@@ -63,33 +63,26 @@ $("methodRisk").textContent=d.risk;$("code").textContent=d.code;
 $("why").innerHTML=d.explain.map(function(x){return "<li>"+esc(x)+"</li>"}).join("");
 }
 function frames(){
-if(current.id==="2010-42"){
-var start=[1,2,3,4,5,6,7],arr=start.slice(),f=[{array:arr.slice(),text:"初始数组。目标是把最前面的3个元素循环移到最后。"}];
-if(mode==="brute"){for(var i=0;i<3;i++){arr.push(arr.shift());f.push({array:arr.slice(),text:"第"+(i+1)+"轮：保存队首 "+(i+1)+"，其余元素左移一格，再把队首接到末尾。"});}}
-else{f.push({array:[3,2,1,4,5,6,7],text:"第1次逆置：前3个元素 A=[1,2,3] → [3,2,1]。"});f.push({array:[3,2,1,7,6,5,4],text:"第2次逆置：剩余的 B=[4,5,6,7] → [7,6,5,4]。"});f.push({array:[4,5,6,7,1,2,3],text:"第3次逆置：整体逆置，得到左移3位的最终结果。"});}
-return f;
-}
-var f2=[],a=["l","o","a","d","i","n","g"],b=["b","e","i","n","g"];
-if(mode==="brute"){
-outer:for(var p=0;p<a.length;p++){for(var q=0;q<b.length;q++){var hit=(p===4&&q===2);f2.push({p:p,q:q,done:hit,text:hit?"找到！两指针落在共享的 i 结点（同一地址），它后面必然共用 n、g。":"比较 p 所指的 "+a[p]+" 与 q 所指的 "+b[q]+" 是否为同一物理结点。字符相同也不能代替地址比较。"});if(hit)break outer;}}
-}else{
-f2=[{p:0,q:0,text:"第一遍统计：链表1长度7，链表2长度5，长度差2。"},
-{p:1,q:0,text:"让长链表指针 p 先走一步，从 l 到 o，q 暂时不动。"},
-{p:2,q:0,text:"p 再走一步到 a。现在 p 与 q 距各自末尾的步数相同。"},
-{p:3,q:1,text:"同步向后走一步：p 指向 d，q 指向 e，它们不是同一结点。"},
-{p:4,q:2,done:true,text:"再同步走一步：两者都到同一个 i 结点！返回 i 的地址。"}];
-}
-return f2;
+if(!current || !current.animation) return [{diagram:current ? current.sample : "",text:"本题请按上方样例手动演示。"}];
+var xs=current.animation[mode];
+return Array.isArray(xs)&&xs.length?xs:[{diagram:current.sample,text:"观察题目给出的样例。"}];
 }
 function renderFrame(f){
-if(current.id==="2010-42"){
-$("viz").innerHTML='<div style="font-size:12px;color:#61778b;margin-bottom:6px">数组 R · 下方数字是下标</div><div class="arrnums">'+f.array.map(function(v,i){return '<div class="node '+(i===0||i===6?"shared":"")+'"><div class="letter">'+v+'</div><div class="under">['+i+']</div></div>'}).join("")+'</div>';
-}else{
-var as=["l","o","a","d","i","n","g"],bs=["b","e","i","n","g"];
-function row(arr,p,name,which){return '<div><div style="font-size:12px;color:#64788d;margin-bottom:4px">'+name+'</div><div class="chainline">'+arr.map(function(x,i){return (i?'<span class="arr">→</span>':'')+'<div class="node '+(i>=(which==="p"?4:2)?"shared ":"")+(i===p?"pointer "+(which==="q"?"other":""):"")+'"><div class="letter">'+x+'</div><div class="under">'+(i===p?which:"节点")+'</div></div>'}).join("")+'<span class="arr">→ NULL</span></div></div>'}
-$("viz").innerHTML='<div class="twochains">'+row(as,f.p,"链表一 · loading","p")+row(bs,f.q,"链表二 · being","q")+'</div><div style="font-size:11px;color:#67867f">绿色结点属于同一段物理共享后缀 i → n → g；p、q 是当前指针位置。</div>';
-}
-$("desc").textContent=f.text;
+if(f.array){
+$("viz").innerHTML='<div style="font-size:12px;color:#61778b;margin-bottom:6px">数组元素 · 下方数字是下标</div><div class="arrnums">'+f.array.map(function(v,i){return '<div class="node '+(i===0?"shared":"")+'"><div class="letter">'+esc(v)+'</div><div class="under">['+i+']</div></div>'}).join("")+'</div>';
+}else if(current.animation && current.animation.layout==="chains" && current.animation.rows){
+$("viz").innerHTML='<div class="twochains">'+current.animation.rows.map(function(row){
+var pos=f[row.pointerKey];var values=row.values||[];
+return '<div><div style="font-size:12px;color:#64788d;margin-bottom:4px">'+esc(row.label)+'</div><div class="chainline">'+values.map(function(v,i){
+return (i?'<span class="arr">→</span>':'')+'<div class="node '+(i>=row.sharedFrom?"shared ":"")+(i===pos?"pointer "+(row.pointerKey==="q"?"other":""):"")+'"><div class="letter">'+esc(v)+'</div><div class="under">'+(i===pos?esc(row.pointerKey):"结点")+'</div></div>'
+}).join("")+'<span class="arr">→ NULL</span></div></div>'
+}).join("")+'</div><div style="font-size:11px;color:#67867f">浅绿色表示两条链表物理共享的结点；带指针标签的是当前检查位置。</div>';
+}else if(Array.isArray(f.rows)){
+$("viz").innerHTML='<div class="twochains">'+f.rows.map(function(row){
+return '<div style="font-size:12px;color:#64788d">'+esc(row.label||"状态")+'</div><div class="arrnums">'+(row.values||[]).map(function(v,i){return '<div class="node '+(i===row.active?"pointer":"")+'"><div class="letter">'+esc(v)+'</div><div class="under">'+i+'</div></div>'}).join("")+'</div>';
+}).join("")+'</div>';
+}else{$("viz").innerHTML='<pre class="sample" style="background:#182b3e;margin:0">'+esc(f.diagram||current.sample)+'</pre>';}
+$("desc").textContent=f.text||"观察当前步骤。";
 }
 function setStep(x){var fs=frames();step=Math.max(0,Math.min(fs.length-1,x));var f=fs[step];$("stepNum").textContent=String(step+1).padStart(2,"0")+" / "+String(fs.length).padStart(2,"0");$("stepName").textContent=current[mode].title+(f.done?" · 查找完成":"");$("progress").style.width=((step+1)/fs.length*100)+"%";$("prev").disabled=step===0;$("next").textContent=step===fs.length-1?"↻ 重新开始":"下一步 →";renderFrame(f)}
 function next(){var n=frames().length;if(step>=n-1){stop();setStep(0)}else{setStep(step+1);if(step>=n-1)stop()}}
