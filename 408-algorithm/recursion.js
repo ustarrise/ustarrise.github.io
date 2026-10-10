@@ -134,19 +134,20 @@ general:"第 k 层：2ᵏ 个节点 × 1 = 2ᵏ；深度约 n",
 layers:[{vals:[["n","1"]],w:"1"},{vals:[["n−1","1"],["n−1","1"]],w:"2"},{vals:[["n−2","1"],["n−2","1"],["n−2","1"],["n−2","1"]],w:"4"}]
 }
 ];
-var letters=["A","B","C","D"];var progress={};var stages={};var filter="all";
+if(Array.isArray(window.RT_EXTRA_QUESTIONS))questions=questions.concat(window.RT_EXTRA_QUESTIONS);
+var letters=["A","B","C","D"];var progress={};var stages={};var filter=location.hash==="#recursion-new"?"new":"all";
 try{progress=JSON.parse(localStorage.getItem("rt408-choices")||"{}")||{};}catch(e){progress={};}
 function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]});}
 function updateProgress(){
 var count=questions.filter(function(q){return Number.isInteger(progress[q.id]);}).length;
-root.querySelector("#rt-count").textContent="已作答 "+count+" / 10 题";
-root.querySelector("#rt-meter-fill").style.width=(count*10)+"%";
+root.querySelector("#rt-count").textContent="已作答 "+count+" / "+questions.length+" 题";
+root.querySelector("#rt-meter-fill").style.width=(count/questions.length*100)+"%";
 }
 function save(){try{localStorage.setItem("rt408-choices",JSON.stringify(progress))}catch(e){}updateProgress();}
 function render(){
 var target=root.querySelector("#rt-list");target.innerHTML=questions.map(function(q){
-return '<article class="rt-card rt-unanswered" data-rt-id="'+q.id+'" data-level="'+(q.id<=4?"basic":q.id<=7?"medium":"hard")+'">'+
-'<div class="rt-cardhead"><div><div class="rt-no">EXERCISE '+String(q.id).padStart(2,"0")+' / 10</div><h3>'+esc(q.title)+'</h3></div><span class="rt-difficulty">'+esc(q.level)+'</span></div>'+
+return '<article class="rt-card rt-unanswered" data-rt-id="'+q.id+'" data-level="'+(q.id>=11?"new":q.id<=4?"basic":q.id<=7?"medium":"hard")+'">'+
+'<div class="rt-cardhead"><div><div class="rt-no">EXERCISE '+String(q.id).padStart(2,"0")+' / '+questions.length+'</div><h3>'+esc(q.title)+'</h3></div><span class="rt-difficulty">'+esc(q.level)+'</span></div>'+
 '<div class="rt-cardmain"><pre class="rt-code"><code>'+esc(q.code)+'</code></pre><p class="rt-question">最坏情况下，该算法最紧的渐近时间复杂度是（ ）。</p>'+
 '<div class="rt-options">'+q.opts.map(function(v,j){
 return '<label class="rt-opt"><input type="radio" name="rt-q-'+q.id+'" value="'+j+'" '+(progress[q.id]===j?'checked':'')+'><span>'+letters[j]+'. '+esc(v)+'</span></label>';
@@ -156,7 +157,7 @@ return '<label class="rt-opt"><input type="radio" name="rt-q-'+q.id+'" value="'+
 '<div class="rt-treewrap" data-rt-svg></div>'+
 '<div class="rt-stage-controls"><small data-rt-stage-label>已显示第 0 层</small><div class="rt-stage-buttons"><button type="button" data-rt-act="prev">← 上一层</button><button type="button" data-rt-act="next">下一层 →</button><button type="button" data-rt-act="all">显示前三层</button></div></div>'+
 '<div class="rt-rows" data-rt-rows></div><div class="rt-general">'+esc(q.general)+'</div>'+
-'<div class="rt-note">树图仅画前 3 层来观察规律；后续递归按第 k 层公式继续，直至达到基本情况。框内上行是问题规模，下行是自身代价。'+(q.id===8?" 第 2 层按 4 个一组折叠展示，共 16 个节点。":"")+'</div></div>'+
+'<div class="rt-note">树图仅画前 3 层来观察规律；后续递归按第 k 层公式继续，直至达到基本情况。框内上行是问题规模，下行是自身代价。'+(q.layers[2].group?(q.layers[2].groupLabel||" 第 2 层分组折叠展示。"):"")+'</div></div>'+
 '<div class="rt-reveal rt-solution" data-rt-solution hidden>'+
 '<div class="rt-final"><span>正确答案：'+letters[q.answer]+' · '+esc(q.opts[q.answer])+'</span><small data-rt-verdict></small></div>'+
 '<div class="rt-step"><h4>① 从 C 代码找到递推式</h4><p>'+esc(q.why)+'</p><div class="rt-math">'+esc(q.recur)+'</div></div>'+
@@ -177,6 +178,7 @@ function coords(n){
 if(n===1)return [535];
 if(n===2)return [300,770];
 if(n===4)return [125,395,675,945];
+if(n===3)return [220,535,850];
 return [535];
 }
 function draw(q,card){
@@ -198,7 +200,7 @@ var x=xx[j],s=nodes[j][0],cost=nodes[j][1];
 var box=svgEl("rect",{x:x-85,y:y[k]-30,width:170,height:59,rx:12,fill:k===step?"#e1f4ed":"#fff",stroke:k===step?"#20a090":"#cbd9e2","stroke-width":k===step?2:1.2});
 svg.appendChild(box);
 svg.appendChild(svgEl("text",{x:x,y:y[k]-5,"text-anchor":"middle",fill:"#183650","font-size":17,"font-weight":700},s));
-svg.appendChild(svgEl("text",{x:x,y:y[k]+16,"text-anchor":"middle",fill:"#118077","font-size":12},q.id===8&&k===2?"分组代价："+cost:"自身："+cost));
+svg.appendChild(svgEl("text",{x:x,y:y[k]+16,"text-anchor":"middle",fill:"#118077","font-size":12},q.layers[k].group?"分组代价："+cost:"自身："+cost));
 }
 prev=xx;
 }
@@ -237,7 +239,7 @@ if(btn){
 var a=btn.dataset.rtAct;
 if(a==="all-open"){root.querySelectorAll(".rt-card").forEach(function(c){revealTree(c,true);revealAnswer(c,true)});return;}
 if(a==="all-close"){root.querySelectorAll(".rt-card").forEach(function(c){revealTree(c,false);revealAnswer(c,false)});return;}
-if(a==="reset"){if(!confirm("清空本专题的 10 道题选择记录？"))return;progress={};save();render();return;}
+if(a==="reset"){if(!confirm("清空本专题的 "+questions.length+" 道题选择记录？"))return;progress={};save();render();return;}
 var card=cardBy(btn);if(!card)return;
 var q=questions[Number(card.dataset.rtId)-1];
 if(a==="tree"){revealTree(card);return;}
