@@ -195,7 +195,7 @@ $("variationQuestion").textContent=current.variation.question;$("variationIdea")
 $("tips").innerHTML=current.tips.map(function(x){return "<li>"+esc(x)+"</li>"}).join("");
 $("compareBrute").textContent=current.brute.complexity+"。"+current.brute.risk;
 $("compareOpt").textContent=current.optimal.complexity+"。"+current.optimal.risk;
-closeRecursion(false);document.querySelectorAll("#lessonList .lessonitem").forEach(function(el){var active=el.dataset.id===current.id;el.classList.toggle("active",active);el.setAttribute("aria-pressed",active?"true":"false")});
+closeAOE(false);closeRecursion(false);var activeIndex=lessons.findIndex(function(x){return x.id===current.id});if(activeIndex>=0){setArchivePage(Math.floor(activeIndex/ARCHIVE_PAGE_SIZE));}syncArchiveSelection();saveArchivePage();
 syncModes();setStep(0);
 if(!skipScroll){history.replaceState(null,"","#"+current.id);document.getElementById("lesson").scrollIntoView({behavior:"smooth",block:"start"});}
 }
@@ -232,23 +232,93 @@ function next(){var n=frames().length;if(step>=n-1){stop();setStep(0)}else{setSt
 function copy(text,el){if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(function(){el.textContent="已复制 ✓";setTimeout(function(){el.textContent="复制代码"},1800)},function(){fallback(text,el)})}else fallback(text,el)}
 function fallback(text,el){var ta=document.createElement("textarea");ta.value=text;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();try{document.execCommand("copy");el.textContent="已复制 ✓"}catch(e){el.textContent="请长按代码复制"}ta.remove()}
 
-var showAllLessons=false;
+var ARCHIVE_PAGE_SIZE=4,archivePage=0,topicPage=0,lastArchiveSwipe=0,lastTopicSwipe=0;
 function lessonCategory(x){
  if(x.year==="LeetCode")return "LeetCode · "+x.number;
  if(/^[0-9]{4}$/.test(String(x.year)))return x.year+" 年真题";
  return "408 专项练习";
 }
-function renderArchive(){
- $("archiveCount").textContent=lessons.length+" 道题";
- $("lessonList").innerHTML=lessons.map(function(x,i){
-   return '<button type="button" class="lessonitem" data-id="'+esc(x.id)+'" aria-pressed="false"'+(!showAllLessons&&i>=5?' hidden':'')+'>'+
-    '<span class="lessonitem-head"><span class="lessonitem-kind">'+esc(lessonCategory(x))+'</span><span class="lessonitem-order">'+String(i+1).padStart(2,"0")+'</span></span>'+
-    '<strong>'+esc(x.title)+'</strong><span class="lessonitem-date">'+esc(x.date)+'</span></button>'
+function archivePages(){return Math.max(1,Math.ceil(lessons.length/ARCHIVE_PAGE_SIZE));}
+function saveArchivePage(){
+ try{localStorage.setItem("archive408page",JSON.stringify({page:archivePage,newest:lessons.length?lessons[0].id:""}))}catch(e){}
+}
+function archiveDots(){
+ var total=archivePages(),indices=[];
+ if(total<=7){for(var i=0;i<total;i++)indices.push(i);}
+ else{
+  indices=[0];
+  for(var j=Math.max(1,archivePage-1);j<=Math.min(total-2,archivePage+1);j++)indices.push(j);
+  indices.push(total-1);
+ }
+ var prev=-1;
+ $("archiveDots").innerHTML=indices.map(function(i){
+  var dots=i-prev>1?'<span class="archive-ellipsis" aria-hidden="true">···</span>':"";
+  prev=i;
+  return dots+'<button class="archive-dot '+(i===archivePage?'is-active':'')+'" type="button" data-archive-page="'+i+'" aria-label="跳转到第'+(i+1)+'页" aria-pressed="'+(i===archivePage)+'"></button>';
  }).join("");
- var more=$("archiveToggle");more.hidden=lessons.length<=5;
- more.innerHTML=showAllLessons?'收起历史题目 <span aria-hidden="true">⌃</span>':'展开全部 '+lessons.length+' 道题 <span aria-hidden="true">⌄</span>';
+}
+function renderArchive(direction){
+ if(!lessons.length)return;
+ $("archiveCount").textContent=lessons.length+" 道题";
+ var currentPage=lessons.slice(archivePage*ARCHIVE_PAGE_SIZE,(archivePage+1)*ARCHIVE_PAGE_SIZE);
+ var cells=currentPage.map(function(x,i){
+   var num=archivePage*ARCHIVE_PAGE_SIZE+i+1,selected=current&&current.id===x.id;
+   return '<button type="button" class="lessonitem '+(selected?'active':'')+'" data-id="'+esc(x.id)+'" aria-pressed="'+selected+'">'+
+    '<span class="lessonitem-head"><span class="lessonitem-kind">'+esc(lessonCategory(x))+'</span><span class="lessonitem-order">'+String(num).padStart(2,"0")+'</span></span>'+
+    '<strong>'+esc(x.title)+'</strong><span class="lessonitem-date">'+esc(x.date)+'</span></button>';
+ });
+ while(cells.length<ARCHIVE_PAGE_SIZE)cells.push('<div class="archive-placeholder" aria-hidden="true">✦</div>');
+ var grid=$("lessonList");
+ grid.classList.remove("archive-slide-next","archive-slide-prev");
+ grid.innerHTML=cells.join("");
+ if(direction!==0&&window.matchMedia&&!window.matchMedia("(prefers-reduced-motion: reduce)").matches){
+  void grid.offsetWidth;grid.classList.add(direction>0?"archive-slide-next":"archive-slide-prev");
+ }
+ archiveDots();
+ $("archivePageLabel").textContent="第 "+(archivePage+1)+" / "+archivePages()+" 页";
+ $("archivePrev").disabled=archivePage<=0;$("archiveNext").disabled=archivePage>=archivePages()-1;
+}
+function setArchivePage(page,direction){
+ var next=Math.max(0,Math.min(archivePages()-1,page));
+ if(next===archivePage){return;}
+ var move=direction===undefined?(next>archivePage?1:-1):direction;
+ archivePage=next;renderArchive(move);saveArchivePage();
+}
+function syncArchiveSelection(){
  $("lessonList").querySelectorAll(".lessonitem").forEach(function(el){
-   el.addEventListener("click",function(){loadLesson(el.dataset.id);});
+  var selected=current&&el.dataset.id===current.id;
+  el.classList.toggle("active",!!selected);el.setAttribute("aria-pressed",selected?"true":"false");
+ });
+}
+function setTopicPage(page){
+ topicPage=Math.max(0,Math.min(1,page));
+ $("topicTrack").style.transform="translateX(-"+topicPage*100+"%)";
+ $("topicPrev").disabled=topicPage===0;$("topicNext").disabled=topicPage===1;
+ $("topicPageLabel").textContent=(topicPage+1)+" / 2";
+ $("topicDots").innerHTML=[0,1].map(function(n){return '<button class="topic-dot '+(n===topicPage?'is-active':'')+'" data-topic-page="'+n+'" aria-label="显示第'+(n+1)+'个专题" aria-pressed="'+(n===topicPage)+'"></button>'}).join("");
+}
+function swipeArea(id,getPage,setPage,canRight,lastName){
+ var zone=$(id),begin=null,moved=false;
+ zone.addEventListener("touchstart",function(e){
+  if(e.touches.length===1){begin={x:e.touches[0].clientX,y:e.touches[0].clientY};moved=false;}
+ },{passive:true});
+ zone.addEventListener("touchend",function(e){
+  if(!begin||!e.changedTouches.length)return;
+  var dx=e.changedTouches[0].clientX-begin.x,dy=e.changedTouches[0].clientY-begin.y;begin=null;
+  if(Math.abs(dx)>38&&Math.abs(dx)>Math.abs(dy)*1.25){
+   moved=true;var p=getPage();setPage(p+(dx<0?1:-1));if(lastName==="archive")lastArchiveSwipe=Date.now();else lastTopicSwipe=Date.now();
+  }
+ },{passive:true});
+ var startMouse=null;
+ zone.addEventListener("pointerdown",function(e){if(e.pointerType==="mouse"&&e.button===0)startMouse={x:e.clientX,y:e.clientY};});
+ zone.addEventListener("pointerup",function(e){if(startMouse){
+  var dx=e.clientX-startMouse.x,dy=e.clientY-startMouse.y;startMouse=null;
+  if(Math.abs(dx)>40&&Math.abs(dx)>Math.abs(dy)*1.25){setPage(getPage()+(dx<0?1:-1));if(lastName==="archive")lastArchiveSwipe=Date.now();else lastTopicSwipe=Date.now();}
+ }});
+ zone.addEventListener("keydown",function(e){
+  if(e.target!==zone)return;
+  if(e.key==="ArrowLeft"){e.preventDefault();setPage(getPage()-1)}
+  if(e.key==="ArrowRight"){e.preventDefault();setPage(getPage()+1)}
  });
 }
 function closeRecursion(scroll){
@@ -262,7 +332,7 @@ function closeRecursion(scroll){
  }
 }
 function openRecursion(onlyNew,updateUrl){
- stop();
+ stop();closeAOE(false);setTopicPage(0);
  $("recursion").hidden=false;
  $("lesson").classList.add("is-recursion-mode");
  $("recursionEntry").classList.add("is-active");
@@ -272,15 +342,40 @@ function openRecursion(onlyNew,updateUrl){
  if(onlyNew){var b=$("recursion").querySelector('[data-rt-filter="new"]');if(b)b.click()}
  requestAnimationFrame(function(){$("recursion").scrollIntoView({behavior:"smooth",block:"start"});});
 }
-$("archiveToggle").addEventListener("click",function(){
- showAllLessons=!showAllLessons;renderArchive();
- if(current&&!$("recursion").hidden)return;
- $("lessonList").querySelectorAll(".lessonitem").forEach(function(el){
-   var active=current&&el.dataset.id===current.id;
-   el.classList.toggle("active",!!active);el.setAttribute("aria-pressed",active?"true":"false");
- });
+
+$("lessonList").addEventListener("click",function(e){
+ var b=e.target.closest("button[data-id]");
+ if(b&&Date.now()-lastArchiveSwipe>350)loadLesson(b.dataset.id);
 });
-$("recursionEntry").addEventListener("click",function(e){e.preventDefault();openRecursion(false,true)});
+$("archivePrev").addEventListener("click",function(){setArchivePage(archivePage-1)});
+$("archiveNext").addEventListener("click",function(){setArchivePage(archivePage+1)});
+$("archiveDots").addEventListener("click",function(e){var b=e.target.closest("button[data-archive-page]");if(b)setArchivePage(Number(b.dataset.archivePage))});
+swipeArea("archiveSwipe",function(){return archivePage},setArchivePage,true,"archive");
+$("topicPrev").addEventListener("click",function(){setTopicPage(topicPage-1)});
+$("topicNext").addEventListener("click",function(){setTopicPage(topicPage+1)});
+$("topicDots").addEventListener("click",function(e){var b=e.target.closest("button[data-topic-page]");if(b)setTopicPage(Number(b.dataset.topicPage))});
+swipeArea("topicSwipe",function(){return topicPage},setTopicPage,true,"topic");
+setTopicPage(0);
+function closeAOE(scroll){
+ $("aoe").hidden=true;$("lesson").classList.remove("is-aoe-mode");
+ $("aoeEntry").classList.remove("is-active");$("aoeEntry").setAttribute("aria-expanded","false");
+ if(scroll){if(current)history.pushState(null,"","#"+current.id);$("lesson").scrollIntoView({behavior:"smooth",block:"start"});}
+}
+function openAOE(index,updateUrl){
+ stop();closeRecursion(false);$("aoe").hidden=false;
+ $("lesson").classList.add("is-aoe-mode");$("aoeEntry").classList.add("is-active");$("aoeEntry").setAttribute("aria-expanded","true");
+ setTopicPage(1);syncArchiveSelection();
+ if(window.AOE_LAB)window.AOE_LAB.activate(index);
+ if(updateUrl!==false)history.pushState(null,"",index?"#aoe-"+(index+1):"#aoe");
+ requestAnimationFrame(function(){$("aoe").scrollIntoView({behavior:"smooth",block:"start"})});
+}
+$("aoeEntry").addEventListener("click",function(e){
+ if(Date.now()-lastTopicSwipe<350){e.preventDefault();return}
+ e.preventDefault();openAOE(0,true);
+});
+$("aoeBack").addEventListener("click",function(){closeAOE(true)});
+
+$("recursionEntry").addEventListener("click",function(e){if(Date.now()-lastTopicSwipe<350){e.preventDefault();return}e.preventDefault();openRecursion(false,true)});
 document.querySelectorAll('.barlinks a[href="#recursion"]').forEach(function(el){
  el.addEventListener("click",function(e){e.preventDefault();openRecursion(false,true)});
 });
@@ -291,8 +386,9 @@ $("recursionBack").addEventListener("click",function(){closeRecursion(true)});
 window.addEventListener("hashchange",function(){
  var hash=location.hash.slice(1);
  if(hash==="recursion"||hash==="recursion-new"){openRecursion(hash==="recursion-new",false);return}
+ if(hash==="aoe"||/^aoe-[1-8]$/.test(hash)){openAOE(hash==="aoe"?0:Number(hash.slice(-1))-1,false);return}
  if(lessons.some(function(x){return x.id===hash})){loadLesson(hash);return}
- if(hash==="lesson")closeRecursion(false);
+ if(hash==="lesson"){closeRecursion(false);closeAOE(false);}
 });
 
 $("reveal").onclick=showAnswer;
@@ -303,7 +399,17 @@ document.querySelectorAll("[data-mode]").forEach(function(el){el.onclick=functio
 $("copy").onclick=function(){copy(current[mode].code,this)};
 $("copyVar").onclick=function(){copy(current.variation.code,this)};
 $("showVar").onclick=function(){var e=$("variationAnswer");var open=e.style.display==="none";e.style.display=open?"block":"none";this.textContent=open?"收起参考答案 ↑":"展开完整参考答案 ↓"};
-fetch("./lessons.json",{cache:"no-store"}).then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return r.json()}).then(function(data){lessons=data.sort(function(a,b){return b.date.localeCompare(a.date)});var targetHash=location.hash.slice(1);var initialIndex=lessons.findIndex(function(x){return x.id===targetHash});showAllLessons=initialIndex>=5;renderArchive();var isRecursion=targetHash==="recursion"||targetHash==="recursion-new";loadLesson(isRecursion?lessons[0].id:(targetHash||lessons[0].id),true);if(isRecursion){openRecursion(targetHash==="recursion-new",false)}}).catch(function(e){$("title").textContent="题目加载失败";$("question").textContent="无法读取 lessons.json。请通过 GitHub Pages 的在线网址访问本站，或稍后刷新。错误："+e.message;$("reveal").disabled=true});
+fetch("./lessons.json",{cache:"no-store"}).then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return r.json()}).then(function(data){lessons=data.sort(function(a,b){return b.date.localeCompare(a.date)});
+ var targetHash=location.hash.slice(1),initialIndex=lessons.findIndex(function(x){return x.id===targetHash});
+ try{var stored=JSON.parse(localStorage.getItem("archive408page")||"null");if(stored&&stored.newest===lessons[0].id&&Number.isInteger(stored.page))archivePage=Math.max(0,Math.min(archivePages()-1,stored.page))}catch(e){}
+ if(initialIndex>=0)archivePage=Math.floor(initialIndex/ARCHIVE_PAGE_SIZE);
+ renderArchive(0);
+ var isRecursion=targetHash==="recursion"||targetHash==="recursion-new";
+ var isAOE=targetHash==="aoe"||/^aoe-[1-8]$/.test(targetHash);
+ var chosen=initialIndex>=0?lessons[initialIndex].id:(lessons[Math.min(lessons.length-1,archivePage*ARCHIVE_PAGE_SIZE)]||lessons[0]).id;
+ loadLesson(isRecursion||isAOE?lessons[0].id:chosen,true);
+ if(isRecursion)openRecursion(targetHash==="recursion-new",false);
+ if(isAOE)openAOE(targetHash==="aoe"?0:Number(targetHash.slice(-1))-1,false);}).catch(function(e){$("title").textContent="题目加载失败";$("question").textContent="无法读取 lessons.json。请通过 GitHub Pages 的在线网址访问本站，或稍后刷新。错误："+e.message;$("reveal").disabled=true});
 })();
 </script>
 <script src="./recursion-extra.js?v=20261010b"></script>
