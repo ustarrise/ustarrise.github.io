@@ -13,6 +13,9 @@ on:
       - '408-algorithm/lessons.json'
       - '408-algorithm/index.html'
       - '408-algorithm/pending-lessons.json'
+      - '408-algorithm/validate_lessons.py'
+      - '408-algorithm/publish_daily.py'
+      - '.github/workflows/daily-408.yml'
 
 permissions:
   contents: write
@@ -32,6 +35,9 @@ jobs:
         with:
           ref: master
           persist-credentials: true
+
+      - name: Compile and test all queued C solutions
+        run: python3 408-algorithm/validate_lessons.py
 
       - name: Publish reviewed lesson with retries
         env:
