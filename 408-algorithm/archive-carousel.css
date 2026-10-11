@@ -1,0 +1,41 @@
+
+/* 408 题库：四张一屏的轻量轮播，专题每屏只有一个完整横向卡片 */
+#archive .archive-swipe{overflow:hidden;width:100%;min-width:0;border-radius:16px;touch-action:pan-y;overscroll-behavior-x:contain;user-select:none;-webkit-user-select:none}
+#archive .archive-swipe:focus-visible,#archive .topic-swipe:focus-visible{outline:2px solid #1a908b;outline-offset:3px}
+#archive .lesson-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-rows:repeat(2,minmax(106px,auto));gap:9px;min-height:221px;align-content:stretch}
+#archive .lessonitem{min-width:0!important;min-height:106px;height:100%;margin:0;padding:12px 10px}
+#archive .lessonitem strong{font-size:12.5px}
+#archive .archive-placeholder{display:flex;align-items:center;justify-content:center;min-height:106px;border-radius:15px;border:1px dashed #dae5e6;background:#f8fafb;color:#b4c4c5;font-size:18px}
+#archive .archive-pagination{display:flex;align-items:center;justify-content:space-between;gap:8px;border-top:1px solid #edf1f2;margin-top:14px;padding:11px 1px 0}
+#archive .archive-nav{width:39px;height:38px;border:1px solid #dce9e9;background:#f5faf9;border-radius:12px;color:#0f7d75;font-size:23px;display:grid;place-items:center}
+#archive .archive-nav:disabled,#archive .topic-arrow:disabled{opacity:.3;cursor:default}
+#archive .archive-pagination-mid{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:5px}
+#archive .archive-dots,#archive .topic-dots{display:flex;justify-content:center;align-items:center;gap:6px;min-height:11px}
+#archive .archive-dot,#archive .topic-dot{border:0;width:7px;height:7px;border-radius:99px;background:#d4e1e2;padding:0;flex-shrink:0}
+#archive .archive-dot.is-active,#archive .topic-dot.is-active{width:21px;background:#138981}
+#archive .archive-page-label,#archive .topic-page-label{font-size:10px;color:#82969e;font-weight:800;font-variant-numeric:tabular-nums}
+#archive .archive-ellipsis{font-size:10px;color:#a7b3b9}
+#archive .archive-swipe-hint{font-size:10px;color:#98aaaf;margin:7px 0 0;text-align:center}
+#archive .lesson-grid.archive-slide-next{animation:archiveSlideNext .23s ease-out both}
+#archive .lesson-grid.archive-slide-prev{animation:archiveSlidePrev .23s ease-out both}
+@keyframes archiveSlideNext{from{opacity:.35;transform:translateX(22px)}to{opacity:1;transform:translateX(0)}}
+@keyframes archiveSlidePrev{from{opacity:.35;transform:translateX(-22px)}to{opacity:1;transform:translateX(0)}}
+/* 专题训练：一行一个，左右滑动只有一个卡片可见。 */
+#archive .topic-swipe{width:100%;overflow:hidden;touch-action:pan-y;overscroll-behavior-x:contain;border-radius:16px}
+#archive .topic-track{display:flex;align-items:stretch;width:100%;transition:transform .25s cubic-bezier(.2,.8,.2,1)}
+#archive .topic-card{flex:0 0 100%;width:100%;min-width:100%;margin:0!important;box-shadow:none}
+#archive .aoe-entry{background:linear-gradient(115deg,#eef5ff,#eaf4fc);border-color:#c0d9ed}
+#archive .aoe-entry:hover{background:#e3effa;border-color:#7eb2d1}
+#archive .aoe-entry .recursion-eyebrow{color:#3b75a4}
+#archive .aoe-entry .recursion-summary strong{color:#285d82}
+#archive .aoe-entry .recursion-hint{color:#638ca6}
+#archive .aoe-entry .recursion-arrow{color:#35789d}
+#archive .aoe-entry.is-active{background:#dceafa;border-color:#4b96c0}
+#archive .topic-pagination{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:11px}
+#archive .topic-arrow{border:1px solid #e0eaea;width:31px;height:30px;border-radius:10px;background:#f8fafb;color:#438276;font-size:19px}
+#archive .topic-page-label{white-space:nowrap}
+#lesson.is-aoe-mode > .panel:not(#aoe),#lesson.is-aoe-mode > .answer-wrap{display:none!important}
+#aoe[hidden]{display:none!important}
+@media(max-width:850px){#archive .lesson-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-rows:repeat(2,minmax(111px,auto));min-height:229px;gap:9px}#archive .lessonitem{min-height:111px;padding:12px 12px}#archive .lessonitem strong{font-size:13px}#archive .archive-placeholder{min-height:111px}}
+@media(max-width:360px){#archive .lessonitem{padding:11px 9px}#archive .lessonitem strong{font-size:12px}}
+@media(prefers-reduced-motion:reduce){#archive .topic-track{transition:none}#archive .lesson-grid.archive-slide-next,#archive .lesson-grid.archive-slide-prev{animation:none}}
