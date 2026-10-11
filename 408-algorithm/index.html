@@ -20,11 +20,90 @@
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
 </style>
 <link rel="stylesheet" href="./recursion.css">
+<style id="archive-navigation-style">
+/* 选题导航：一组卡片，不让专题入口与每日题目横向抢宽度 */
+#archive.sidebar{display:block;min-width:0;overflow:visible}
+#archive .archive-heading{padding:3px 3px 13px}
+#archive .archive-overline{display:flex;align-items:center;gap:6px;color:#118780;font-size:10px;font-weight:900;letter-spacing:1.6px;white-space:nowrap}
+#archive .archive-sparkle{font-size:16px;color:#e0ae5e}
+#archive .archive-heading-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px}
+#archive .archive-heading-row h2{font-size:18px;line-height:1.35;letter-spacing:-.4px;margin:0;font-weight:850;color:#14283b}
+#archive .archive-count{font-size:11px;font-weight:800;white-space:nowrap;padding:5px 9px;background:#f0f5f6;border-radius:20px;color:#628487}
+#archive .archive-heading p{font-size:12px;line-height:1.5;color:#7b8b9b;margin:8px 0 0}
+#archive .lesson-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:9px;min-width:0}
+#archive .lessonitem{position:relative;display:flex;flex-direction:column;gap:8px;min-width:0;width:100%;min-height:107px;padding:14px 14px 12px;margin:0;border:1px solid #e5edf0;background:#fafcfd;border-radius:15px;text-align:left;color:#213348;transition:background .18s,border-color .18s,box-shadow .18s,transform .18s;box-shadow:0 2px 5px #20334c06;overflow:hidden}
+#archive .lessonitem:hover{background:#f2f8f8;border-color:#b8dad7;transform:translateY(-1px)}
+#archive .lessonitem:active{transform:translateY(0)}
+#archive .lessonitem-head{display:flex;align-items:center;justify-content:space-between;gap:4px;margin:0;min-width:0;width:100%}
+#archive .lessonitem-kind{font-size:10px;line-height:1.4;font-weight:850;color:#087970;letter-spacing:.2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:0}
+#archive .lessonitem-order{font-size:10px;color:#a1aeba;font-weight:900;line-height:1.5;margin:0}
+#archive .lessonitem strong{font-size:13px;line-height:1.5;font-weight:800;letter-spacing:-.15px;color:inherit;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;word-break:break-word;min-height:38px;margin:0}
+#archive .lessonitem-date{font-size:10px;line-height:1.4;font-weight:600;color:#91a1b1;margin-top:auto;letter-spacing:.2px}
+#archive .lessonitem.active{background:linear-gradient(142deg,#122c40,#115b60);border-color:#19726f;color:#fff;box-shadow:0 7px 17px #12616a27}
+#archive .lessonitem.active:hover{background:linear-gradient(142deg,#173c52,#12666b)}
+#archive .lessonitem.active .lessonitem-kind{color:#99e5d3}
+#archive .lessonitem.active .lessonitem-order{color:#93b8bd}
+#archive .lessonitem.active .lessonitem-date{color:#c7dddd}
+#archive .lessonitem.active::after{content:"✓";position:absolute;right:12px;bottom:10px;color:#d1f7e8;font-weight:900;font-size:12px}
+#archive .archive-more{margin-top:10px;width:100%;border:1px dashed #c6dcd9;background:#f6fbfa;border-radius:11px;padding:10px;color:#21766f;font-weight:750;font-size:12px}
+#archive .archive-more:hover{background:#e6f5f0}
+#archive .archive-divider{display:flex;align-items:center;gap:10px;margin:19px 0 11px;color:#8c9aa9;font-size:11px;font-weight:800;letter-spacing:.7px}
+#archive .archive-divider::after{content:"";flex:1;height:1px;background:#e8edf2}
+#archive .recursion-entry{position:relative;width:100%;min-width:0;display:flex;align-items:center;gap:12px;padding:16px 13px;border-radius:16px;background:linear-gradient(115deg,#e9f7f1,#edf8f7);border:1px solid #b8e2d3;text-decoration:none;box-shadow:0 3px 10px #177f6410;color:#17483e;transition:background .18s,border-color .18s,transform .18s}
+#archive .recursion-entry:hover{background:#dcf3e9;border-color:#76c5a8;transform:translateY(-1px);opacity:1}
+#archive .recursion-entry.is-active{border-color:#138e78;background:#d4f3e8;box-shadow:0 0 0 2px #0c9c7624}
+#archive .recursion-illustration{width:47px;height:47px;flex-shrink:0;display:grid;place-items:center;border-radius:13px;background:#fffaf1;border:1px solid #e8ead5;font-size:25px}
+#archive .recursion-summary{display:flex;flex:1;min-width:0;flex-direction:column;gap:2px}
+#archive .recursion-eyebrow{font-size:10px;color:#278376;font-weight:850;letter-spacing:.5px}
+#archive .recursion-summary strong{font-size:14px;line-height:1.45;color:#164f4a;font-weight:850}
+#archive .recursion-hint{font-size:11px;color:#6a998b}
+#archive .recursion-arrow{display:grid;place-items:center;width:25px;height:25px;background:#fff9;border-radius:50%;font-size:15px;color:#1c846e}
+#archive [hidden]{display:none!important}
+#recursion[hidden]{display:none!important}
+#lesson.is-recursion-mode > .panel:not(#recursion),#lesson.is-recursion-mode > .answer-wrap{display:none!important}
+#recursion .recursion-back{border:1px solid #cee8de;background:#eff9f5;border-radius:11px;padding:9px 13px;margin-bottom:18px;color:#0e7368;font-size:12px;font-weight:800}
+#recursion .recursion-back:hover{background:#ddf1e9}
+@media (max-width:850px){
+ #archive.sidebar{display:block!important;padding:17px!important;margin-bottom:17px;position:static;max-height:none}
+ #archive .lesson-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+ #archive .lessonitem{min-width:0!important;min-height:112px}
+ #archive .lessonitem strong{font-size:13px}
+ #archive .archive-heading{padding:1px 2px 13px}
+ #archive .archive-heading-row h2{font-size:18px}
+ #archive .recursion-entry{padding:13px 14px}
+}
+@media(max-width:370px){
+ #archive .lesson-grid{gap:7px}
+ #archive .lessonitem{padding:12px 10px;min-height:105px}
+ #archive .lessonitem strong{font-size:12px}
+ #archive .recursion-entry{gap:9px;padding:12px}
+}
+@media(min-width:851px){
+ #archive.sidebar{max-height:calc(100vh - 32px);overflow-y:auto;scrollbar-width:thin}
+ #archive .lessonitem{min-height:94px}
+}
+@media(prefers-reduced-motion:reduce){#archive .lessonitem,#archive .recursion-entry{transition:none}}
+</style>
 </head>
 <body>
 <header class="top"><div class="bar"><div class="brand"><div class="mark">408</div><span>ALGORITHM LAB</span></div><div class="barlinks"><a href="#lesson">今日精练</a><a href="#visual">算法演示</a><a href="#recursion">递归树专项</a><a href="https://github.com/ustarrise/ustarrise.github.io" target="_blank" rel="noopener">GitHub ↗</a></div></div><div class="hero"><div class="eyebrow">DAILY PRACTICE · 408 数据结构</div><h1>一道题，练透一类算法。</h1><p>先写最容易想到的暴力解，再用考纲内的简单方法优化。手动推演、动画演示、完整 C 语言代码和中文注释，全部放在一个地方。</p><div class="hero-stats"><span>考纲内 · 不炫技</span><span>暴力法先讲</span><span>逐步动画</span><span>适合手机阅读</span></div></div></header>
 <div class="shell">
-<aside class="sidebar" id="archive"><small>练习归档 · ARCHIVE</small><div id="lessonList"></div><a class="lessonitem" style="text-decoration:none;background:#e7f8f1;border:1px solid #a8dfd0;margin-top:10px" href="#recursion"><span>专题练习 · 15 道</span><strong>🌳 递归树与时间复杂度</strong></a><div class="miniinfo">每天一题，积累成自己的 408 算法题库。所有题目保留历史记录。</div></aside>
+<aside class="sidebar" id="archive" aria-label="408算法题目导航">
+<div class="archive-heading">
+  <span class="archive-overline"><span class="archive-sparkle" aria-hidden="true">✦</span> PRACTICE LIBRARY</span>
+  <div class="archive-heading-row"><h2>选择今日练习</h2><span id="archiveCount" class="archive-count">— 道题</span></div>
+  <p>每天一道，按日期保存进度与真题。</p>
+</div>
+<div id="lessonList" class="lesson-grid"></div>
+<button id="archiveToggle" class="archive-more" type="button" hidden>查看历史题目 <span aria-hidden="true">⌄</span></button>
+<div class="archive-divider"><span>专题训练</span></div>
+<a class="recursion-entry" id="recursionEntry" href="#recursion" aria-controls="recursion" aria-expanded="false">
+ <span class="recursion-illustration" aria-hidden="true">🌳</span>
+ <span class="recursion-summary"><span class="recursion-eyebrow">15 道 · 递归树专项</span><strong>递归树与复杂度</strong><span class="recursion-hint">点击进入专题练习</span></span>
+ <span class="recursion-arrow" aria-hidden="true">↗</span>
+</a>
+<div class="miniinfo">每日一题，练到熟练。你的历史题目一直保留。</div>
+</aside>
 <main class="stack" id="lesson">
 <section class="panel"><div class="breadcrumb" id="crumb">算法精练 / 正在加载</div><div class="section-kicker">TODAY'S CHALLENGE</div><h1 class="title" id="title">正在加载题目…</h1><div class="chips" id="chips"></div><h2 style="margin-top:27px">题目描述</h2><p class="statement" id="question"></p><div class="focus" id="constraint"></div><div class="section-kicker" style="margin:22px 0 8px">EXAMPLE</div><pre class="sample" id="sample"></pre><div class="prompt"><span>✦</span><div><b>先独立思考 15 分钟</b><p>能不能先想出最直观的方法？如果你能写出正确的暴力解，已经走出了第一步。</p></div></div><div class="actions"><button class="primary" id="reveal">查看答案与动画 ↓</button><a id="source" target="_blank" rel="noopener" class="secondary" style="text-decoration:none">查看真题出处 ↗</a></div></section>
 <div class="answer-wrap" id="answers">
@@ -32,7 +111,7 @@
 <section class="panel"><div class="section-kicker">METHOD BREAKDOWN</div><h2>解法讲解与完整代码</h2><div class="toggle" id="codeModes" style="margin-bottom:14px"><button data-mode="brute" class="active">暴力解法</button><button data-mode="optimal">优化解法</button></div><div class="method"><div class="chips"><span id="methodTag" class="chip gold"></span><span class="chip" id="methodComplexity"></span></div><h3 id="methodName"></h3><p id="methodIdea"></p><div class="warning" id="methodRisk"></div><h3>每段代码为什么这样写？</h3><ol class="reason" id="why"></ol><div class="codewrap"><button class="copy" id="copy">复制代码</button><pre><code id="code"></code></pre></div></div></section>
 <section class="panel"><div class="section-kicker">EXAM STRATEGY</div><h2>考场性价比：到底写哪种？</h2><div class="sideBySide"><div><b>🟡 暴力法 · 先拿下正确思路</b><p id="compareBrute"></p></div><div><b>🟢 优化法 · 满足高效要求</b><p id="compareOpt"></p></div></div><p>建议：先学会用朴素思路保底，再判断题目是否明确强调效率。原题强调“尽可能高效”时，不要把暴力法误当作必然满分答案。具体分值以实际评分细则为准。</p><h3>常见错误</h3><ul class="ul" id="tips"></ul></section>
 <section class="panel"><div class="section-kicker">ONE MORE ROUND</div><h2>巩固变式 · 先做后看</h2><p id="variationQuestion"></p><button class="secondary" id="showVar">展开完整参考答案 ↓</button><div id="variationAnswer" style="display:none"><div class="focus" id="variationIdea"></div><div class="codewrap"><button class="copy" id="copyVar">复制变式代码</button><pre><code id="variationCode"></code></pre></div></div></section>
-</div><section class="panel recursion-panel" id="recursion"><div class="section-kicker">RECURSION TREE LAB · 408 专项</div><h2 style="font-size:clamp(24px,3vw,31px);margin:10px 0">递归树专项｜15 道时间复杂度训练</h2><p class="rt-lead">和日常真题共用一个页面。先读 C 代码和四个选项，再按「查看递归树」逐层观察节点分裂。需要核对时，展开完整解析：<b>递推式 → 第 k 层总代价 → 递归树深度 → 累加求和</b>。</p><div class="rt-guide"><strong>先记住：</strong>递归树第 k 层的总代价 Wₖ，是该层所有节点<b>不含子递归的自身工作量之和</b>，而不是将问题规模直接相加。<br>单分支、第 k 层相同规模时：Wₖ = Nₖ × f(sₖ)；不等规模时，逐节点累加。所有题目默认基本操作为常数时间，考察最坏情况下最紧的 Θ 阶。</div><div class="rt-toolbar"><div class="rt-filter" role="group" aria-label="按难度筛选"><button type="button" data-rt-filter="all" class="is-active">全部 15 题</button><button type="button" data-rt-filter="basic">基础 1–4</button><button type="button" data-rt-filter="medium">中等 5–7</button><button type="button" data-rt-filter="hard">提高 8–10</button><button type="button" data-rt-filter="new">新题 11–15</button></div><div class="rt-counter" id="rt-count">已作答 0 / 10 题</div></div><div class="rt-meter"><span id="rt-meter-fill"></span></div><div id="rt-list" class="rt-list" aria-live="polite"></div><div class="rt-toolbar" style="margin-top:23px"><div class="rt-actions"><button class="rt-btn" type="button" data-rt-act="all-open">展开全部树图与解析</button><button class="rt-btn alt" type="button" data-rt-act="all-close">全部收起</button></div><button class="rt-btn alt" type="button" data-rt-act="reset">清空答案重做</button></div><p class="rt-note">提示：答案默认隐藏，选择记录保存在本浏览器。所有树图使用原生 SVG 绘制，无须加载 LaTeX 字体或外部图形服务；手机上可以左右滑动查看树图。</p></section></main></div>
+</div><section class="panel recursion-panel" id="recursion" hidden><button class="recursion-back" id="recursionBack" type="button">← 返回每日算法精练</button><div class="section-kicker">RECURSION TREE LAB · 408 专项</div><h2 style="font-size:clamp(24px,3vw,31px);margin:10px 0">递归树专项｜15 道时间复杂度训练</h2><p class="rt-lead">和日常真题共用一个页面。先读 C 代码和四个选项，再按「查看递归树」逐层观察节点分裂。需要核对时，展开完整解析：<b>递推式 → 第 k 层总代价 → 递归树深度 → 累加求和</b>。</p><div class="rt-guide"><strong>先记住：</strong>递归树第 k 层的总代价 Wₖ，是该层所有节点<b>不含子递归的自身工作量之和</b>，而不是将问题规模直接相加。<br>单分支、第 k 层相同规模时：Wₖ = Nₖ × f(sₖ)；不等规模时，逐节点累加。所有题目默认基本操作为常数时间，考察最坏情况下最紧的 Θ 阶。</div><div class="rt-toolbar"><div class="rt-filter" role="group" aria-label="按难度筛选"><button type="button" data-rt-filter="all" class="is-active">全部 15 题</button><button type="button" data-rt-filter="basic">基础 1–4</button><button type="button" data-rt-filter="medium">中等 5–7</button><button type="button" data-rt-filter="hard">提高 8–10</button><button type="button" data-rt-filter="new">新题 11–15</button></div><div class="rt-counter" id="rt-count">已作答 0 / 10 题</div></div><div class="rt-meter"><span id="rt-meter-fill"></span></div><div id="rt-list" class="rt-list" aria-live="polite"></div><div class="rt-toolbar" style="margin-top:23px"><div class="rt-actions"><button class="rt-btn" type="button" data-rt-act="all-open">展开全部树图与解析</button><button class="rt-btn alt" type="button" data-rt-act="all-close">全部收起</button></div><button class="rt-btn alt" type="button" data-rt-act="reset">清空答案重做</button></div><p class="rt-note">提示：答案默认隐藏，选择记录保存在本浏览器。所有树图使用原生 SVG 绘制，无须加载 LaTeX 字体或外部图形服务；手机上可以左右滑动查看树图。</p></section></main></div>
 <footer class="foot">408 Algorithm Lab · 为考场手写而设计 · 一题一剑，终有锋芒。</footer>
 <script>
 (function(){
@@ -53,7 +132,7 @@ $("variationQuestion").textContent=current.variation.question;$("variationIdea")
 $("tips").innerHTML=current.tips.map(function(x){return "<li>"+esc(x)+"</li>"}).join("");
 $("compareBrute").textContent=current.brute.complexity+"。"+current.brute.risk;
 $("compareOpt").textContent=current.optimal.complexity+"。"+current.optimal.risk;
-document.querySelectorAll(".lessonitem").forEach(function(el){el.classList.toggle("active",el.dataset.id===current.id)});
+closeRecursion(false);document.querySelectorAll("#lessonList .lessonitem").forEach(function(el){var active=el.dataset.id===current.id;el.classList.toggle("active",active);el.setAttribute("aria-pressed",active?"true":"false")});
 syncModes();setStep(0);
 if(!skipScroll){history.replaceState(null,"","#"+current.id);document.getElementById("lesson").scrollIntoView({behavior:"smooth",block:"start"});}
 }
@@ -89,6 +168,70 @@ function setStep(x){var fs=frames();step=Math.max(0,Math.min(fs.length-1,x));var
 function next(){var n=frames().length;if(step>=n-1){stop();setStep(0)}else{setStep(step+1);if(step>=n-1)stop()}}
 function copy(text,el){if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(function(){el.textContent="已复制 ✓";setTimeout(function(){el.textContent="复制代码"},1800)},function(){fallback(text,el)})}else fallback(text,el)}
 function fallback(text,el){var ta=document.createElement("textarea");ta.value=text;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();try{document.execCommand("copy");el.textContent="已复制 ✓"}catch(e){el.textContent="请长按代码复制"}ta.remove()}
+
+var showAllLessons=false;
+function lessonCategory(x){
+ if(x.year==="LeetCode")return "LeetCode · "+x.number;
+ if(/^[0-9]{4}$/.test(String(x.year)))return x.year+" 年真题";
+ return "408 专项练习";
+}
+function renderArchive(){
+ $("archiveCount").textContent=lessons.length+" 道题";
+ $("lessonList").innerHTML=lessons.map(function(x,i){
+   return '<button type="button" class="lessonitem" data-id="'+esc(x.id)+'" aria-pressed="false"'+(!showAllLessons&&i>=5?' hidden':'')+'>'+
+    '<span class="lessonitem-head"><span class="lessonitem-kind">'+esc(lessonCategory(x))+'</span><span class="lessonitem-order">'+String(i+1).padStart(2,"0")+'</span></span>'+
+    '<strong>'+esc(x.title)+'</strong><span class="lessonitem-date">'+esc(x.date)+'</span></button>'
+ }).join("");
+ var more=$("archiveToggle");more.hidden=lessons.length<=5;
+ more.innerHTML=showAllLessons?'收起历史题目 <span aria-hidden="true">⌃</span>':'展开全部 '+lessons.length+' 道题 <span aria-hidden="true">⌄</span>';
+ $("lessonList").querySelectorAll(".lessonitem").forEach(function(el){
+   el.addEventListener("click",function(){loadLesson(el.dataset.id);});
+ });
+}
+function closeRecursion(scroll){
+ $("recursion").hidden=true;
+ $("lesson").classList.remove("is-recursion-mode");
+ $("recursionEntry").classList.remove("is-active");
+ $("recursionEntry").setAttribute("aria-expanded","false");
+ if(scroll){
+   if(current)history.pushState(null,"","#"+current.id);
+   document.getElementById("lesson").scrollIntoView({behavior:"smooth",block:"start"});
+ }
+}
+function openRecursion(onlyNew,updateUrl){
+ stop();
+ $("recursion").hidden=false;
+ $("lesson").classList.add("is-recursion-mode");
+ $("recursionEntry").classList.add("is-active");
+ $("recursionEntry").setAttribute("aria-expanded","true");
+ $("lessonList").querySelectorAll(".lessonitem").forEach(function(el){el.classList.remove("active");el.setAttribute("aria-pressed","false");});
+ if(updateUrl!==false)history.pushState(null,"",onlyNew?"#recursion-new":"#recursion");
+ if(onlyNew){var b=$("recursion").querySelector('[data-rt-filter="new"]');if(b)b.click()}
+ requestAnimationFrame(function(){$("recursion").scrollIntoView({behavior:"smooth",block:"start"});});
+}
+$("archiveToggle").addEventListener("click",function(){
+ showAllLessons=!showAllLessons;renderArchive();
+ if(current&&!$("recursion").hidden)return;
+ $("lessonList").querySelectorAll(".lessonitem").forEach(function(el){
+   var active=current&&el.dataset.id===current.id;
+   el.classList.toggle("active",!!active);el.setAttribute("aria-pressed",active?"true":"false");
+ });
+});
+$("recursionEntry").addEventListener("click",function(e){e.preventDefault();openRecursion(false,true)});
+document.querySelectorAll('.barlinks a[href="#recursion"]').forEach(function(el){
+ el.addEventListener("click",function(e){e.preventDefault();openRecursion(false,true)});
+});
+document.querySelectorAll('.barlinks a[href="#lesson"]').forEach(function(el){
+ el.addEventListener("click",function(e){e.preventDefault();closeRecursion(true)});
+});
+$("recursionBack").addEventListener("click",function(){closeRecursion(true)});
+window.addEventListener("hashchange",function(){
+ var hash=location.hash.slice(1);
+ if(hash==="recursion"||hash==="recursion-new"){openRecursion(hash==="recursion-new",false);return}
+ if(lessons.some(function(x){return x.id===hash})){loadLesson(hash);return}
+ if(hash==="lesson")closeRecursion(false);
+});
+
 $("reveal").onclick=showAnswer;
 $("prev").onclick=function(){stop();setStep(step-1)};
 $("next").onclick=function(){stop();next()};
@@ -97,7 +240,7 @@ document.querySelectorAll("[data-mode]").forEach(function(el){el.onclick=functio
 $("copy").onclick=function(){copy(current[mode].code,this)};
 $("copyVar").onclick=function(){copy(current.variation.code,this)};
 $("showVar").onclick=function(){var e=$("variationAnswer");var open=e.style.display==="none";e.style.display=open?"block":"none";this.textContent=open?"收起参考答案 ↑":"展开完整参考答案 ↓"};
-fetch("./lessons.json",{cache:"no-store"}).then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return r.json()}).then(function(data){lessons=data.sort(function(a,b){return b.date.localeCompare(a.date)});$("lessonList").innerHTML=lessons.map(function(x){return '<button class="lessonitem" data-id="'+esc(x.id)+'"><span>'+esc(x.date)+' · '+esc(x.year==='LeetCode'?'LeetCode题库':/^[0-9]{4}$/.test(String(x.year))?x.year+'年真题':'原创408风格题')+'</span><strong>'+esc(x.title)+'</strong></button>'}).join("");document.querySelectorAll(".lessonitem").forEach(function(el){el.onclick=function(){loadLesson(el.dataset.id)}});var isRecursion=location.hash==="#recursion"||location.hash==="#recursion-new";loadLesson(isRecursion?lessons[0].id:(location.hash.slice(1)||lessons[0].id),isRecursion);if(isRecursion){requestAnimationFrame(function(){document.getElementById("recursion").scrollIntoView({behavior:"auto",block:"start"})})}}).catch(function(e){$("title").textContent="题目加载失败";$("question").textContent="无法读取 lessons.json。请通过 GitHub Pages 的在线网址访问本站，或稍后刷新。错误："+e.message;$("reveal").disabled=true});
+fetch("./lessons.json",{cache:"no-store"}).then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return r.json()}).then(function(data){lessons=data.sort(function(a,b){return b.date.localeCompare(a.date)});var targetHash=location.hash.slice(1);var initialIndex=lessons.findIndex(function(x){return x.id===targetHash});showAllLessons=initialIndex>=5;renderArchive();var isRecursion=targetHash==="recursion"||targetHash==="recursion-new";loadLesson(isRecursion?lessons[0].id:(targetHash||lessons[0].id),true);if(isRecursion){openRecursion(targetHash==="recursion-new",false)}}).catch(function(e){$("title").textContent="题目加载失败";$("question").textContent="无法读取 lessons.json。请通过 GitHub Pages 的在线网址访问本站，或稍后刷新。错误："+e.message;$("reveal").disabled=true});
 })();
 </script>
 <script src="./recursion-extra.js?v=20261010b"></script>
