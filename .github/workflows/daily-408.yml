@@ -1,0 +1,101 @@
+name: 408 Daily Publish and Pages
+
+on:
+  schedule:
+    # UTC 19:41/20:37/21:21 -> Beijing next day 03:41/04:37/05:21
+    - cron: '41 19 * * *'
+    - cron: '37 20 * * *'
+    - cron: '21 21 * * *'
+  workflow_dispatch:
+  push:
+    branches: [master]
+    paths:
+      - '408-algorithm/lessons.json'
+      - '408-algorithm/index.html'
+      - '408-algorithm/pending-lessons.json'
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: daily-408-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout master
+        uses: actions/checkout@v4
+        with:
+          ref: master
+          persist-credentials: true
+
+      - name: Publish reviewed lesson with retries
+        env:
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          success=0
+          for attempt in 1 2 3; do
+            echo "发布尝试 $attempt/3"
+            python3 408-algorithm/publish_daily.py
+            if git diff --quiet -- 408-algorithm/lessons.json; then
+              echo "今天已发布过，无需重复提交。"
+              success=1
+              break
+            fi
+            git add 408-algorithm/lessons.json
+            git commit -m "Publish reviewed 408 lesson for $(TZ=Asia/Shanghai date +%F)"
+            if git push origin HEAD:master; then
+              success=1
+              break
+            fi
+            echo "版本冲突，刷新 master 后重试"
+            git fetch origin master
+            git reset --hard origin/master
+            sleep $((attempt * 4))
+          done
+          if [ "$success" -ne 1 ]; then
+            echo "::error::今日题目未能推送到 GitHub"
+            exit 1
+          fi
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Stage static site
+        shell: bash
+        run: |
+          mkdir -p _pages
+          rsync -a \
+            --exclude='.git/' \
+            --exclude='.github/' \
+            --exclude='_pages/' \
+            --exclude='node_modules/' \
+            --exclude='.idea/' \
+            ./ _pages/
+          test -f _pages/408-algorithm/index.html
+          test -f _pages/408-algorithm/lessons.json
+          test -f _pages/index.html
+
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: _pages
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy GitHub Pages artifact
+        id: deployment
+        uses: actions/deploy-pages@v4
