@@ -4,7 +4,7 @@
  var root=document.getElementById("aoe");
  if(!root)return;
  var $=function(id){return document.getElementById(id)};
- var questions=[],current=0,frames=[],step=0,unlocked=false,timer=null,pendingIndex=null;
+ var questions=[],current=0,frames=[],step=0,unlocked=false,revealFullTables=false,timer=null,pendingIndex=null;
  var phases=[["intro","读图"],["critical","找关键路径"],["forward","正推 ve"],["backward","反推 vl"],["activities","活动 e/l"],["gaps","补边差额"],["verify","复核结论"]];
  var phaseIndex={}; phases.forEach(function(x,i){phaseIndex[x[0]]=i});
  function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
@@ -111,13 +111,13 @@
  }
  function renderTables(q,d,f){
    var eventRows=[];for(var v=1;v<=q.n;v++){
-     var showVe=unlocked&&v<=f.ve,showVl=unlocked&&v>=q.n-f.vl+1;
+     var showVe=unlocked&&(revealFullTables||v<=f.ve),showVl=unlocked&&(revealFullTables||v>=q.n-f.vl+1);
      eventRows.push('<tr class="'+(f.vertex===v?'is-current':'')+'"><td>V'+v+'</td><td>'+(showVe?d.ve[v]:'—')+'</td><td>'+(showVl?d.vl[v]:'—')+'</td><td>'+(showVe&&showVl?d.vl[v]-d.ve[v]:'—')+'</td></tr>');
    }
    $("aoeEventsTable").innerHTML='<thead><tr><th>事件</th><th>ve 最早</th><th>vl 最迟</th><th>时间差</th></tr></thead><tbody>'+eventRows.join("")+'</tbody>';
    $("aoeActivitiesTable").innerHTML='<thead><tr><th>活动</th><th>起点→终点</th><th>工期 w</th><th>e</th><th>l</th><th>l−e</th><th>入边差</th><th>后续差</th><th>关键？</th></tr></thead><tbody>'+
      d.stats.map(function(e,i){
-       var time=unlocked&&i<f.act,gap=unlocked&&i<f.gap;
+       var time=unlocked&&(revealFullTables||i<f.act),gap=unlocked&&(revealFullTables||i<f.gap);
        return '<tr class="aoe-row-edge '+(f.edgeId===e.id?'is-current ':'')+(time&&e.critical?'is-critical':'')+'" data-aoe-table-edge="'+esc(e.id)+'"><td>'+esc(e.id)+'</td><td>V'+e.u+' → V'+e.v+'</td><td>'+e.w+'</td><td>'+(time?e.early:'—')+'</td><td>'+(time?e.late:'—')+'</td><td>'+(time?e.slack:'—')+'</td><td>'+(gap?e.front:'—')+'</td><td>'+(gap?e.rear:'—')+'</td><td>'+(time?(e.critical?'是':'否'):'—')+'</td></tr>';
      }).join("")+'</tbody>';
  }
@@ -137,6 +137,8 @@
      var selected=p[0]===f.phase;
      return '<button type="button" class="aoe-phase '+(selected?'active':'')+'" data-aoe-phase="'+p[0]+'" '+(!unlocked?'disabled ':'')+'aria-pressed="'+selected+'">'+esc(p[1])+'</button>';
    }).join("");
+   $("aoeShowFullTables").textContent=revealFullTables?"恢复按步骤填表":"一键查看两张完整表";
+   $("aoeShowFullTables").setAttribute("aria-pressed",revealFullTables?"true":"false");
    renderTables(q,d,f);
    if(unlocked)requestAnimationFrame(refreshTableScroll);
    var e=d.stats.find(function(x){return x.id===f.edgeId;});
@@ -145,7 +147,7 @@
    $("aoeCriticalPaths").innerHTML=unlocked?'<p class="aoe-table-sub">项目总工期 T = <strong>'+d.T+'</strong>，以下为全部关键路径（活动编号顺序）。</p><div class="aoe-critpaths">'+d.paths.map(function(a){return '<span class="aoe-path-pill">'+esc(a.join(' → '))+' = '+d.T+'</span>'}).join("")+'</div>':'';
  }
  function select(index,withScroll){
-   stop();current=Math.max(0,Math.min(questions.length-1,index));unlocked=false;step=0;frames=makeFrames(questions[current],questions[current]._sol);render();if(!root.hidden&&/^#aoe/.test(location.hash))history.replaceState(null,"","#aoe-"+(current+1));
+   stop();current=Math.max(0,Math.min(questions.length-1,index));unlocked=false;revealFullTables=false;step=0;frames=makeFrames(questions[current],questions[current]._sol);render();if(!root.hidden&&/^#aoe/.test(location.hash))history.replaceState(null,"","#aoe-"+(current+1));
    if(withScroll)$("aoe").scrollIntoView({behavior:"smooth",block:"start"});
  }
  function go(s){stop();step=Math.max(0,Math.min(frames.length-1,s));render();}
@@ -155,6 +157,11 @@
    if(!unlocked){$("aoeGraphNote").textContent="已选活动 "+id+"。先点击“查看完整解析”才能看到两张表和补边步骤。";return;}
    if(fidx>=0)go(fidx);
  }
+ $("aoeShowFullTables").addEventListener("click",function(){
+   if(!unlocked)return;
+   revealFullTables=!revealFullTables;
+   render();
+ });
  $("aoePrevQuestion").onclick=function(){select(current-1,false)};
  $("aoeNextQuestion").onclick=function(){select(current+1,false)};
  $("aoeUnlock").onclick=function(){if(!unlocked){unlocked=true;step=1;render();$("aoeResult").scrollIntoView({behavior:"smooth",block:"nearest"});}else{$("aoeStep").scrollIntoView({behavior:"smooth",block:"nearest"});}};
