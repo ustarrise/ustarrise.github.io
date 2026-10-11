@@ -65,3 +65,63 @@
 #aoe .aoe-result{margin-top:14px}
 @media(max-width:850px){#aoe .aoe-graph-scroll svg{min-width:750px}#aoe .aoe-lesson-switch{gap:8px}#aoe .aoe-step{padding:13px}#aoe .aoe-switch{width:41px;height:39px}}
 @media(prefers-reduced-motion:reduce){#aoe .aoe-progress span,#aoe .aoe-edge-line{transition:none}}
+
+
+/* 2026-10-11 手机表格修复：把 9 列宽表限制在自身滚动区域，禁止撑宽整页。
+   grid/flex 默认 min-width:auto 会拿表格的 min-content 宽度撑破页面；
+   这里必须在每一层显式设 min-width:0，不能简单对 body 隐藏溢出。 */
+.shell>.stack{min-width:0;max-width:100%}
+.stack>.panel{min-width:0;max-width:100%}
+#aoe{width:100%;min-width:0;max-width:100%}
+#aoe>.aoe-result,#aoe .aoe-table-grid,#aoe .aoe-table-grid>div{min-width:0;max-width:100%;width:100%}
+#aoe .aoe-table-grid{display:grid;grid-template-columns:minmax(0,1fr)}
+#aoe .aoe-table-scroll{
+ display:block;position:relative;width:100%;min-width:0;max-width:100%;
+ overflow-x:auto;overflow-y:auto;overscroll-behavior-x:contain;
+ -webkit-overflow-scrolling:touch;scrollbar-width:thin;
+ border-radius:13px;border:1px solid #dce8e8;
+ background:#fff;box-shadow:inset 0 0 0 1px #ffffff10
+}
+#aoe .aoe-table-scroll:focus-visible{outline:2px solid #23958a;outline-offset:3px}
+#aoe .aoe-table-scroll table{border-collapse:separate;border-spacing:0}
+#aoe #aoeEventsTable{width:100%;min-width:0;table-layout:fixed}
+#aoe #aoeEventsTable th,#aoe #aoeEventsTable td{padding:11px 6px;white-space:nowrap}
+#aoe #aoeActivitiesTable{width:max-content;min-width:740px;table-layout:auto}
+#aoe #aoeActivitiesTable th,#aoe #aoeActivitiesTable td{padding:10px 13px;white-space:nowrap}
+#aoe #aoeActivitiesTable th{box-shadow:0 1px 0 #dde7e6}
+#aoe #aoeActivitiesTable th:first-child{
+ position:sticky;left:0;z-index:3;background:#eaf4f2;
+ box-shadow:1px 0 0 #dce8e8,6px 0 8px -9px #263e42
+}
+#aoe #aoeActivitiesTable tbody td:first-child{
+ position:sticky;left:0;z-index:2;background:#fff;
+ box-shadow:1px 0 0 #e6eeee,6px 0 8px -9px #263e42
+}
+#aoe #aoeActivitiesTable tbody tr.is-current td:first-child{background:#eaf8f2}
+#aoe #aoeActivitiesTable tbody tr:hover td:first-child{background:#f4faf8}
+#aoe .aoe-table-scroll-hint{
+ margin:8px 0 9px;font-size:11px;color:#6d9390;line-height:1.65;
+ display:flex;align-items:center;gap:6px
+}
+#aoe .aoe-table-scroll-hint .aoe-drag-icon{
+ display:inline-grid;place-items:center;flex-shrink:0;width:21px;height:21px;
+ border-radius:7px;background:#e4f4ef;color:#197e75;font-weight:900;font-size:14px
+}
+#aoe .aoe-table-tools{display:flex;align-items:center;gap:8px;justify-content:space-between;margin:9px 0 5px;min-width:0}
+#aoe .aoe-table-nav{
+ border:1px solid #cae0dc;border-radius:9px;background:#eff8f5;color:#196f68;
+ padding:8px 12px;font-size:12px;font-weight:800;flex-shrink:0
+}
+#aoe .aoe-table-nav:disabled{opacity:.35;cursor:default}
+#aoe .aoe-table-status{color:#738c93;font-size:10px;text-align:center;white-space:nowrap}
+@media(max-width:600px){
+ #aoe .aoe-table-grid{gap:19px}
+ #aoe #aoeEventsTable{font-size:12px}
+ #aoe #aoeEventsTable th{font-size:10px;letter-spacing:0;line-height:1.4}
+ #aoe #aoeEventsTable th,#aoe #aoeEventsTable td{padding:10px 3px}
+ #aoe #aoeActivitiesTable th,#aoe #aoeActivitiesTable td{padding:11px 12px}
+ #aoe .aoe-table-title{font-size:14px;line-height:1.4}
+ #aoe .aoe-table-sub{overflow-wrap:anywhere}
+ #aoe .aoe-table-tools{gap:5px}
+ #aoe .aoe-table-nav{padding:9px 10px}
+}
