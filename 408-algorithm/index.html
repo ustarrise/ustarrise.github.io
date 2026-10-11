@@ -20,6 +20,8 @@
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
 </style>
 <link rel="stylesheet" href="./recursion.css">
+<link rel="stylesheet" href="./aoe.css">
+<link rel="stylesheet" href="./archive-carousel.css?v=20261011">
 <style id="archive-navigation-style">
 /* 选题导航：一组卡片，不让专题入口与每日题目横向抢宽度 */
 #archive.sidebar{display:block;min-width:0;overflow:visible}
@@ -94,14 +96,37 @@
   <div class="archive-heading-row"><h2>选择今日练习</h2><span id="archiveCount" class="archive-count">— 道题</span></div>
   <p>每天一道，按日期保存进度与真题。</p>
 </div>
-<div id="lessonList" class="lesson-grid"></div>
-<button id="archiveToggle" class="archive-more" type="button" hidden>查看历史题目 <span aria-hidden="true">⌄</span></button>
-<div class="archive-divider"><span>专题训练</span></div>
-<a class="recursion-entry" id="recursionEntry" href="#recursion" aria-controls="recursion" aria-expanded="false">
- <span class="recursion-illustration" aria-hidden="true">🌳</span>
- <span class="recursion-summary"><span class="recursion-eyebrow">15 道 · 递归树专项</span><strong>递归树与复杂度</strong><span class="recursion-hint">点击进入专题练习</span></span>
- <span class="recursion-arrow" aria-hidden="true">↗</span>
-</a>
+<div id="archiveSwipe" class="archive-swipe" role="region" tabindex="0" aria-label="题目轮播，每页四道题，左右滑动切换">
+ <div id="lessonList" class="lesson-grid"></div>
+</div>
+<div class="archive-pagination">
+ <button id="archivePrev" class="archive-nav" aria-label="上一页题目" type="button">‹</button>
+ <div class="archive-pagination-mid"><div id="archiveDots" class="archive-dots"></div><span id="archivePageLabel" class="archive-page-label" aria-live="polite">1 / 1</span></div>
+ <button id="archiveNext" class="archive-nav" aria-label="下一页题目" type="button">›</button>
+</div>
+<p class="archive-swipe-hint">↔ 左右滑动翻页 · 每页四题</p>
+<button id="archiveToggle" hidden type="button"></button>
+<div class="archive-divider"><span>专题训练 · 横向切换</span></div>
+<div id="topicSwipe" class="topic-swipe" role="region" tabindex="0" aria-label="专题轮播，一页一个专题，左右滑动">
+ <div id="topicTrack" class="topic-track">
+  <a class="recursion-entry topic-card" id="recursionEntry" href="#recursion" aria-controls="recursion" aria-expanded="false">
+   <span class="recursion-illustration" aria-hidden="true">🌳</span>
+   <span class="recursion-summary"><span class="recursion-eyebrow">15 道 · 递归树专项</span><strong>递归树与时间复杂度</strong><span class="recursion-hint">递推式 → 层代价 → 树高 → 求和</span></span>
+   <span class="recursion-arrow" aria-hidden="true">↗</span>
+  </a>
+  <a class="recursion-entry topic-card aoe-entry" id="aoeEntry" href="#aoe" aria-controls="aoe" aria-expanded="false">
+   <span class="recursion-illustration" aria-hidden="true">🕸️</span>
+   <span class="recursion-summary"><span class="recursion-eyebrow">8 道 · AOE 网络专项</span><strong>AOE 关键路径与补边法</strong><span class="recursion-hint">找关键路 → 两张表 → 差额补边</span></span>
+   <span class="recursion-arrow" aria-hidden="true">↗</span>
+  </a>
+ </div>
+</div>
+<div class="topic-pagination">
+ <button type="button" id="topicPrev" class="topic-arrow" aria-label="上一个专题">‹</button>
+ <div id="topicDots" class="topic-dots" aria-label="专题页码"></div>
+ <span id="topicPageLabel" class="topic-page-label" aria-live="polite">1 / 2</span>
+ <button type="button" id="topicNext" class="topic-arrow" aria-label="下一个专题">›</button>
+</div>
 <div class="miniinfo">每日一题，练到熟练。你的历史题目一直保留。</div>
 </aside>
 <main class="stack" id="lesson">
@@ -111,7 +136,45 @@
 <section class="panel"><div class="section-kicker">METHOD BREAKDOWN</div><h2>解法讲解与完整代码</h2><div class="toggle" id="codeModes" style="margin-bottom:14px"><button data-mode="brute" class="active">暴力解法</button><button data-mode="optimal">优化解法</button></div><div class="method"><div class="chips"><span id="methodTag" class="chip gold"></span><span class="chip" id="methodComplexity"></span></div><h3 id="methodName"></h3><p id="methodIdea"></p><div class="warning" id="methodRisk"></div><h3>每段代码为什么这样写？</h3><ol class="reason" id="why"></ol><div class="codewrap"><button class="copy" id="copy">复制代码</button><pre><code id="code"></code></pre></div></div></section>
 <section class="panel"><div class="section-kicker">EXAM STRATEGY</div><h2>考场性价比：到底写哪种？</h2><div class="sideBySide"><div><b>🟡 暴力法 · 先拿下正确思路</b><p id="compareBrute"></p></div><div><b>🟢 优化法 · 满足高效要求</b><p id="compareOpt"></p></div></div><p>建议：先学会用朴素思路保底，再判断题目是否明确强调效率。原题强调“尽可能高效”时，不要把暴力法误当作必然满分答案。具体分值以实际评分细则为准。</p><h3>常见错误</h3><ul class="ul" id="tips"></ul></section>
 <section class="panel"><div class="section-kicker">ONE MORE ROUND</div><h2>巩固变式 · 先做后看</h2><p id="variationQuestion"></p><button class="secondary" id="showVar">展开完整参考答案 ↓</button><div id="variationAnswer" style="display:none"><div class="focus" id="variationIdea"></div><div class="codewrap"><button class="copy" id="copyVar">复制变式代码</button><pre><code id="variationCode"></code></pre></div></div></section>
-</div><section class="panel recursion-panel" id="recursion" hidden><button class="recursion-back" id="recursionBack" type="button">← 返回每日算法精练</button><div class="section-kicker">RECURSION TREE LAB · 408 专项</div><h2 style="font-size:clamp(24px,3vw,31px);margin:10px 0">递归树专项｜15 道时间复杂度训练</h2><p class="rt-lead">和日常真题共用一个页面。先读 C 代码和四个选项，再按「查看递归树」逐层观察节点分裂。需要核对时，展开完整解析：<b>递推式 → 第 k 层总代价 → 递归树深度 → 累加求和</b>。</p><div class="rt-guide"><strong>先记住：</strong>递归树第 k 层的总代价 Wₖ，是该层所有节点<b>不含子递归的自身工作量之和</b>，而不是将问题规模直接相加。<br>单分支、第 k 层相同规模时：Wₖ = Nₖ × f(sₖ)；不等规模时，逐节点累加。所有题目默认基本操作为常数时间，考察最坏情况下最紧的 Θ 阶。</div><div class="rt-toolbar"><div class="rt-filter" role="group" aria-label="按难度筛选"><button type="button" data-rt-filter="all" class="is-active">全部 15 题</button><button type="button" data-rt-filter="basic">基础 1–4</button><button type="button" data-rt-filter="medium">中等 5–7</button><button type="button" data-rt-filter="hard">提高 8–10</button><button type="button" data-rt-filter="new">新题 11–15</button></div><div class="rt-counter" id="rt-count">已作答 0 / 10 题</div></div><div class="rt-meter"><span id="rt-meter-fill"></span></div><div id="rt-list" class="rt-list" aria-live="polite"></div><div class="rt-toolbar" style="margin-top:23px"><div class="rt-actions"><button class="rt-btn" type="button" data-rt-act="all-open">展开全部树图与解析</button><button class="rt-btn alt" type="button" data-rt-act="all-close">全部收起</button></div><button class="rt-btn alt" type="button" data-rt-act="reset">清空答案重做</button></div><p class="rt-note">提示：答案默认隐藏，选择记录保存在本浏览器。所有树图使用原生 SVG 绘制，无须加载 LaTeX 字体或外部图形服务；手机上可以左右滑动查看树图。</p></section></main></div>
+</div><section class="panel recursion-panel" id="recursion" hidden><button class="recursion-back" id="recursionBack" type="button">← 返回每日算法精练</button><div class="section-kicker">RECURSION TREE LAB · 408 专项</div><h2 style="font-size:clamp(24px,3vw,31px);margin:10px 0">递归树专项｜15 道时间复杂度训练</h2><p class="rt-lead">和日常真题共用一个页面。先读 C 代码和四个选项，再按「查看递归树」逐层观察节点分裂。需要核对时，展开完整解析：<b>递推式 → 第 k 层总代价 → 递归树深度 → 累加求和</b>。</p><div class="rt-guide"><strong>先记住：</strong>递归树第 k 层的总代价 Wₖ，是该层所有节点<b>不含子递归的自身工作量之和</b>，而不是将问题规模直接相加。<br>单分支、第 k 层相同规模时：Wₖ = Nₖ × f(sₖ)；不等规模时，逐节点累加。所有题目默认基本操作为常数时间，考察最坏情况下最紧的 Θ 阶。</div><div class="rt-toolbar"><div class="rt-filter" role="group" aria-label="按难度筛选"><button type="button" data-rt-filter="all" class="is-active">全部 15 题</button><button type="button" data-rt-filter="basic">基础 1–4</button><button type="button" data-rt-filter="medium">中等 5–7</button><button type="button" data-rt-filter="hard">提高 8–10</button><button type="button" data-rt-filter="new">新题 11–15</button></div><div class="rt-counter" id="rt-count">已作答 0 / 10 题</div></div><div class="rt-meter"><span id="rt-meter-fill"></span></div><div id="rt-list" class="rt-list" aria-live="polite"></div><div class="rt-toolbar" style="margin-top:23px"><div class="rt-actions"><button class="rt-btn" type="button" data-rt-act="all-open">展开全部树图与解析</button><button class="rt-btn alt" type="button" data-rt-act="all-close">全部收起</button></div><button class="rt-btn alt" type="button" data-rt-act="reset">清空答案重做</button></div><p class="rt-note">提示：答案默认隐藏，选择记录保存在本浏览器。所有树图使用原生 SVG 绘制，无须加载 LaTeX 字体或外部图形服务；手机上可以左右滑动查看树图。</p></section>
+<section class="panel aoe-panel" id="aoe" hidden>
+ <button id="aoeBack" class="aoe-back" type="button">← 返回每日算法精练</button>
+ <div class="aoe-kicker">AOE NETWORK · 手写补边法</div>
+ <h2>AOE 网络专项｜8 道阶梯训练</h2>
+ <p class="aoe-lead">按你的顺序走：先找关键路径和总工期，再正向推 ve、反向推 vl，最后求活动 e/l 并用入边差＋后续差补边。每题都有<strong>两张表</strong>逐项核对。</p>
+ <div class="aoe-lesson-switch">
+  <button id="aoePrevQuestion" type="button" class="aoe-switch" aria-label="上一道AOE题">‹</button>
+  <span class="aoe-index" id="aoeIndex">01 / 08</span>
+  <button id="aoeNextQuestion" type="button" class="aoe-switch" aria-label="下一道AOE题">›</button>
+ </div>
+ <h3 id="aoeTitle" class="aoe-title">正在载入AOE题目…</h3>
+ <div id="aoeMeta" class="aoe-meta"></div>
+ <div class="aoe-question" id="aoeQuestion">请选择一条路径开始独立思考。</div>
+ <div class="aoe-graph-section">
+  <div class="aoe-graph-top"><strong>网络图 · 点击活动箭头查看补边分析</strong>
+   <span class="aoe-legend"><span><i class="aoe-dot" style="background:#dc6760"></i>关键</span><span><i class="aoe-dot" style="background:#418ab9"></i>最长前缀</span><span><i class="aoe-dot" style="background:#a183c5"></i>最长后缀</span><span><i class="aoe-dot" style="background:#d9a342"></i>当前活动</span></span>
+  </div>
+  <div class="aoe-graph-scroll" id="aoeGraphScroll"><div id="aoeGraph"></div></div>
+  <div class="aoe-graph-note" id="aoeGraphNote">网络图可左右滚动，点击任意箭头定位活动。</div>
+ </div>
+ <div class="aoe-locked" id="aoeLocked">先独立尝试：圈出关键路径，找出各事件的最早发生时间。解析暂时隐藏。</div>
+ <div class="aoe-reveal-controls">
+  <button class="aoe-action major" id="aoeUnlock" type="button">查看完整解析与两张表 ↓</button>
+  <button class="aoe-action" id="aoePrevStep" type="button" disabled>← 上一步</button>
+  <button class="aoe-action" id="aoeNextStep" type="button" disabled>下一步 →</button>
+  <button class="aoe-action" id="aoePlay" type="button">▶ 自动播放</button>
+ </div>
+ <div class="aoe-result" id="aoeResult" hidden>
+  <div class="aoe-progress"><span id="aoeProgressFill"></span></div>
+  <div id="aoePhaseStrip" class="aoe-phase-strip" role="group" aria-label="跳转讲解阶段"></div>
+  <div class="aoe-step" id="aoeStep"><div class="aoe-step-eyebrow"></div><strong id="aoeStepTitle"></strong><p id="aoeStepBody"></p></div>
+  <div class="aoe-table-grid">
+   <div><h3 class="aoe-table-title">表一：事件时间表 ve / vl</h3><p class="aoe-table-sub">正向取入边最大值，反向取出边最小值；逐步高亮当前事件。</p><div class="aoe-table-scroll"><table id="aoeEventsTable"></table></div></div>
+   <div><h3 class="aoe-table-title">表二：活动时间与补边差额表</h3><p class="aoe-table-sub">e = ve(起点)，l = vl(终点) − 工期；余量 = l−e = 入边差＋后续差。点击表格行可定位活动。</p><div class="aoe-table-scroll"><table id="aoeActivitiesTable"></table></div></div>
+  </div>
+  <div class="aoe-formula" id="aoeFormula"></div><div id="aoeCriticalPaths"></div>
+ </div>
+</section></main></div>
 <footer class="foot">408 Algorithm Lab · 为考场手写而设计 · 一题一剑，终有锋芒。</footer>
 <script>
 (function(){
@@ -245,5 +308,6 @@ fetch("./lessons.json",{cache:"no-store"}).then(function(r){if(!r.ok)throw new E
 </script>
 <script src="./recursion-extra.js?v=20261010b"></script>
 <script src="./recursion.js?v=20261010b"></script>
+<script src="./aoe.js?v=20261011a"></script>
 </body>
 </html>
