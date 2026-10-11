@@ -125,3 +125,11 @@
  #aoe .aoe-table-tools{gap:5px}
  #aoe .aoe-table-nav{padding:9px 10px}
 }
+
+
+/* 分步解题与完整表模式，始终在滚动表格之外操作。 */
+#aoe .aoe-table-viewbar{min-width:0;max-width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:16px;padding:11px 12px;border:1px solid #e0e9e7;border-radius:12px;background:#f6faf9}
+#aoe .aoe-table-unfilled{font-size:11px;color:#657e83;line-height:1.65;flex:1;min-width:170px}
+#aoe #aoeShowFullTables{flex-shrink:0;font-size:11px;background:#e1f5ed;border-color:#b9ded1}
+#aoe #aoeShowFullTables[aria-pressed="true"]{background:#116f73;color:#fff;border-color:#116f73}
+@media(max-width:600px){#aoe .aoe-table-viewbar{align-items:stretch}#aoe #aoeShowFullTables{width:100%}}
