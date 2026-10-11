@@ -20,7 +20,7 @@
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
 </style>
 <link rel="stylesheet" href="./recursion.css">
-<link rel="stylesheet" href="./aoe.css?v=20261011b">
+<link rel="stylesheet" href="./aoe.css?v=20261011c">
 
 <style id="archive-navigation-style">
 /* 选题导航：一组卡片，不让专题入口与每日题目横向抢宽度 */
@@ -169,6 +169,10 @@
   <div class="aoe-progress"><span id="aoeProgressFill"></span></div>
   <div id="aoePhaseStrip" class="aoe-phase-strip" role="group" aria-label="跳转讲解阶段"></div>
   <div class="aoe-step" id="aoeStep"><div class="aoe-step-eyebrow"></div><strong id="aoeStepTitle"></strong><p id="aoeStepBody"></p></div>
+  <div class="aoe-table-viewbar">
+   <span class="aoe-table-unfilled">表格中的“—”表示当前步骤还未计算到，并非缺失答案。</span>
+   <button id="aoeShowFullTables" type="button" class="aoe-action" aria-pressed="false">一键查看两张完整表</button>
+  </div>
   <div class="aoe-table-grid">
    <div><h3 class="aoe-table-title">表一：事件时间表 ve / vl</h3><p class="aoe-table-sub">正向取入边最大值，反向取出边最小值；逐步高亮当前事件。</p><div class="aoe-table-scroll" role="region" tabindex="0" aria-label="事件时间表"><table id="aoeEventsTable"></table></div></div>
    <div><h3 class="aoe-table-title">表二：活动时间与补边差额表</h3><p class="aoe-table-sub">e = ve(起点)，l = vl(终点) − 工期；余量 = l−e = 入边差＋后续差。点击表格行可定位活动。</p>
@@ -424,6 +428,6 @@ fetch("./lessons.json",{cache:"no-store"}).then(function(r){if(!r.ok)throw new E
 </script>
 <script src="./recursion-extra.js?v=20261010b"></script>
 <script src="./recursion.js?v=20261010b"></script>
-<script src="./aoe.js?v=20261011a"></script>
+<script src="./aoe.js?v=20261011c"></script>
 </body>
 </html>
