@@ -20,7 +20,7 @@
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
 </style>
 <link rel="stylesheet" href="./recursion.css">
-<link rel="stylesheet" href="./aoe.css">
+<link rel="stylesheet" href="./aoe.css?v=20261011b">
 
 <style id="archive-navigation-style">
 /* 选题导航：一组卡片，不让专题入口与每日题目横向抢宽度 */
@@ -170,8 +170,17 @@
   <div id="aoePhaseStrip" class="aoe-phase-strip" role="group" aria-label="跳转讲解阶段"></div>
   <div class="aoe-step" id="aoeStep"><div class="aoe-step-eyebrow"></div><strong id="aoeStepTitle"></strong><p id="aoeStepBody"></p></div>
   <div class="aoe-table-grid">
-   <div><h3 class="aoe-table-title">表一：事件时间表 ve / vl</h3><p class="aoe-table-sub">正向取入边最大值，反向取出边最小值；逐步高亮当前事件。</p><div class="aoe-table-scroll"><table id="aoeEventsTable"></table></div></div>
-   <div><h3 class="aoe-table-title">表二：活动时间与补边差额表</h3><p class="aoe-table-sub">e = ve(起点)，l = vl(终点) − 工期；余量 = l−e = 入边差＋后续差。点击表格行可定位活动。</p><div class="aoe-table-scroll"><table id="aoeActivitiesTable"></table></div></div>
+   <div><h3 class="aoe-table-title">表一：事件时间表 ve / vl</h3><p class="aoe-table-sub">正向取入边最大值，反向取出边最小值；逐步高亮当前事件。</p><div class="aoe-table-scroll" role="region" tabindex="0" aria-label="事件时间表"><table id="aoeEventsTable"></table></div></div>
+   <div><h3 class="aoe-table-title">表二：活动时间与补边差额表</h3><p class="aoe-table-sub">e = ve(起点)，l = vl(终点) − 工期；余量 = l−e = 入边差＋后续差。点击表格行可定位活动。</p>
+ <div class="aoe-table-scroll-hint"><span class="aoe-drag-icon" aria-hidden="true">↔</span><span>表格可在框内左右滑动，最左侧活动编号固定不动</span></div>
+ <div class="aoe-table-scroll" id="aoeActivityScroll" role="region" tabindex="0" aria-label="活动时间及补边差额表，左右滑动查看更多列">
+  <table id="aoeActivitiesTable"></table>
+ </div>
+ <div class="aoe-table-tools">
+  <button type="button" id="aoeTableLeft" class="aoe-table-nav" aria-label="向左查看活动时间列">← 左移</button>
+  <span class="aoe-table-status" id="aoeTableStatus" aria-live="polite">左右滑动查看更多列</span>
+  <button type="button" id="aoeTableRight" class="aoe-table-nav" aria-label="向右查看补边差额列">右移 →</button>
+ </div></div>
   </div>
   <div class="aoe-formula" id="aoeFormula"></div><div id="aoeCriticalPaths"></div>
  </div>
