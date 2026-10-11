@@ -132,7 +132,7 @@
    $("aoeProgressFill").style.width=(100*(step+1)/frames.length)+"%";
    $("aoeLocked").hidden=unlocked;$("aoeResult").hidden=!unlocked;
    $("aoeUnlock").textContent=unlocked?"✓ 已解锁完整推演":"查看完整解析与两张表 ↓";
-   $("aoePrevStep").disabled=step===0;$("aoeNextStep").disabled=step===frames.length-1;
+   $("aoePrevStep").disabled=!unlocked||step===0;$("aoeNextStep").disabled=!unlocked||step===frames.length-1;
    $("aoePhaseStrip").innerHTML=phases.map(function(p){
      var selected=p[0]===f.phase;
      return '<button type="button" class="aoe-phase '+(selected?'active':'')+'" data-aoe-phase="'+p[0]+'" '+(!unlocked?'disabled ':'')+'aria-pressed="'+selected+'">'+esc(p[1])+'</button>';
@@ -144,7 +144,7 @@
    $("aoeCriticalPaths").innerHTML=unlocked?'<p class="aoe-table-sub">项目总工期 T = <strong>'+d.T+'</strong>，以下为全部关键路径（活动编号顺序）。</p><div class="aoe-critpaths">'+d.paths.map(function(a){return '<span class="aoe-path-pill">'+esc(a.join(' → '))+' = '+d.T+'</span>'}).join("")+'</div>':'';
  }
  function select(index,withScroll){
-   stop();current=Math.max(0,Math.min(questions.length-1,index));unlocked=false;step=0;frames=makeFrames(questions[current],questions[current]._sol);render();
+   stop();current=Math.max(0,Math.min(questions.length-1,index));unlocked=false;step=0;frames=makeFrames(questions[current],questions[current]._sol);render();if(!root.hidden&&/^#aoe/.test(location.hash))history.replaceState(null,"","#aoe-"+(current+1));
    if(withScroll)$("aoe").scrollIntoView({behavior:"smooth",block:"start"});
  }
  function go(s){stop();step=Math.max(0,Math.min(frames.length-1,s));render();}
