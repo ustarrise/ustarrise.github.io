@@ -380,7 +380,7 @@ document.querySelectorAll('.barlinks a[href="#recursion"]').forEach(function(el)
  el.addEventListener("click",function(e){e.preventDefault();openRecursion(false,true)});
 });
 document.querySelectorAll('.barlinks a[href="#lesson"]').forEach(function(el){
- el.addEventListener("click",function(e){e.preventDefault();closeRecursion(true)});
+ el.addEventListener("click",function(e){e.preventDefault();closeAOE(false);closeRecursion(true)});
 });
 $("recursionBack").addEventListener("click",function(){closeRecursion(true)});
 window.addEventListener("hashchange",function(){
