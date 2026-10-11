@@ -138,6 +138,7 @@
      return '<button type="button" class="aoe-phase '+(selected?'active':'')+'" data-aoe-phase="'+p[0]+'" '+(!unlocked?'disabled ':'')+'aria-pressed="'+selected+'">'+esc(p[1])+'</button>';
    }).join("");
    renderTables(q,d,f);
+   if(unlocked)requestAnimationFrame(refreshTableScroll);
    var e=d.stats.find(function(x){return x.id===f.edgeId;});
    $("aoeFormula").innerHTML=e&&unlocked?'<b>当前活动 '+esc(e.id)+'</b>：从 V'+e.u+' 到 V'+e.v+'，工期 '+e.w+'<div>① 入边差 = '+e.front+'；② 后续差 = '+e.rear+'；总余量 = '+e.front+' + '+e.rear+' = <strong>'+e.slack+'</strong>。</div><div>标准公式：e = '+e.early+'；l = '+e.late+'；l − e = <strong>'+e.slack+'</strong>。最严格经过此边的完整路长度为 '+e.via+'。</div>':
      '<b>补边法公式：</b>入边差 = ve(v) − ve(u) − w；后续差 = vl(v) − ve(v)。<br>总余量 = 入边差 + 后续差 = l − e = T − [P(u)+w+Q(v)]。';
@@ -165,6 +166,28 @@
    $("aoePlay").textContent="Ⅱ 暂停";
    timer=setInterval(function(){if(step>=frames.length-1){stop();return;}step++;render();if(step>=frames.length-1)stop();},950);
  };
+
+ // 移动端活动表只在表内横向滚动；状态提示随滚动同步。
+ var activityScroller=$("aoeActivityScroll"),tableLeft=$("aoeTableLeft"),tableRight=$("aoeTableRight"),tableStatus=$("aoeTableStatus");
+ function refreshTableScroll(){
+   var max=Math.max(0,activityScroller.scrollWidth-activityScroller.clientWidth);
+   var offset=activityScroller.scrollLeft;
+   tableLeft.disabled=max<2||offset<2;
+   tableRight.disabled=max<2||offset>max-2;
+   if(max<2)tableStatus.textContent="已显示全部列";
+   else if(offset<2)tableStatus.textContent="向右查看更多 →";
+   else if(offset>max-2)tableStatus.textContent="← 已到最右侧";
+   else tableStatus.textContent="继续左右滑动";
+ }
+ function nudgeTable(direction){
+   var width=activityScroller.clientWidth;
+   activityScroller.scrollBy({left:direction*Math.max(150,Math.round(width*.73)),behavior:"smooth"});
+ }
+ tableLeft.addEventListener("click",function(){nudgeTable(-1)});
+ tableRight.addEventListener("click",function(){nudgeTable(1)});
+ activityScroller.addEventListener("scroll",refreshTableScroll,{passive:true});
+ window.addEventListener("resize",refreshTableScroll,{passive:true});
+
  $("aoeGraph").addEventListener("click",function(e){var p=e.target.closest("[data-edge-id]");if(p)focusEdge(p.dataset.edgeId);});
  $("aoeActivitiesTable").addEventListener("click",function(e){var p=e.target.closest("[data-aoe-table-edge]");if(p)focusEdge(p.dataset.aoeTableEdge);});
  $("aoePhaseStrip").addEventListener("click",function(e){var b=e.target.closest("button[data-aoe-phase]");if(b&&unlocked)phaseJump(b.dataset.aoePhase);});
