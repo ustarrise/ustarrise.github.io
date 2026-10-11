@@ -1,1 +1,667 @@
-[{"id":"2012-42","date":"2026-10-10","year":"2012","number":"42","category":"单链表 · 双指针","title":"寻找两个单链表的公共后缀","difficulty":"中等","time":"15–20 分钟","source":"https://www.csgraduates.com/study_methods/408quiz/2012/","question":"两个带头结点的单链表分别表示 loading 与 being，其中两条链表共用实际的 i→n→g 三个结点。请返回公共后缀起点的结点指针；如果没有共享结点则返回 NULL。请给出算法思想、C代码和复杂度。","constraint":"判断的是结点地址相同，而不是存储字符相同；共享一个结点后，该结点的 next 唯一，后续必然全部共享。","sample":"str1 = l → o → a → d ↘\n                      i → n → g → NULL\nstr2 = b → e ────────↗\n结果：共享结点 i 的地址","brute":{"title":"双层枚举","tag":"保底思路","idea":"从第一个链表取一个结点，用第二条链表从头到尾逐个寻找地址是否相等；找不到就换下一个结点。第一个地址相同的结点就是答案。","complexity":"时间 O(mn) · 空间 O(1)","risk":"原题要求时间尽可能高效，暴力法虽然正确，但效率部分存在失分风险。","code":"#include <stdio.h>\n\ntypedef struct Node {\n    char data;                 // 保存一个字符\n    struct Node *next;         // 指向后继结点\n} Node;\n\n// 双重循环：逐个比较两个链表的结点地址\nNode* findCommon(Node* h1, Node* h2) {\n    if (h1 == NULL || h2 == NULL) return NULL;\n    for (Node* p = h1->next; p != NULL; p = p->next) {\n        for (Node* q = h2->next; q != NULL; q = q->next) {\n            if (p == q)        // 比较物理地址，不能比较data字符\n                return p;     // 第一次相遇就是共享后缀起点\n        }\n    }\n    return NULL;               // 两链表没有共享结点\n}\n\nint main(void) {\n    // 后缀i→n→g是两条链表共同使用的同一批结点\n    Node g = {'g', NULL}, n = {'n', &g}, i = {'i', &n};\n    Node d = {'d', &i}, a = {'a', &d}, o = {'o', &a}, l = {'l', &o};\n    Node e = {'e', &i}, b = {'b', &e};\n    Node h1 = {0, &l}, h2 = {0, &b}; // 不存数据的头结点\n    Node *ans = findCommon(&h1, &h2);\n    if (ans) printf(\"公共后缀起点：%c\\n\", ans->data);\n    else puts(\"不存在共享后缀\");\n    return 0;\n}","explain":["p 每次向后走一个结点，枚举链表1的所有候选位置。","q 每次必须重新从链表2的首个数据结点出发，否则会漏掉匹配。","p == q 比较内存地址，不是 p->data == q->data。"]},"optimal":{"title":"长度对齐 + 同步双指针","tag":"考场推荐","idea":"先求两条链表长度，让较长的链表先移动长度差，此时两指针距末尾的步数一致。随后同步走，第一次地址相等的位置就是公共后缀起点。","complexity":"时间 O(m+n) · 空间 O(1)","risk":"只用计算长度和普通指针移动，效率满足题目要求，考场推荐。","code":"#include <stdio.h>\n\ntypedef struct Node {\n    char data;\n    struct Node *next;\n} Node;\n\n// 不计算头结点，只计算有效字符结点的个数\nint length(Node* head) {\n    int count = 0;\n    for (Node* p = head->next; p != NULL; p = p->next)\n        count++;\n    return count;\n}\n\n// 长链先走长度差，然后两个指针同步移动\nNode* findCommon(Node* h1, Node* h2) {\n    if (h1 == NULL || h2 == NULL) return NULL;\n    int m = length(h1), n = length(h2);\n    Node *p = h1->next, *q = h2->next;\n\n    while (m > n) {           // 链表1长，就让p先走\n        p = p->next;\n        m--;\n    }\n    while (n > m) {           // 链表2长，就让q先走\n        q = q->next;\n        n--;\n    }\n\n    while (p != NULL && q != NULL) {\n        if (p == q) return p; // 同一个地址即共享同一结点\n        p = p->next;          // 保持两者距末尾的距离相同\n        q = q->next;\n    }\n    return NULL;\n}\n\nint main(void) {\n    Node g = {'g', NULL}, n = {'n', &g}, i = {'i', &n};\n    Node d = {'d', &i}, a = {'a', &d}, o = {'o', &a}, l = {'l', &o};\n    Node e = {'e', &i}, b = {'b', &e};\n    Node h1 = {0, &l}, h2 = {0, &b};\n    Node *ans = findCommon(&h1, &h2);\n    if (ans) printf(\"公共后缀起点：%c\\n\", ans->data);\n    else puts(\"不存在共享后缀\");\n    return 0;\n}","explain":["m、n 是有效数据结点长度，不包含头结点。","先走长度差，使 p 和 q 到 NULL 的剩余步数相同。","同步移动时不会跳过公共起点，因为两个指针会同时进入共享部分。"]},"tips":["不能用字符是否相同判断是否共享：两个存储 'i' 的结点也可能地址不同。","带头结点链表应从 head->next 开始访问有效数据。","如果两个链表没有交点，两个指针最终到达 NULL，返回 NULL。"],"variation":{"question":"巩固题：带头结点的链表 1→2→3→4→5，求倒数第2个结点。分别写出长度法与快慢指针法。","idea":"长度法：先得到 n=5，再走 n−k=3 次到 4。快慢指针：fast 从第一个数据结点先走 k=2 步，之后 fast 与 slow 一起走；当 fast 到 NULL 时 slow 指向 4。两者时间 O(n)、额外空间 O(1)。","code":"#include <stdio.h>\n\ntypedef struct Node {\n    int data;\n    struct Node *next;\n} Node;\n\n// 朴素法：先求长度，再走到正数第n-k+1个结点\nNode* kthByLength(Node* head, int k) {\n    if (!head || k <= 0) return NULL;\n    int n = 0;\n    for (Node* p = head->next; p; p = p->next) n++;\n    if (k > n) return NULL;           // 长度不够\n    Node* p = head->next;\n    for (int i = 0; i < n - k; i++) p = p->next;\n    return p;\n}\n\n// 快慢指针法：fast先走k步，随后两个指针同步走\nNode* kthByTwoPointers(Node* head, int k) {\n    if (!head || k <= 0) return NULL;\n    Node *fast = head->next, *slow = head->next;\n    for (int i = 0; i < k; i++) {\n        if (!fast) return NULL;       // k超出链表长度\n        fast = fast->next;            // 保持fast领先k步\n    }\n    while (fast) {\n        fast = fast->next;\n        slow = slow->next;            // 两者距离仍为k\n    }\n    return slow;                      // fast到NULL时slow恰好倒数第k\n}\n\nint main(void) {\n    Node n5 = {5, NULL}, n4 = {4, &n5}, n3 = {3, &n4};\n    Node n2 = {2, &n3}, n1 = {1, &n2}, head = {0, &n1};\n    Node *a = kthByLength(&head, 2);\n    Node *b = kthByTwoPointers(&head, 2);\n    printf(\"长度法=%d，快慢指针=%d\\n\", a ? a->data : -1, b ? b->data : -1);\n    return 0;\n}"},"animation":{"layout":"chains","rows":[{"label":"链表一 · loading","values":["l","o","a","d","i","n","g"],"sharedFrom":4,"pointerKey":"p"},{"label":"链表二 · being","values":["b","e","i","n","g"],"sharedFrom":2,"pointerKey":"q"}],"brute":[{"p":0,"q":0,"done":false,"text":"比较 p 指向的 l 与 q 指向的 b 的地址是否相等，不是比较字符。"},{"p":0,"q":1,"done":false,"text":"比较 p 指向的 l 与 q 指向的 e 的地址是否相等，不是比较字符。"},{"p":0,"q":2,"done":false,"text":"比较 p 指向的 l 与 q 指向的 i 的地址是否相等，不是比较字符。"},{"p":0,"q":3,"done":false,"text":"比较 p 指向的 l 与 q 指向的 n 的地址是否相等，不是比较字符。"},{"p":0,"q":4,"done":false,"text":"比较 p 指向的 l 与 q 指向的 g 的地址是否相等，不是比较字符。"},{"p":1,"q":0,"done":false,"text":"比较 p 指向的 o 与 q 指向的 b 的地址是否相等，不是比较字符。"},{"p":1,"q":1,"done":false,"text":"比较 p 指向的 o 与 q 指向的 e 的地址是否相等，不是比较字符。"},{"p":1,"q":2,"done":false,"text":"比较 p 指向的 o 与 q 指向的 i 的地址是否相等，不是比较字符。"},{"p":1,"q":3,"done":false,"text":"比较 p 指向的 o 与 q 指向的 n 的地址是否相等，不是比较字符。"},{"p":1,"q":4,"done":false,"text":"比较 p 指向的 o 与 q 指向的 g 的地址是否相等，不是比较字符。"},{"p":2,"q":0,"done":false,"text":"比较 p 指向的 a 与 q 指向的 b 的地址是否相等，不是比较字符。"},{"p":2,"q":1,"done":false,"text":"比较 p 指向的 a 与 q 指向的 e 的地址是否相等，不是比较字符。"},{"p":2,"q":2,"done":false,"text":"比较 p 指向的 a 与 q 指向的 i 的地址是否相等，不是比较字符。"},{"p":2,"q":3,"done":false,"text":"比较 p 指向的 a 与 q 指向的 n 的地址是否相等，不是比较字符。"},{"p":2,"q":4,"done":false,"text":"比较 p 指向的 a 与 q 指向的 g 的地址是否相等，不是比较字符。"},{"p":3,"q":0,"done":false,"text":"比较 p 指向的 d 与 q 指向的 b 的地址是否相等，不是比较字符。"},{"p":3,"q":1,"done":false,"text":"比较 p 指向的 d 与 q 指向的 e 的地址是否相等，不是比较字符。"},{"p":3,"q":2,"done":false,"text":"比较 p 指向的 d 与 q 指向的 i 的地址是否相等，不是比较字符。"},{"p":3,"q":3,"done":false,"text":"比较 p 指向的 d 与 q 指向的 n 的地址是否相等，不是比较字符。"},{"p":3,"q":4,"done":false,"text":"比较 p 指向的 d 与 q 指向的 g 的地址是否相等，不是比较字符。"},{"p":4,"q":0,"done":false,"text":"比较 p 指向的 i 与 q 指向的 b 的地址是否相等，不是比较字符。"},{"p":4,"q":1,"done":false,"text":"比较 p 指向的 i 与 q 指向的 e 的地址是否相等，不是比较字符。"},{"p":4,"q":2,"done":true,"text":"两个指针同时指向实际共享的 i 结点，找到公共后缀起点。"}],"optimal":[{"p":0,"q":0,"text":"遍历求得两链表长度7和5，差值为2。"},{"p":1,"q":0,"text":"较长链表指针先走一步：p由l走到o。"},{"p":2,"q":0,"text":"p再走一步到a。现在p与q距末尾距离相同。"},{"p":3,"q":1,"text":"两指针同步走一步：p=d，q=e，地址不同。"},{"p":4,"q":2,"done":true,"text":"同步再走一步：两个指针都指向同一个i结点，返回它的地址。"}]}},{"id":"2010-42","date":"2026-10-09","year":"2010","number":"42","category":"顺序表 · 数组","title":"数组循环左移 p 个位置","difficulty":"中等","time":"15–20 分钟","source":"https://www.csgraduates.com/study_methods/408quiz/2010/","question":"给定长度为 n 的整数数组 R，将整个序列循环左移 p 位（0<p<n），例如 [1,2,3,4,5,6,7] 左移3位得到 [4,5,6,7,1,2,3]。要求设计时间和空间两方面都尽可能高效的算法。","constraint":"循环左移不是删除元素；原来最前面的 p 个元素必须按原顺序接到末尾。","sample":"输入：n=7，p=3\n1 2 3 4 5 6 7\n输出：4 5 6 7 1 2 3","brute":{"title":"每次左移一位，重复 p 次","tag":"保底思路","idea":"先把首元素存到 temp，让其余元素逐个向左移动，然后把 temp 放到末尾。这样执行 p 轮。","complexity":"时间 O(np) · 空间 O(1)","risk":"题目要求时间与空间尽可能高效。逐位法虽然正确、容易写，但时间复杂度不够理想。","code":"#include <stdio.h>\n\n// 将数组循环左移p位：每次先保存队首，再移动剩余元素\nvoid leftRotate(int R[], int n, int p) {\n    if (n <= 1 || p < 0) return; // 空数组或非法位数不处理\n    p %= n;                      // 左移n位相当于不动\n\n    for (int i = 0; i < p; i++) {\n        int first = R[0];       // 保存原队首，避免数据丢失\n        for (int j = 0; j < n - 1; j++) {\n            R[j] = R[j + 1];    // 后面的元素向左挪一格\n        }\n        R[n - 1] = first;       // 原队首放到末尾\n    }\n}\n\nint main(void) {\n    int R[] = {1, 2, 3, 4, 5, 6, 7};\n    int n = 7, p = 3;\n    leftRotate(R, n, p);\n    for (int i = 0; i < n; i++)\n        printf(\"%d%c\", R[i], i == n - 1 ? '\\n' : ' ');\n    return 0;\n}","explain":["外层 i 循环决定移动多少位，执行 p 次。","内层 j 循环负责把后面的元素向左挪一位，必须从左向右赋值。","temp 保存原首元素，否则 R[0] 会被覆盖。"]},"optimal":{"title":"三次逆置","tag":"考场推荐","idea":"把数组分为前 p 位 A 与剩余的 B，目标是 AB→BA。分别逆置 A、B，再整体逆置，就能得到 BA。","complexity":"时间 O(n) · 空间 O(1)","risk":"三个 reverse 操作均是简单双指针交换，复杂度也满足原题的双重效率要求。","code":"#include <stdio.h>\n\n// 用左右两个下标交换，使区间原地逆置\nvoid reverse(int R[], int l, int r) {\n    while (l < r) {\n        int t = R[l];          // 暂存左侧元素，防止被覆盖\n        R[l] = R[r];           // 右侧元素放到左边\n        R[r] = t;              // 原左侧元素放到右边\n        l++;                   // 两个指针向中间靠拢\n        r--;\n    }\n}\n\n// 三次逆置：把 AB 变成 BA，不申请额外数组\nvoid leftRotate(int R[], int n, int p) {\n    if (n <= 1 || p < 0) return;\n    p %= n;                    // 处理超过一整圈的情况\n    if (p == 0) return;\n    reverse(R, 0, p - 1);      // A逆置\n    reverse(R, p, n - 1);      // B逆置\n    reverse(R, 0, n - 1);      // 整体逆置得到BA\n}\n\nint main(void) {\n    int R[] = {1, 2, 3, 4, 5, 6, 7};\n    int n = 7, p = 3;\n    leftRotate(R, n, p);\n    for (int i = 0; i < n; i++)\n        printf(\"%d%c\", R[i], i == n - 1 ? '\\n' : ' ');\n    return 0;\n}","explain":["reverse(R,0,p-1) 逆置前 p 个元素。","reverse(R,p,n-1) 逆置后 n-p 个元素。","reverse(R,0,n-1) 再整体逆置，利用 (Aᴿ Bᴿ)ᴿ=BA。"]},"tips":["数组下标从0开始，前 p 个元素的最后下标是 p−1。","左移 n 位等于不移动，代码可以用 p %= n。","题目若要求时间空间都高效，优先三次逆置法。"],"variation":{"question":"巩固题：把 [2,4,6,8,10,12,14,16] 循环右移3位。先想最简单方法，再思考能否转换成左移 n−p 位。","idea":"结果为 [12,14,16,2,4,6,8,10]。朴素法每次保存末尾，把其他元素从右向左移动；优化法等价于左移 n−p 位，仍可三次逆置。","code":"#include <stdio.h>\n\n// 右移一位：保存末尾，其他元素从右向左移动\nvoid rightRotate(int R[], int n, int p) {\n    if (n <= 1 || p < 0) return;\n    p %= n;\n    for (int i = 0; i < p; i++) {\n        int last = R[n - 1];\n        for (int j = n - 1; j > 0; j--)\n            R[j] = R[j - 1];\n        R[0] = last;\n    }\n}\n\nint main(void) {\n    int R[] = {2,4,6,8,10,12,14,16}, n = 8;\n    rightRotate(R, n, 3);\n    for (int i = 0; i < n; i++)\n        printf(\"%d%c\", R[i], i == n - 1 ? '\\n' : ' ');\n    return 0;\n}"},"animation":{"layout":"array","brute":[{"array":[1,2,3,4,5,6,7],"text":"原始数组，准备左移3位。"},{"array":[2,3,4,5,6,7,1],"text":"第一轮：保存1，剩余元素左移一格，1放到末尾。"},{"array":[3,4,5,6,7,1,2],"text":"第二轮：保存2，把2放到末尾。"},{"array":[4,5,6,7,1,2,3],"text":"第三轮：保存3，把3放到末尾，完成左移。"}],"optimal":[{"array":[1,2,3,4,5,6,7],"text":"将数组分成A=[1,2,3]与B=[4,5,6,7]。"},{"array":[3,2,1,4,5,6,7],"text":"第一次逆置：A变成[3,2,1]。"},{"array":[3,2,1,7,6,5,4],"text":"第二次逆置：B变成[7,6,5,4]。"},{"array":[4,5,6,7,1,2,3],"text":"第三次整体逆置：数组变成BA，得到目标结果。"}]}},{"id":"lc20-20261011","date":"2026-10-11","year":"LeetCode","number":"20","category":"栈 · 括号匹配","title":"有效的括号：从逐对消除到顺序栈","difficulty":"简单—中等","time":"15～20分钟","source":"https://leetcode.com/problems/valid-parentheses/","question":"给定只包含六种括号字符 ()[]{} 的字符串 s，判断括号能否按照正确顺序完全匹配。只有同类型、嵌套顺序正确的括号才算有效。例如 ([{}]) 有效，([)] 无效。要求先设计最直观的方法，再给出基于408顺序栈的高效算法。","constraint":"栈只处理括号字符；括号类型必须对应，且每个右括号必须与最近一个尚未匹配的左括号对应。朴素删除法会修改输入数组；栈法不会。","sample":"样例一：s = \"([{}])\" → true\n样例二：s = \"([)]\" → false\n样例三：s = \"()[]{}\" → true\n样例四：s = \"((\" → false","brute":{"title":"反复删除相邻的一对合法括号","tag":"考场朴素保底","idea":"观察最里面的合法括号一定相邻，例如 ([{}]) 中最先能删除的是 {}。每轮从左到右找一对相邻且配套的括号并删除；删除后从头重新检查。最后空串表示完全匹配。为了尽量少用库，在原字符串上左移覆盖，函数会修改原字符串。","complexity":"时间 O(n²)，额外空间 O(1)（原地修改输入）","risk":"这是一种可手写的正确思路，但不断删除会导致反复移动，最坏 O(n²)。题目若要求高效，优先使用顺序栈法。","code":"#include <stdio.h>\n\n// 判断相邻两个字符能否抵消\nint match(char a, char b) {\n    return (a == '(' && b == ')') ||\n           (a == '[' && b == ']') ||\n           (a == '{' && b == '}');\n}\n\n// 朴素法：反复删除相邻的一对合法括号\n// 注意：这个函数会修改原字符串 s\nint valid(char s[]) {\n    int n = 0;\n    while (s[n] != '\\0') n++;  // 手动求字符串长度\n\n    while (n >= 2) {\n        int found = 0;         // 这一轮有没有删掉一对\n\n        for (int i = 0; i < n - 1; i++) {\n            if (match(s[i], s[i + 1])) {\n                // 把后面的字符左移2位，包括结束符'\\0'\n                for (int j = i; j <= n - 2; j++)\n                    s[j] = s[j + 2];\n\n                n -= 2;       // 逻辑长度缩小两个字符\n                found = 1;\n                break;        // 删除后从头重新扫描\n            }\n        }\n\n        if (!found) break;     // 找不到可抵消的一对，停止\n    }\n    return n == 0;            // 全部消去，才是合法括号序列\n}\n\nint main(void) {\n    char s[] = \"([{}])\";      // 可修改的字符数组\n    printf(\"是否合法：%s\\n\", valid(s) ? \"是\" : \"否\");\n    return 0;\n}","explain":["match 函数只匹配 ()、[]、{}，类型必须对应，不能只判断一个左括号和一个右括号。","发现相邻匹配的一对后，把后面全部字符（含字符串结束符）前移2格，从而原地删除。","每次删除后从头扫描，因为新的相邻字符可能构成下一对；最后只有长度为0才有效。","这段算法会改变 s，main 必须使用 char s[] 可修改数组，不能把字符串字面量直接传入。"]},"optimal":{"title":"顺序栈：左括号入栈，右括号弹栈匹配","tag":"考场首选","idea":"由左到右扫描。遇到左括号就压入顺序栈；遇到右括号则检查栈顶，必须正好是对应的左括号，再弹出。扫完时栈空才合法。栈顶始终保存最近且尚未匹配的左括号。","complexity":"时间 O(n)，额外空间 O(n)","risk":"单次遍历即可完成，且不修改原字符串。只用408考纲内的顺序栈基本操作，是本题考场最值得掌握的写法。","code":"#include <stdio.h>\n\n#define MAXN 1000\n\n// 顺序栈判断括号是否配对\nint valid(const char s[]) {\n    char stack[MAXN];         // 最坏情况全部是左括号\n    int top = -1;             // -1 表示空栈\n\n    for (int i = 0; s[i] != '\\0'; i++) {\n        char c = s[i];\n\n        if (c == '(' || c == '[' || c == '{') {\n            // 左括号入栈，等待右括号匹配\n            if (top == MAXN - 1) return 0;\n            stack[++top] = c;\n        } else {\n            // 题目保证字符只包括六种括号\n            if (top == -1) return 0; // 没有左括号可匹配\n\n            char left = stack[top--]; // 弹出最近的左括号\n            if (!((left == '(' && c == ')') ||\n                  (left == '[' && c == ']') ||\n                  (left == '{' && c == '}')))\n                return 0;          // 类型不匹配\n        }\n    }\n\n    return top == -1;          // 不得有剩余未匹配的左括号\n}\n\nint main(void) {\n    char s[] = \"([{}])\";\n    printf(\"是否合法：%s\\n\", valid(s) ? \"是\" : \"否\");\n    return 0;\n}","explain":["top=-1 表示空栈，stack[++top] 是先移动栈顶下标再压栈。","遇到右括号先判断 top 是否为 -1，防止空栈弹出。","只有与最近的未匹配左括号对应，才可以弹出；例如 ([)] 在 ')' 处立刻失败。","最后 top==-1 才说明没有遗留左括号。例子中 MAXN 限定最多1000个待存括号，可按题目上界调整。"]},"tips":["'([)]' 虽然三种括号数量看似平衡，嵌套次序仍然错误。","先判断空栈，再读取 stack[top]，否则可能越界。","合法条件是遍历中从不失败并且结束时栈为空，缺一不可。","朴素删除法会改写原字符串，若要求保留输入，应先复制或改用栈法。","暴力法与栈法都有效，但不代表有相同的时间复杂度。"],"variation":{"question":"巩固变式：若字符串只包含 '(' 与 ')'，最少插入几个括号才能使它变得有效？例如 '())(' 需要补2个。先自己试着用计数器分析，再查看下面的答案。","idea":"扫描时用 left 记录尚未匹配的左括号。遇 '(' 则 left++；遇 ')' 且 left>0 则 left--；如果没有左括号可匹配，只能补一个 '('，令 add++。最后剩余 left 个左括号各需要补一个 ')'，答案 add+left。'())(' 中第三个字符 ')' 要补1个左括号，最后剩1个 '(' 要补1个右括号，总共2个。时间 O(n)，空间 O(1)。","code":"#include <stdio.h>\n\n// 变式：只含()的字符串，最少插入几个括号才合法\nint minInsertions(const char s[]) {\n    int left = 0;   // 尚未匹配的左括号数量\n    int add = 0;    // 必须补充的左括号数量\n\n    for (int i = 0; s[i] != '\\0'; i++) {\n        if (s[i] == '(') {\n            left++;            // 新的左括号尚待匹配\n        } else {                // 遇到右括号\n            if (left > 0) {\n                left--;        // 匹配一个已有的左括号\n            } else {\n                add++;         // 没有左括号，只能补一个 '('\n            }\n        }\n    }\n    return add + left; // 剩余左括号需要补同样多的 ')'\n}\n\nint main(void) {\n    char s[] = \"())(\";\n    printf(\"最少插入：%d\\n\", minInsertions(s)); // 输出2\n    return 0;\n}"},"animation":{"layout":"diagram","brute":[{"diagram":"当前：([{}])\n可消除：{}","text":"观察最内层：{} 相邻而且类型正确，能够先抵消。"},{"diagram":"当前：([])\n可消除：[]","text":"删除 {} 后新串是 ([])，内部 [] 成了相邻且配对的一组。"},{"diagram":"当前：()\n可消除：()","text":"删除 [] 后只剩 ()，再抵消最后一组。"},{"diagram":"当前：空串\n结果：合法 ✓","done":true,"text":"所有字符都消除，说明括号完全匹配。"}],"optimal":[{"diagram":"待扫描：([{}])\n栈（底→顶）：空","text":"开始时顺序栈为空，top=-1。"},{"diagram":"读入 '(' \n栈：(","text":"左括号入栈；top 变成0。"},{"diagram":"读入 '['\n栈：( [","text":"又遇左括号，继续入栈；最近的左括号是 '['。"},{"diagram":"读入 '{'\n栈：( [ {","text":"第三个左括号入栈；栈顶是 '{'。"},{"diagram":"读入 '}'\n栈：( [","text":"右大括号与栈顶 '{' 配对，弹出栈顶。"},{"diagram":"读入 ']'\n栈：(","text":"右中括号与栈顶 '[' 配对，继续弹栈。"},{"diagram":"读入 ')'\n栈：空\n结果：合法 ✓","done":true,"text":"右小括号匹配 '(', 扫描完成且栈空，返回真。"}]}}]
+[
+  {
+    "id": "2012-42",
+    "date": "2026-10-10",
+    "year": "2012",
+    "number": "42",
+    "category": "单链表 · 双指针",
+    "title": "寻找两个单链表的公共后缀",
+    "difficulty": "中等",
+    "time": "15–20 分钟",
+    "source": "https://www.csgraduates.com/study_methods/408quiz/2012/",
+    "question": "两个带头结点的单链表分别表示 loading 与 being，其中两条链表共用实际的 i→n→g 三个结点。请返回公共后缀起点的结点指针；如果没有共享结点则返回 NULL。请给出算法思想、C代码和复杂度。",
+    "constraint": "判断的是结点地址相同，而不是存储字符相同；共享一个结点后，该结点的 next 唯一，后续必然全部共享。",
+    "sample": "str1 = l → o → a → d ↘\n                      i → n → g → NULL\nstr2 = b → e ────────↗\n结果：共享结点 i 的地址",
+    "brute": {
+      "title": "双层枚举",
+      "tag": "保底思路",
+      "idea": "从第一个链表取一个结点，用第二条链表从头到尾逐个寻找地址是否相等；找不到就换下一个结点。第一个地址相同的结点就是答案。",
+      "complexity": "时间 O(mn) · 空间 O(1)",
+      "risk": "原题要求时间尽可能高效，暴力法虽然正确，但效率部分存在失分风险。",
+      "code": "#include <stdio.h>\n\ntypedef struct Node {\n    char data;                 // 保存一个字符\n    struct Node *next;         // 指向后继结点\n} Node;\n\n// 双重循环：逐个比较两个链表的结点地址\nNode* findCommon(Node* h1, Node* h2) {\n    if (h1 == NULL || h2 == NULL) return NULL;\n    for (Node* p = h1->next; p != NULL; p = p->next) {\n        for (Node* q = h2->next; q != NULL; q = q->next) {\n            if (p == q)        // 比较物理地址，不能比较data字符\n                return p;     // 第一次相遇就是共享后缀起点\n        }\n    }\n    return NULL;               // 两链表没有共享结点\n}\n\nint main(void) {\n    // 后缀i→n→g是两条链表共同使用的同一批结点\n    Node g = {'g', NULL}, n = {'n', &g}, i = {'i', &n};\n    Node d = {'d', &i}, a = {'a', &d}, o = {'o', &a}, l = {'l', &o};\n    Node e = {'e', &i}, b = {'b', &e};\n    Node h1 = {0, &l}, h2 = {0, &b}; // 不存数据的头结点\n    Node *ans = findCommon(&h1, &h2);\n    if (ans) printf(\"公共后缀起点：%c\\n\", ans->data);\n    else puts(\"不存在共享后缀\");\n    return 0;\n}",
+      "explain": [
+        "p 每次向后走一个结点，枚举链表1的所有候选位置。",
+        "q 每次必须重新从链表2的首个数据结点出发，否则会漏掉匹配。",
+        "p == q 比较内存地址，不是 p->data == q->data。"
+      ]
+    },
+    "optimal": {
+      "title": "长度对齐 + 同步双指针",
+      "tag": "考场推荐",
+      "idea": "先求两条链表长度，让较长的链表先移动长度差，此时两指针距末尾的步数一致。随后同步走，第一次地址相等的位置就是公共后缀起点。",
+      "complexity": "时间 O(m+n) · 空间 O(1)",
+      "risk": "只用计算长度和普通指针移动，效率满足题目要求，考场推荐。",
+      "code": "#include <stdio.h>\n\ntypedef struct Node {\n    char data;\n    struct Node *next;\n} Node;\n\n// 不计算头结点，只计算有效字符结点的个数\nint length(Node* head) {\n    int count = 0;\n    for (Node* p = head->next; p != NULL; p = p->next)\n        count++;\n    return count;\n}\n\n// 长链先走长度差，然后两个指针同步移动\nNode* findCommon(Node* h1, Node* h2) {\n    if (h1 == NULL || h2 == NULL) return NULL;\n    int m = length(h1), n = length(h2);\n    Node *p = h1->next, *q = h2->next;\n\n    while (m > n) {           // 链表1长，就让p先走\n        p = p->next;\n        m--;\n    }\n    while (n > m) {           // 链表2长，就让q先走\n        q = q->next;\n        n--;\n    }\n\n    while (p != NULL && q != NULL) {\n        if (p == q) return p; // 同一个地址即共享同一结点\n        p = p->next;          // 保持两者距末尾的距离相同\n        q = q->next;\n    }\n    return NULL;\n}\n\nint main(void) {\n    Node g = {'g', NULL}, n = {'n', &g}, i = {'i', &n};\n    Node d = {'d', &i}, a = {'a', &d}, o = {'o', &a}, l = {'l', &o};\n    Node e = {'e', &i}, b = {'b', &e};\n    Node h1 = {0, &l}, h2 = {0, &b};\n    Node *ans = findCommon(&h1, &h2);\n    if (ans) printf(\"公共后缀起点：%c\\n\", ans->data);\n    else puts(\"不存在共享后缀\");\n    return 0;\n}",
+      "explain": [
+        "m、n 是有效数据结点长度，不包含头结点。",
+        "先走长度差，使 p 和 q 到 NULL 的剩余步数相同。",
+        "同步移动时不会跳过公共起点，因为两个指针会同时进入共享部分。"
+      ]
+    },
+    "tips": [
+      "不能用字符是否相同判断是否共享：两个存储 'i' 的结点也可能地址不同。",
+      "带头结点链表应从 head->next 开始访问有效数据。",
+      "如果两个链表没有交点，两个指针最终到达 NULL，返回 NULL。"
+    ],
+    "variation": {
+      "question": "巩固题：带头结点的链表 1→2→3→4→5，求倒数第2个结点。分别写出长度法与快慢指针法。",
+      "idea": "长度法：先得到 n=5，再走 n−k=3 次到 4。快慢指针：fast 从第一个数据结点先走 k=2 步，之后 fast 与 slow 一起走；当 fast 到 NULL 时 slow 指向 4。两者时间 O(n)、额外空间 O(1)。",
+      "code": "#include <stdio.h>\n\ntypedef struct Node {\n    int data;\n    struct Node *next;\n} Node;\n\n// 朴素法：先求长度，再走到正数第n-k+1个结点\nNode* kthByLength(Node* head, int k) {\n    if (!head || k <= 0) return NULL;\n    int n = 0;\n    for (Node* p = head->next; p; p = p->next) n++;\n    if (k > n) return NULL;           // 长度不够\n    Node* p = head->next;\n    for (int i = 0; i < n - k; i++) p = p->next;\n    return p;\n}\n\n// 快慢指针法：fast先走k步，随后两个指针同步走\nNode* kthByTwoPointers(Node* head, int k) {\n    if (!head || k <= 0) return NULL;\n    Node *fast = head->next, *slow = head->next;\n    for (int i = 0; i < k; i++) {\n        if (!fast) return NULL;       // k超出链表长度\n        fast = fast->next;            // 保持fast领先k步\n    }\n    while (fast) {\n        fast = fast->next;\n        slow = slow->next;            // 两者距离仍为k\n    }\n    return slow;                      // fast到NULL时slow恰好倒数第k\n}\n\nint main(void) {\n    Node n5 = {5, NULL}, n4 = {4, &n5}, n3 = {3, &n4};\n    Node n2 = {2, &n3}, n1 = {1, &n2}, head = {0, &n1};\n    Node *a = kthByLength(&head, 2);\n    Node *b = kthByTwoPointers(&head, 2);\n    printf(\"长度法=%d，快慢指针=%d\\n\", a ? a->data : -1, b ? b->data : -1);\n    return 0;\n}"
+    },
+    "animation": {
+      "layout": "chains",
+      "rows": [
+        {
+          "label": "链表一 · loading",
+          "values": [
+            "l",
+            "o",
+            "a",
+            "d",
+            "i",
+            "n",
+            "g"
+          ],
+          "sharedFrom": 4,
+          "pointerKey": "p"
+        },
+        {
+          "label": "链表二 · being",
+          "values": [
+            "b",
+            "e",
+            "i",
+            "n",
+            "g"
+          ],
+          "sharedFrom": 2,
+          "pointerKey": "q"
+        }
+      ],
+      "brute": [
+        {
+          "p": 0,
+          "q": 0,
+          "done": false,
+          "text": "比较 p 指向的 l 与 q 指向的 b 的地址是否相等，不是比较字符。"
+        },
+        {
+          "p": 0,
+          "q": 1,
+          "done": false,
+          "text": "比较 p 指向的 l 与 q 指向的 e 的地址是否相等，不是比较字符。"
+        },
+        {
+          "p": 0,
+          "q": 2,
+          "done": false,
+          "text": "比较 p 指向的 l 与 q 指向的 i 的地址是否相等，不是比较字符。"
+        },
+        {
+          "p": 0,
+          "q": 3,
+          "done": false,
+          "text": "比较 p 指向的 l 与 q 指向的 n 的地址是否相等，不是比较字符。"
+        },
+        {
+          "p": 0,
+          "q": 4,
+          "done": false,
+          "text": "比较 p 指向的 l 与 q 指向的 g 的地址是否相等，不是比较字符。"
+        },
+        {
+          "p": 1,
+          "q": 0,
+          "done": false,
+          "text": "比较 p 指向的 o 与 q 指向的 b 的地址是否相等，不是比较字符。"
+        },
+        {
+          "p": 1,
+          "q": 1,
+          "done": false,
+          "text": "比较 p 指向的 o 与 q 指向的 e 的地址是否相等，不是比较字符。"
+        },
+        {
+          "p": 1,
+          "q": 2,
+          "done": false,
+          "text": "比较 p 指向的 o 与 q 指向的 i 的地址是否相等，不是比较字符。"
+        },
+        {
+          "p": 1,
+          "q": 3,
+          "done": false,
+          "text": "比较 p 指向的 o 与 q 指向的 n 的地址是否相等，不是比较字符。"
+        },
+        {
+          "p": 1,
+          "q": 4,
+          "done": false,
+          "text": "比较 p 指向的 o 与 q 指向的 g 的地址是否相等，不是比较字符。"
+        },
+        {
+          "p": 2,
+          "q": 0,
+          "done": false,
+          "text": "比较 p 指向的 a 与 q 指向的 b 的地址是否相等，不是比较字符。"
+        },
+        {
+          "p": 2,
+          "q": 1,
+          "done": false,
+          "text": "比较 p 指向的 a 与 q 指向的 e 的地址是否相等，不是比较字符。"
+        },
+        {
+          "p": 2,
+          "q": 2,
+          "done": false,
+          "text": "比较 p 指向的 a 与 q 指向的 i 的地址是否相等，不是比较字符。"
+        },
+        {
+          "p": 2,
+          "q": 3,
+          "done": false,
+          "text": "比较 p 指向的 a 与 q 指向的 n 的地址是否相等，不是比较字符。"
+        },
+        {
+          "p": 2,
+          "q": 4,
+          "done": false,
+          "text": "比较 p 指向的 a 与 q 指向的 g 的地址是否相等，不是比较字符。"
+        },
+        {
+          "p": 3,
+          "q": 0,
+          "done": false,
+          "text": "比较 p 指向的 d 与 q 指向的 b 的地址是否相等，不是比较字符。"
+        },
+        {
+          "p": 3,
+          "q": 1,
+          "done": false,
+          "text": "比较 p 指向的 d 与 q 指向的 e 的地址是否相等，不是比较字符。"
+        },
+        {
+          "p": 3,
+          "q": 2,
+          "done": false,
+          "text": "比较 p 指向的 d 与 q 指向的 i 的地址是否相等，不是比较字符。"
+        },
+        {
+          "p": 3,
+          "q": 3,
+          "done": false,
+          "text": "比较 p 指向的 d 与 q 指向的 n 的地址是否相等，不是比较字符。"
+        },
+        {
+          "p": 3,
+          "q": 4,
+          "done": false,
+          "text": "比较 p 指向的 d 与 q 指向的 g 的地址是否相等，不是比较字符。"
+        },
+        {
+          "p": 4,
+          "q": 0,
+          "done": false,
+          "text": "比较 p 指向的 i 与 q 指向的 b 的地址是否相等，不是比较字符。"
+        },
+        {
+          "p": 4,
+          "q": 1,
+          "done": false,
+          "text": "比较 p 指向的 i 与 q 指向的 e 的地址是否相等，不是比较字符。"
+        },
+        {
+          "p": 4,
+          "q": 2,
+          "done": true,
+          "text": "两个指针同时指向实际共享的 i 结点，找到公共后缀起点。"
+        }
+      ],
+      "optimal": [
+        {
+          "p": 0,
+          "q": 0,
+          "text": "遍历求得两链表长度7和5，差值为2。"
+        },
+        {
+          "p": 1,
+          "q": 0,
+          "text": "较长链表指针先走一步：p由l走到o。"
+        },
+        {
+          "p": 2,
+          "q": 0,
+          "text": "p再走一步到a。现在p与q距末尾距离相同。"
+        },
+        {
+          "p": 3,
+          "q": 1,
+          "text": "两指针同步走一步：p=d，q=e，地址不同。"
+        },
+        {
+          "p": 4,
+          "q": 2,
+          "done": true,
+          "text": "同步再走一步：两个指针都指向同一个i结点，返回它的地址。"
+        }
+      ]
+    }
+  },
+  {
+    "id": "2010-42",
+    "date": "2026-10-09",
+    "year": "2010",
+    "number": "42",
+    "category": "顺序表 · 数组",
+    "title": "数组循环左移 p 个位置",
+    "difficulty": "中等",
+    "time": "15–20 分钟",
+    "source": "https://www.csgraduates.com/study_methods/408quiz/2010/",
+    "question": "给定长度为 n 的整数数组 R，将整个序列循环左移 p 位（0<p<n），例如 [1,2,3,4,5,6,7] 左移3位得到 [4,5,6,7,1,2,3]。要求设计时间和空间两方面都尽可能高效的算法。",
+    "constraint": "循环左移不是删除元素；原来最前面的 p 个元素必须按原顺序接到末尾。",
+    "sample": "输入：n=7，p=3\n1 2 3 4 5 6 7\n输出：4 5 6 7 1 2 3",
+    "brute": {
+      "title": "每次左移一位，重复 p 次",
+      "tag": "保底思路",
+      "idea": "先把首元素存到 temp，让其余元素逐个向左移动，然后把 temp 放到末尾。这样执行 p 轮。",
+      "complexity": "时间 O(np) · 空间 O(1)",
+      "risk": "题目要求时间与空间尽可能高效。逐位法虽然正确、容易写，但时间复杂度不够理想。",
+      "code": "#include <stdio.h>\n\n// 将数组循环左移p位：每次先保存队首，再移动剩余元素\nvoid leftRotate(int R[], int n, int p) {\n    if (n <= 1 || p < 0) return; // 空数组或非法位数不处理\n    p %= n;                      // 左移n位相当于不动\n\n    for (int i = 0; i < p; i++) {\n        int first = R[0];       // 保存原队首，避免数据丢失\n        for (int j = 0; j < n - 1; j++) {\n            R[j] = R[j + 1];    // 后面的元素向左挪一格\n        }\n        R[n - 1] = first;       // 原队首放到末尾\n    }\n}\n\nint main(void) {\n    int R[] = {1, 2, 3, 4, 5, 6, 7};\n    int n = 7, p = 3;\n    leftRotate(R, n, p);\n    for (int i = 0; i < n; i++)\n        printf(\"%d%c\", R[i], i == n - 1 ? '\\n' : ' ');\n    return 0;\n}",
+      "explain": [
+        "外层 i 循环决定移动多少位，执行 p 次。",
+        "内层 j 循环负责把后面的元素向左挪一位，必须从左向右赋值。",
+        "temp 保存原首元素，否则 R[0] 会被覆盖。"
+      ]
+    },
+    "optimal": {
+      "title": "三次逆置",
+      "tag": "考场推荐",
+      "idea": "把数组分为前 p 位 A 与剩余的 B，目标是 AB→BA。分别逆置 A、B，再整体逆置，就能得到 BA。",
+      "complexity": "时间 O(n) · 空间 O(1)",
+      "risk": "三个 reverse 操作均是简单双指针交换，复杂度也满足原题的双重效率要求。",
+      "code": "#include <stdio.h>\n\n// 用左右两个下标交换，使区间原地逆置\nvoid reverse(int R[], int l, int r) {\n    while (l < r) {\n        int t = R[l];          // 暂存左侧元素，防止被覆盖\n        R[l] = R[r];           // 右侧元素放到左边\n        R[r] = t;              // 原左侧元素放到右边\n        l++;                   // 两个指针向中间靠拢\n        r--;\n    }\n}\n\n// 三次逆置：把 AB 变成 BA，不申请额外数组\nvoid leftRotate(int R[], int n, int p) {\n    if (n <= 1 || p < 0) return;\n    p %= n;                    // 处理超过一整圈的情况\n    if (p == 0) return;\n    reverse(R, 0, p - 1);      // A逆置\n    reverse(R, p, n - 1);      // B逆置\n    reverse(R, 0, n - 1);      // 整体逆置得到BA\n}\n\nint main(void) {\n    int R[] = {1, 2, 3, 4, 5, 6, 7};\n    int n = 7, p = 3;\n    leftRotate(R, n, p);\n    for (int i = 0; i < n; i++)\n        printf(\"%d%c\", R[i], i == n - 1 ? '\\n' : ' ');\n    return 0;\n}",
+      "explain": [
+        "reverse(R,0,p-1) 逆置前 p 个元素。",
+        "reverse(R,p,n-1) 逆置后 n-p 个元素。",
+        "reverse(R,0,n-1) 再整体逆置，利用 (Aᴿ Bᴿ)ᴿ=BA。"
+      ]
+    },
+    "tips": [
+      "数组下标从0开始，前 p 个元素的最后下标是 p−1。",
+      "左移 n 位等于不移动，代码可以用 p %= n。",
+      "题目若要求时间空间都高效，优先三次逆置法。"
+    ],
+    "variation": {
+      "question": "巩固题：把 [2,4,6,8,10,12,14,16] 循环右移3位。先想最简单方法，再思考能否转换成左移 n−p 位。",
+      "idea": "结果为 [12,14,16,2,4,6,8,10]。朴素法每次保存末尾，把其他元素从右向左移动；优化法等价于左移 n−p 位，仍可三次逆置。",
+      "code": "#include <stdio.h>\n\n// 右移一位：保存末尾，其他元素从右向左移动\nvoid rightRotate(int R[], int n, int p) {\n    if (n <= 1 || p < 0) return;\n    p %= n;\n    for (int i = 0; i < p; i++) {\n        int last = R[n - 1];\n        for (int j = n - 1; j > 0; j--)\n            R[j] = R[j - 1];\n        R[0] = last;\n    }\n}\n\nint main(void) {\n    int R[] = {2,4,6,8,10,12,14,16}, n = 8;\n    rightRotate(R, n, 3);\n    for (int i = 0; i < n; i++)\n        printf(\"%d%c\", R[i], i == n - 1 ? '\\n' : ' ');\n    return 0;\n}"
+    },
+    "animation": {
+      "layout": "array",
+      "brute": [
+        {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "text": "原始数组，准备左移3位。"
+        },
+        {
+          "array": [
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            1
+          ],
+          "text": "第一轮：保存1，剩余元素左移一格，1放到末尾。"
+        },
+        {
+          "array": [
+            3,
+            4,
+            5,
+            6,
+            7,
+            1,
+            2
+          ],
+          "text": "第二轮：保存2，把2放到末尾。"
+        },
+        {
+          "array": [
+            4,
+            5,
+            6,
+            7,
+            1,
+            2,
+            3
+          ],
+          "text": "第三轮：保存3，把3放到末尾，完成左移。"
+        }
+      ],
+      "optimal": [
+        {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "text": "将数组分成A=[1,2,3]与B=[4,5,6,7]。"
+        },
+        {
+          "array": [
+            3,
+            2,
+            1,
+            4,
+            5,
+            6,
+            7
+          ],
+          "text": "第一次逆置：A变成[3,2,1]。"
+        },
+        {
+          "array": [
+            3,
+            2,
+            1,
+            7,
+            6,
+            5,
+            4
+          ],
+          "text": "第二次逆置：B变成[7,6,5,4]。"
+        },
+        {
+          "array": [
+            4,
+            5,
+            6,
+            7,
+            1,
+            2,
+            3
+          ],
+          "text": "第三次整体逆置：数组变成BA，得到目标结果。"
+        }
+      ]
+    }
+  },
+  {
+    "id": "lc20-20261011",
+    "date": "2026-10-11",
+    "year": "LeetCode",
+    "number": "20",
+    "category": "栈 · 括号匹配",
+    "title": "有效的括号：从逐对消除到顺序栈",
+    "difficulty": "简单—中等",
+    "time": "15～20分钟",
+    "source": "https://leetcode.com/problems/valid-parentheses/",
+    "question": "给定只包含六种括号字符 ()[]{} 的字符串 s，判断括号能否按照正确顺序完全匹配。只有同类型、嵌套顺序正确的括号才算有效。例如 ([{}]) 有效，([)] 无效。要求先设计最直观的方法，再给出基于408顺序栈的高效算法。",
+    "constraint": "栈只处理括号字符；括号类型必须对应，且每个右括号必须与最近一个尚未匹配的左括号对应。朴素删除法会修改输入数组；栈法不会。",
+    "sample": "样例一：s = \"([{}])\" → true\n样例二：s = \"([)]\" → false\n样例三：s = \"()[]{}\" → true\n样例四：s = \"((\" → false",
+    "brute": {
+      "title": "反复删除相邻的一对合法括号",
+      "tag": "考场朴素保底",
+      "idea": "观察最里面的合法括号一定相邻，例如 ([{}]) 中最先能删除的是 {}。每轮从左到右找一对相邻且配套的括号并删除；删除后从头重新检查。最后空串表示完全匹配。为了尽量少用库，在原字符串上左移覆盖，函数会修改原字符串。",
+      "complexity": "时间 O(n²)，额外空间 O(1)（原地修改输入）",
+      "risk": "这是一种可手写的正确思路，但不断删除会导致反复移动，最坏 O(n²)。题目若要求高效，优先使用顺序栈法。",
+      "code": "#include <stdio.h>\n\n// 判断相邻两个字符能否抵消\nint match(char a, char b) {\n    return (a == '(' && b == ')') ||\n           (a == '[' && b == ']') ||\n           (a == '{' && b == '}');\n}\n\n// 朴素法：反复删除相邻的一对合法括号\n// 注意：这个函数会修改原字符串 s\nint valid(char s[]) {\n    int n = 0;\n    while (s[n] != '\\0') n++;  // 手动求字符串长度\n\n    while (n >= 2) {\n        int found = 0;         // 这一轮有没有删掉一对\n\n        for (int i = 0; i < n - 1; i++) {\n            if (match(s[i], s[i + 1])) {\n                // 把后面的字符左移2位，包括结束符'\\0'\n                for (int j = i; j <= n - 2; j++)\n                    s[j] = s[j + 2];\n\n                n -= 2;       // 逻辑长度缩小两个字符\n                found = 1;\n                break;        // 删除后从头重新扫描\n            }\n        }\n\n        if (!found) break;     // 找不到可抵消的一对，停止\n    }\n    return n == 0;            // 全部消去，才是合法括号序列\n}\n\nint main(void) {\n    char s[] = \"([{}])\";      // 可修改的字符数组\n    printf(\"是否合法：%s\\n\", valid(s) ? \"是\" : \"否\");\n    return 0;\n}",
+      "explain": [
+        "match 函数只匹配 ()、[]、{}，类型必须对应，不能只判断一个左括号和一个右括号。",
+        "发现相邻匹配的一对后，把后面全部字符（含字符串结束符）前移2格，从而原地删除。",
+        "每次删除后从头扫描，因为新的相邻字符可能构成下一对；最后只有长度为0才有效。",
+        "这段算法会改变 s，main 必须使用 char s[] 可修改数组，不能把字符串字面量直接传入。"
+      ]
+    },
+    "optimal": {
+      "title": "顺序栈：左括号入栈，右括号弹栈匹配",
+      "tag": "考场首选",
+      "idea": "由左到右扫描。遇到左括号就压入顺序栈；遇到右括号则检查栈顶，必须正好是对应的左括号，再弹出。扫完时栈空才合法。栈顶始终保存最近且尚未匹配的左括号。",
+      "complexity": "时间 O(n)，额外空间 O(n)",
+      "risk": "单次遍历即可完成，且不修改原字符串。只用408考纲内的顺序栈基本操作，是本题考场最值得掌握的写法。",
+      "code": "#include <stdio.h>\n\n#define MAXN 1000\n\n// 顺序栈判断括号是否配对\nint valid(const char s[]) {\n    char stack[MAXN];         // 最坏情况全部是左括号\n    int top = -1;             // -1 表示空栈\n\n    for (int i = 0; s[i] != '\\0'; i++) {\n        char c = s[i];\n\n        if (c == '(' || c == '[' || c == '{') {\n            // 左括号入栈，等待右括号匹配\n            if (top == MAXN - 1) return 0;\n            stack[++top] = c;\n        } else {\n            // 题目保证字符只包括六种括号\n            if (top == -1) return 0; // 没有左括号可匹配\n\n            char left = stack[top--]; // 弹出最近的左括号\n            if (!((left == '(' && c == ')') ||\n                  (left == '[' && c == ']') ||\n                  (left == '{' && c == '}')))\n                return 0;          // 类型不匹配\n        }\n    }\n\n    return top == -1;          // 不得有剩余未匹配的左括号\n}\n\nint main(void) {\n    char s[] = \"([{}])\";\n    printf(\"是否合法：%s\\n\", valid(s) ? \"是\" : \"否\");\n    return 0;\n}",
+      "explain": [
+        "top=-1 表示空栈，stack[++top] 是先移动栈顶下标再压栈。",
+        "遇到右括号先判断 top 是否为 -1，防止空栈弹出。",
+        "只有与最近的未匹配左括号对应，才可以弹出；例如 ([)] 在 ')' 处立刻失败。",
+        "最后 top==-1 才说明没有遗留左括号。例子中 MAXN 限定最多1000个待存括号，可按题目上界调整。"
+      ]
+    },
+    "tips": [
+      "'([)]' 虽然三种括号数量看似平衡，嵌套次序仍然错误。",
+      "先判断空栈，再读取 stack[top]，否则可能越界。",
+      "合法条件是遍历中从不失败并且结束时栈为空，缺一不可。",
+      "朴素删除法会改写原字符串，若要求保留输入，应先复制或改用栈法。",
+      "暴力法与栈法都有效，但不代表有相同的时间复杂度。"
+    ],
+    "variation": {
+      "question": "巩固变式：若字符串只包含 '(' 与 ')'，最少插入几个括号才能使它变得有效？例如 '())(' 需要补2个。先自己试着用计数器分析，再查看下面的答案。",
+      "idea": "扫描时用 left 记录尚未匹配的左括号。遇 '(' 则 left++；遇 ')' 且 left>0 则 left--；如果没有左括号可匹配，只能补一个 '('，令 add++。最后剩余 left 个左括号各需要补一个 ')'，答案 add+left。'())(' 中第三个字符 ')' 要补1个左括号，最后剩1个 '(' 要补1个右括号，总共2个。时间 O(n)，空间 O(1)。",
+      "code": "#include <stdio.h>\n\n// 变式：只含()的字符串，最少插入几个括号才合法\nint minInsertions(const char s[]) {\n    int left = 0;   // 尚未匹配的左括号数量\n    int add = 0;    // 必须补充的左括号数量\n\n    for (int i = 0; s[i] != '\\0'; i++) {\n        if (s[i] == '(') {\n            left++;            // 新的左括号尚待匹配\n        } else {                // 遇到右括号\n            if (left > 0) {\n                left--;        // 匹配一个已有的左括号\n            } else {\n                add++;         // 没有左括号，只能补一个 '('\n            }\n        }\n    }\n    return add + left; // 剩余左括号需要补同样多的 ')'\n}\n\nint main(void) {\n    char s[] = \"())(\";\n    printf(\"最少插入：%d\\n\", minInsertions(s)); // 输出2\n    return 0;\n}"
+    },
+    "animation": {
+      "layout": "diagram",
+      "brute": [
+        {
+          "diagram": "当前：([{}])\n可消除：{}",
+          "text": "观察最内层：{} 相邻而且类型正确，能够先抵消。"
+        },
+        {
+          "diagram": "当前：([])\n可消除：[]",
+          "text": "删除 {} 后新串是 ([])，内部 [] 成了相邻且配对的一组。"
+        },
+        {
+          "diagram": "当前：()\n可消除：()",
+          "text": "删除 [] 后只剩 ()，再抵消最后一组。"
+        },
+        {
+          "diagram": "当前：空串\n结果：合法 ✓",
+          "done": true,
+          "text": "所有字符都消除，说明括号完全匹配。"
+        }
+      ],
+      "optimal": [
+        {
+          "diagram": "待扫描：([{}])\n栈（底→顶）：空",
+          "text": "开始时顺序栈为空，top=-1。"
+        },
+        {
+          "diagram": "读入 '(' \n栈：(",
+          "text": "左括号入栈；top 变成0。"
+        },
+        {
+          "diagram": "读入 '['\n栈：( [",
+          "text": "又遇左括号，继续入栈；最近的左括号是 '['。"
+        },
+        {
+          "diagram": "读入 '{'\n栈：( [ {",
+          "text": "第三个左括号入栈；栈顶是 '{'。"
+        },
+        {
+          "diagram": "读入 '}'\n栈：( [",
+          "text": "右大括号与栈顶 '{' 配对，弹出栈顶。"
+        },
+        {
+          "diagram": "读入 ']'\n栈：(",
+          "text": "右中括号与栈顶 '[' 配对，继续弹栈。"
+        },
+        {
+          "diagram": "读入 ')'\n栈：空\n结果：合法 ✓",
+          "done": true,
+          "text": "右小括号匹配 '(', 扫描完成且栈空，返回真。"
+        }
+      ]
+    }
+  },
+  {
+    "id": "lc88-20261012",
+    "date": "2026-10-12",
+    "year": "LeetCode",
+    "number": "88",
+    "category": "顺序表 · 双指针",
+    "title": "合并两个有序数组",
+    "difficulty": "中等",
+    "time": "15–20 分钟",
+    "source": "https://leetcode.com/problems/merge-sorted-array/",
+    "question": "A中前m个数已按升序排列，数组A后方预留n个空位；B中n个数也有序。将B合并到A中，使A整体升序，不能把空位0当成有效数据。示例 A=[1,3,5,0,0,0], m=3, B=[2,4,6], n=3。",
+    "constraint": "数组A容量为m+n；有效长度只算前m个元素。允许朴素法开临时数组，优化法要求O(1)额外空间。",
+    "sample": "A: [1,3,5,0,0,0]，B: [2,4,6]\n结果: [1,2,3,4,5,6]",
+    "brute": {
+      "title": "用辅助数组从头归并",
+      "tag": "容易手写",
+      "idea": "各设一个下标分别扫描A和B，谁小就放入temp，最后把temp复制回A。",
+      "complexity": "O(m+n)时间，O(m+n)空间",
+      "risk": "正确且直观；如果题目特别要求原地、额外空间O(1)，则不能满足。",
+      "code": "#include <stdio.h>\n#define MAXN 1000\n\n// 朴素归并：额外申请一块临时数组，避免覆盖尚未比较的元素\nvoid merge(int A[], int m, int B[], int n) {\n    int temp[MAXN];                // 辅助空间：最多存放m+n个数\n    int i = 0, j = 0, k = 0;      // i遍历A，j遍历B，k填写temp\n    if (m+n > MAXN) return;       // 保护测试程序的固定容量\n    while (i < m && j < n) {\n        if (A[i] <= B[j]) temp[k++] = A[i++];\n        else temp[k++] = B[j++];  // 选当前较小的数，两个相同值也能正确处理\n    }\n    while (i < m) temp[k++] = A[i++];  // A中剩余的元素\n    while (j < n) temp[k++] = B[j++];  // B中剩余的元素\n    for (i = 0; i < m+n; i++) A[i] = temp[i]; // 结果复制回A\n}\nint main(void) {\n    int A[6] = {1,3,5,0,0,0}, B[3] = {2,4,6};\n    merge(A,3,B,3);\n    for (int i=0;i<6;i++) printf(\"%d%c\",A[i],i==5?'\\n':' ');\n    return 0;\n}",
+      "explain": [
+        "i、j分别指向两段有效数据的当前最小值。",
+        "temp[k++]先写入再推进下标，不会覆盖源数组。",
+        "某数组到达末尾后，另一段直接全部复制即可。"
+      ]
+    },
+    "optimal": {
+      "title": "从后向前原地归并",
+      "tag": "进阶写法",
+      "idea": "把A末尾的空位当作输出位置。两个数组的最大值放到A最末尾，谁大谁后移指针，这样覆盖不会破坏未处理数据。",
+      "complexity": "O(m+n)时间，O(1)额外空间",
+      "risk": "满足最小额外空间要求，考场优先掌握。",
+      "code": "#include <stdio.h>\n\n// 从右到左：永远把两段未处理数据中的最大值写到A末尾\nvoid merge(int A[], int m, int B[], int n) {\n    int i = m-1;             // A最后一个有效元素\n    int j = n-1;             // B最后一个元素\n    int k = m+n-1;           // A最后一个容量位置\n    while (j >= 0) {         // B全部放进A就完成；A剩下的不需动\n        if (i >= 0 && A[i] > B[j])\n            A[k--] = A[i--]; // A较大，把A的值放到最终末尾\n        else\n            A[k--] = B[j--]; // B较大或A已耗尽\n    }\n}\nint main(void) {\n    int A[6] = {1,3,5,0,0,0}, B[3] = {2,4,6};\n    merge(A,3,B,3);\n    for (int i=0;i<6;i++) printf(\"%d%c\",A[i],i==5?'\\n':' ');\n    return 0;\n}",
+      "explain": [
+        "i=m−1只指向A的有效元素，不能把预留空位当成数据。",
+        "k从最右端开始写，使尚未处理的A前段始终安全。",
+        "只需while(j>=0)，因为B耗尽后A剩余元素已经在正确位置。"
+      ]
+    },
+    "tips": [
+      "注意A后面n个0是预留空间，不是待合并数据。",
+      "原地方法必须从右往左，避免覆盖A的有效元素。",
+      "空B无需移动；空A则直接复制B。"
+    ],
+    "variation": {
+      "question": "变式：分别给出降序A=[9,7,5,0,0]和B=[8,6]，把两段数据按降序合并到A。",
+      "idea": "结果 [9,8,7,6,5]。仿照从后归并，把两段中较小的元素放在A的最后一格。",
+      "code": "#include <stdio.h>\nvoid mergeDesc(int A[],int m,int B[],int n){\n    int i=m-1,j=n-1,k=m+n-1; // 降序时较小元素应该放到右侧\n    while(j>=0){\n        if(i>=0 && A[i]<B[j]) A[k--]=A[i--];\n        else A[k--]=B[j--];\n    }\n}\nint main(void){\n    int A[5]={9,7,5,0,0},B[2]={8,6};\n    mergeDesc(A,3,B,2);\n    for(int i=0;i<5;i++) printf(\"%d%c\",A[i],i==4?'\\n':' ');\n    return 0;\n}"
+    },
+    "animation": {
+      "layout": "array",
+      "brute": [
+        {
+          "array": [
+            1,
+            3,
+            5,
+            0,
+            0,
+            0
+          ],
+          "text": "初始：两个指针分别指向A和B的最小元素，准备写入temp。"
+        },
+        {
+          "array": [
+            1,
+            2,
+            3,
+            0,
+            0,
+            0
+          ],
+          "text": "temp开始得到1、2、3；这里显示临时数组目前的前3个数。"
+        },
+        {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "text": "把4、5、6加入temp，最后整体复制回A。"
+        }
+      ],
+      "optimal": [
+        {
+          "array": [
+            1,
+            3,
+            5,
+            0,
+            0,
+            0
+          ],
+          "text": "起点：i指向5，j指向6，k指向A[5]。"
+        },
+        {
+          "array": [
+            1,
+            3,
+            5,
+            0,
+            0,
+            6
+          ],
+          "text": "6较大，写入A[5]，j左移。"
+        },
+        {
+          "array": [
+            1,
+            3,
+            5,
+            0,
+            5,
+            6
+          ],
+          "text": "5较大，写入A[4]，i左移。"
+        },
+        {
+          "array": [
+            1,
+            3,
+            5,
+            4,
+            5,
+            6
+          ],
+          "text": "4较大，写入A[3]，j左移。"
+        },
+        {
+          "array": [
+            1,
+            3,
+            3,
+            4,
+            5,
+            6
+          ],
+          "text": "3较大，写入A[2]，i左移。"
+        },
+        {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "text": "2从B写入A[1]，B耗尽，结束。"
+        }
+      ]
+    }
+  }
+]
