@@ -21,6 +21,7 @@
 </style>
 <link rel="stylesheet" href="./recursion.css">
 <link rel="stylesheet" href="./aoe.css?v=20261011c">
+<link rel="stylesheet" href="./mmap.css?v=20261012">
 
 <style id="archive-navigation-style">
 /* 选题导航：一组卡片，不让专题入口与每日题目横向抢宽度 */
@@ -120,12 +121,17 @@
    <span class="recursion-summary"><span class="recursion-eyebrow">8 道 · AOE 网络专项</span><strong>AOE 关键路径与补边法</strong><span class="recursion-hint">找关键路 → 两张表 → 差额补边</span></span>
    <span class="recursion-arrow" aria-hidden="true">↗</span>
   </a>
+  <a class="recursion-entry topic-card mmap-entry" id="mmapEntry" href="#mmap" aria-controls="mmap" aria-expanded="false">
+   <span class="recursion-illustration" aria-hidden="true">🧩</span>
+   <span class="recursion-summary"><span class="recursion-eyebrow">操作系统 · 概念图解</span><strong>内存映射文件 mmap</strong><span class="recursion-hint">虚拟地址 → 文件偏移 → 磁盘块</span></span>
+   <span class="recursion-arrow" aria-hidden="true">↗</span>
+  </a>
  </div>
 </div>
 <div class="topic-pagination">
  <button type="button" id="topicPrev" class="topic-arrow" aria-label="上一个专题">‹</button>
  <div id="topicDots" class="topic-dots" aria-label="专题页码"></div>
- <span id="topicPageLabel" class="topic-page-label" aria-live="polite">1 / 2</span>
+ <span id="topicPageLabel" class="topic-page-label" aria-live="polite">1 / 3</span>
  <button type="button" id="topicNext" class="topic-arrow" aria-label="下一个专题">›</button>
 </div>
 <div class="miniinfo">每日一题，练到熟练。你的历史题目一直保留。</div>
@@ -188,7 +194,124 @@
   </div>
   <div class="aoe-formula" id="aoeFormula"></div><div id="aoeCriticalPaths"></div>
  </div>
-</section></main></div>
+</section>
+
+<section class="panel mmap-panel" id="mmap" hidden>
+ <button id="mmapBack" class="mmap-back" type="button">← 返回每日算法精练</button>
+ <div class="mmap-kicker">408 OPERATING SYSTEM · MEMORY MAPPED FILES</div>
+ <h2>内存映射文件｜从虚拟地址到磁盘块</h2>
+ <p class="mmap-lead">第 61 题概念精讲：弄清“文件内容 ↔ 进程虚拟地址空间”的真正含义，把 mmap、文件系统、页表三层职责一次串通。含完整数字例子、6 步交互推演与可折叠自测。</p>
+ <div class="mmap-summary"><strong>先记主结论：</strong>mmap 将<strong>进程的一段虚拟地址区域</strong>关联到<strong>某个文件及文件偏移</strong>；文件系统管理<strong>文件逻辑块到磁盘物理块</strong>的对应；页表管理<strong>虚拟页到物理页框</strong>的映射。它们可以协同工作，但不是同一张映射表。</div>
+ <div class="mmap-chipline"><span class="mmap-chip">页大小：4 KB</span><span class="mmap-chip">文件大小：12 KB</span><span class="mmap-chip">磁盘块大小：4 KB（仅本例）</span><span class="mmap-chip">逻辑块号从 0 开始</span></div>
+
+ <div class="mmap-section">
+  <h3>01 / mmap 究竟建立了什么关联？</h3>
+  <p>假设磁盘上有文件 <code>A.txt</code>，前 11 字节是 <code>HELLO WORLD</code>，全文件大小 12 KB。进程将文件从偏移 0 开始的 12 KB 映射到虚拟地址 <code>0x10000～0x12FFF</code>。<strong>程序读虚拟地址 0x10000，逻辑上就是访问文件偏移 0 的字节 H；读 0x10001 对应字节 E。</strong>进程无需先用 <code>read()</code> 把整段文件复制到自己的缓冲区。</p>
+  <div class="mmap-flow">
+   <div class="mmap-flow-node"><small>程序看到的虚拟地址区间</small><b>0x10000 ～ 0x12FFF</b><small>进程自己的虚拟地址空间，未必已分配物理页框</small></div>
+   <div class="mmap-flow-arrow">↕<small>mmap 登记：映射到 A.txt，文件起始偏移 0</small></div>
+   <div class="mmap-flow-node mmap-flow-key"><small>文件 A.txt 的逻辑内容</small><b>第 0 ～ 12287 字节</b><small>映射的“地址关联”≠ 文件全部立即装入内存</small></div>
+  </div>
+  <p>本例计算公式：<strong>文件偏移 = 被访问的虚拟地址 − 映射区起始虚拟地址 + 映射文件的起始偏移</strong>。本例的文件起始偏移为 0，因此 <code>0x11064 − 0x10000 = 0x1064 = 4196</code> 字节。</p>
+  <div class="mmap-tablewrap" role="region" tabindex="0" aria-label="进程虚拟地址范围到文件偏移的映射表">
+   <table><thead><tr><th>进程虚拟地址</th><th>映射文件</th><th>文件偏移</th></tr></thead><tbody>
+    <tr><td>0x10000～0x10FFF</td><td>A.txt</td><td>0～4095 字节</td></tr>
+    <tr><td>0x11000～0x11FFF</td><td>A.txt</td><td>4096～8191 字节</td></tr>
+    <tr><td>0x12000～0x12FFF</td><td>A.txt</td><td>8192～12287 字节</td></tr>
+   </tbody></table>
+  </div>
+  <div class="mmap-callout"><strong>第一层只回答：</strong>“这个虚拟地址代表 A.txt 的第几个字节？”它不负责确定这个字节落在哪一个磁盘物理块中。</div>
+ </div>
+
+ <div class="mmap-section">
+  <h3>02 / 文件偏移怎样找到磁盘块？</h3>
+  <p>这是<strong>文件系统</strong>的职责。文件内部按逻辑块顺序编号，但文件的实际磁盘块可能不连续。假设 A.txt 有以下块映射（纯教学示例）：</p>
+  <div class="mmap-tablewrap" role="region" tabindex="0" aria-label="文件逻辑块号和磁盘物理块号对照表">
+   <table><thead><tr><th>文件逻辑块</th><th>文件偏移范围</th><th>磁盘物理块</th></tr></thead><tbody>
+    <tr data-mmap-row="0"><td>逻辑块 0</td><td>0～4095</td><td><strong>50</strong></td></tr>
+    <tr data-mmap-row="1"><td>逻辑块 1</td><td>4096～8191</td><td><strong>108</strong></td></tr>
+    <tr data-mmap-row="2"><td>逻辑块 2</td><td>8192～12287</td><td><strong>73</strong></td></tr>
+   </tbody></table>
+  </div>
+  <p>以上面得到的文件偏移 <strong>4196</strong> 为例：<code>4196 = 1 × 4096 + 100</code>，因此是文件<strong>第 1 号逻辑块</strong>中的第 100 字节。文件系统查询文件的块索引（例如索引节点信息），发现逻辑块 1 对应<strong>磁盘块 108，块内偏移 100</strong>。</p>
+  <div class="mmap-flow">
+   <div class="mmap-flow-node"><b>文件偏移 4196 字节</b><small>4096 + 100</small></div>
+   <div class="mmap-flow-arrow">↓<small>除以每块 4096 字节</small></div>
+   <div class="mmap-flow-node"><b>逻辑块 1，块内偏移 100</b><small>逻辑块是文件中的位置编号</small></div>
+   <div class="mmap-flow-arrow">↓<small>查询文件系统中的块映射信息</small></div>
+   <div class="mmap-flow-node mmap-flow-key"><b>磁盘块 108，块内偏移 100</b><small>物理块号只是该例的假设，不要求连续</small></div>
+  </div>
+  <div class="mmap-callout"><strong>第二层只回答：</strong>“如果需要从磁盘找数据，这个文件偏移对应哪个磁盘块？”实际文件可能有空洞、缓存或更复杂的组织方式，不是每个文件字节都必须有已分配的磁盘块。</div>
+ </div>
+
+ <div class="mmap-section">
+  <h3>03 / 完整访问过程：点地址，自己推一遍</h3>
+  <p>下面三个按钮选择不同的虚拟地址。先自己算文件偏移、逻辑块、磁盘块，再点“下一步”核对；进度按你的思考顺序推进。</p>
+  <div class="mmap-demo">
+   <div class="mmap-demo-title">交互例题 · A.txt 12KB 映射到 0x10000</div>
+   <div class="mmap-inputs" role="group" aria-label="选择待访问的虚拟地址">
+    <button class="mmap-choice" type="button" data-mmap-choice="0" aria-pressed="false">0x10064</button>
+    <button class="mmap-choice is-active" type="button" data-mmap-choice="1" aria-pressed="true">0x11064</button>
+    <button class="mmap-choice" type="button" data-mmap-choice="2" aria-pressed="false">0x12064</button>
+   </div>
+   <div class="mmap-live-grid" aria-live="polite">
+    <div><small>① 虚拟地址</small><strong id="mmapAddr">0x11064</strong></div>
+    <div><small>② 文件偏移 · mmap</small><strong id="mmapOffset">4196 字节</strong></div>
+    <div><small>③ 文件逻辑块</small><strong id="mmapLogical">第 1 号逻辑块</strong></div>
+    <div><small>④ 磁盘物理位置 · 文件系统</small><strong id="mmapDisk">磁盘块 108 + 100 字节</strong></div>
+   </div>
+   <div class="mmap-stepbar">
+    <button class="mmap-action" id="mmapPrevStep" type="button" disabled>← 上一步</button>
+    <span id="mmapStepBadge" aria-live="polite">1 / 6</span>
+    <button class="mmap-action" id="mmapNextStep" type="button">下一步 →</button>
+   </div>
+   <div class="mmap-progress"><span id="mmapProgressFill"></span></div>
+   <div class="mmap-stepbox" aria-live="polite"><b id="mmapStepTitle">① 进程访问一个虚拟地址</b><p id="mmapStepBody">选择地址开始推演。</p></div>
+  </div>
+  <div class="mmap-callout warn"><strong>关键时序：</strong>CPU 首先按页表进行地址转换。只有当所需页面不在内存而发生缺页、并且必须从后备文件取得数据时，才需要沿着 mmap → 文件系统 的方向定位文件数据。若已驻留内存，就直接访问物理页框；若数据已在页缓存中，也未必发生磁盘 I/O。</div>
+ </div>
+
+ <div class="mmap-section">
+  <h3>04 / 三张“映射表”，分别归谁管？</h3>
+  <div class="mmap-compare">
+   <div class="mmap-mini"><b>mmap / 虚拟内存区域信息</b><p>虚拟地址区间 ↔ 文件及其偏移。说明虚拟地址背后对应什么文件内容。</p></div>
+   <div class="mmap-mini"><b>文件系统 / 文件块索引</b><p>文件逻辑块 → 磁盘物理块。说明文件数据在外存中如何组织。</p></div>
+   <div class="mmap-mini"><b>页表 / 地址转换</b><p>虚拟页 → 物理页框。说明当前已驻留页面在内存的哪里。</p></div>
+  </div>
+  <p>三个关系可以串起来<strong>协同完成一次缺页处理</strong>，但“能间接找到”不等于“某个机制直接提供这张映射表”。页表通常不直接保存“文件虚拟页号 → 磁盘物理块号”的简单对应表。</p>
+  <div class="mmap-callout"><strong>一口气记住：</strong>mmap 管<strong>这个地址对应哪个文件字节</strong>；文件系统管<strong>这个文件字节在磁盘何处</strong>；页表管<strong>这个虚拟页当前在内存何处</strong>。</div>
+ </div>
+
+ <div class="mmap-section">
+  <h3>05 / 第 61 题：为什么“页到磁盘块的映射”不选？</h3>
+  <p><strong>这种间接对应可以存在，但是 mmap 机制本身并不直接建立“虚拟页 → 磁盘物理块”的映射表。</strong>它只登记虚拟地址区域关联的文件与偏移；真正的文件块定位交由文件系统。如果因此把第二层也算成 mmap 的“直接功能”，就是把不同机制的责任混在一起。</p>
+  <div class="mmap-callout warn"><strong>另一个反例：</strong>匿名零填充页首次访问时可以只分配内存页框，并没有对应的文件磁盘块。即使是文件映射，文件空洞、页缓存等情况也说明“每个虚拟页固定对应一个磁盘块”并不成立。</div>
+  <p>同一文件还可以被进程 A 映射到虚拟地址 <code>0x10000</code>，被进程 B 映射到 <code>0x80000</code>；它们的虚拟地址不同，却能在适当的共享映射条件下使用相同的物理页框。<strong>物理页框不属于某个进程固定独占的一份文件拷贝。</strong></p>
+  <p><strong>写入也别混淆：</strong>共享、可写映射的改动可以反映到对应文件（回写可能延迟）；私有写时复制映射在发生写入后通常不把私有修改写回原文件。考研选择题主要把握“映射文件简化文件访问、支持共享，以及 I/O 由系统按需处理”。</p>
+ </div>
+
+ <div class="mmap-section">
+  <h3>06 / 先独立判断 · 三道概念自测</h3>
+  <div class="mmap-quiz">
+   <details><summary>题 1：mmap 后，文件的所有页面是否立即进入物理内存？</summary><p><strong>否。</strong>建立的是虚拟地址到文件内容的关联；访问时可按需装入。映射区有虚拟地址，不代表相应物理页都已经驻留。</p></details>
+   <details><summary>题 2：访问 0x11064 必然读磁盘块 108 吗？</summary><p><strong>否。</strong>若页表已建立有效映射，就可直接访问内存；即使发生缺页，也可能命中页缓存而无需磁盘 I/O。磁盘块 108 是教学例子中所需文件数据的磁盘位置。</p></details>
+   <details><summary>题 3：两个进程映射同一文件，虚拟地址不同，能共享数据吗？</summary><p><strong>能。</strong>在共享映射及适当同步条件下，可映射到相同的物理页框；各进程虚拟地址不要求一致。</p></details>
+  </div>
+ </div>
+ <div class="mmap-section">
+  <h3>考场 20 秒复盘</h3>
+  <div class="mmap-code"><code>mmap：虚拟区间 → 文件 + 文件偏移
+文件系统：文件逻辑块 → 磁盘物理块
+页表：虚拟页 → 物理页框
+
+0x11064 − 0x10000 = 4196
+4196 = 1 × 4096 + 100
+逻辑块 1 → 磁盘块 108，块内偏移 100
+发生缺页并需读取时才走文件定位；
+页在内存时直接靠页表访问物理页框。</code></div>
+ </div>
+</section>
+</main></div>
 <footer class="foot">408 Algorithm Lab · 为考场手写而设计 · 一题一剑，终有锋芒。</footer>
 <script>
 (function(){
@@ -209,7 +332,7 @@ $("variationQuestion").textContent=current.variation.question;$("variationIdea")
 $("tips").innerHTML=current.tips.map(function(x){return "<li>"+esc(x)+"</li>"}).join("");
 $("compareBrute").textContent=current.brute.complexity+"。"+current.brute.risk;
 $("compareOpt").textContent=current.optimal.complexity+"。"+current.optimal.risk;
-closeAOE(false);closeRecursion(false);var activeIndex=lessons.findIndex(function(x){return x.id===current.id});if(activeIndex>=0){setArchivePage(Math.floor(activeIndex/ARCHIVE_PAGE_SIZE));}syncArchiveSelection();saveArchivePage();
+closeAOE(false);closeRecursion(false);closeMmap(false);var activeIndex=lessons.findIndex(function(x){return x.id===current.id});if(activeIndex>=0){setArchivePage(Math.floor(activeIndex/ARCHIVE_PAGE_SIZE));}syncArchiveSelection();saveArchivePage();
 syncModes();setStep(0);
 if(!skipScroll){history.replaceState(null,"","#"+current.id);document.getElementById("lesson").scrollIntoView({behavior:"smooth",block:"start"});}
 }
@@ -305,11 +428,12 @@ function syncArchiveSelection(){
  });
 }
 function setTopicPage(page){
- topicPage=Math.max(0,Math.min(1,page));
+ var total=$("topicTrack").querySelectorAll(".topic-card").length;
+ topicPage=Math.max(0,Math.min(total-1,page));
  $("topicTrack").style.transform="translateX(-"+topicPage*100+"%)";
- $("topicPrev").disabled=topicPage===0;$("topicNext").disabled=topicPage===1;
- $("topicPageLabel").textContent=(topicPage+1)+" / 2";
- $("topicDots").innerHTML=[0,1].map(function(n){return '<button class="topic-dot '+(n===topicPage?'is-active':'')+'" data-topic-page="'+n+'" aria-label="显示第'+(n+1)+'个专题" aria-pressed="'+(n===topicPage)+'"></button>'}).join("");
+ $("topicPrev").disabled=topicPage===0;$("topicNext").disabled=topicPage===total-1;
+ $("topicPageLabel").textContent=(topicPage+1)+" / "+total;
+ $("topicDots").innerHTML=Array.from({length:total},function(_,n){return n}).map(function(n){return '<button class="topic-dot '+(n===topicPage?'is-active':'')+'" data-topic-page="'+n+'" aria-label="显示第'+(n+1)+'个专题" aria-pressed="'+(n===topicPage)+'"></button>'}).join("");
 }
 function swipeArea(id,getPage,setPage,canRight,lastName){
  var zone=$(id),begin=null,moved=false;
@@ -346,7 +470,7 @@ function closeRecursion(scroll){
  }
 }
 function openRecursion(onlyNew,updateUrl){
- stop();closeAOE(false);setTopicPage(0);
+ stop();closeAOE(false);closeMmap(false);setTopicPage(0);
  $("recursion").hidden=false;
  $("lesson").classList.add("is-recursion-mode");
  $("recursionEntry").classList.add("is-active");
@@ -376,13 +500,33 @@ function closeAOE(scroll){
  if(scroll){if(current)history.pushState(null,"","#"+current.id);$("lesson").scrollIntoView({behavior:"smooth",block:"start"});}
 }
 function openAOE(index,updateUrl){
- stop();closeRecursion(false);$("aoe").hidden=false;
+ stop();closeRecursion(false);closeMmap(false);$("aoe").hidden=false;
  $("lesson").classList.add("is-aoe-mode");$("aoeEntry").classList.add("is-active");$("aoeEntry").setAttribute("aria-expanded","true");
  setTopicPage(1);syncArchiveSelection();
  if(window.AOE_LAB)window.AOE_LAB.activate(index);
  if(updateUrl!==false)history.pushState(null,"",index?"#aoe-"+(index+1):"#aoe");
  requestAnimationFrame(function(){$("aoe").scrollIntoView({behavior:"smooth",block:"start"})});
 }
+
+function closeMmap(scroll){
+ $("mmap").hidden=true;$("lesson").classList.remove("is-mmap-mode");
+ $("mmapEntry").classList.remove("is-active");$("mmapEntry").setAttribute("aria-expanded","false");
+ if(scroll){if(current)history.pushState(null,"","#"+current.id);$("lesson").scrollIntoView({behavior:"smooth",block:"start"});}
+}
+function openMmap(updateUrl){
+ stop();closeRecursion(false);closeAOE(false);
+ $("mmap").hidden=false;$("lesson").classList.add("is-mmap-mode");
+ $("mmapEntry").classList.add("is-active");$("mmapEntry").setAttribute("aria-expanded","true");
+ setTopicPage(2);syncArchiveSelection();
+ if(updateUrl!==false)history.pushState(null,"","#mmap");
+ requestAnimationFrame(function(){$("mmap").scrollIntoView({behavior:"smooth",block:"start"})});
+}
+$("mmapEntry").addEventListener("click",function(e){
+ if(Date.now()-lastTopicSwipe<350){e.preventDefault();return}
+ e.preventDefault();openMmap(true);
+});
+$("mmapBack").addEventListener("click",function(){closeMmap(true)});
+
 $("aoeEntry").addEventListener("click",function(e){
  if(Date.now()-lastTopicSwipe<350){e.preventDefault();return}
  e.preventDefault();openAOE(0,true);
@@ -394,15 +538,16 @@ document.querySelectorAll('.barlinks a[href="#recursion"]').forEach(function(el)
  el.addEventListener("click",function(e){e.preventDefault();openRecursion(false,true)});
 });
 document.querySelectorAll('.barlinks a[href="#lesson"]').forEach(function(el){
- el.addEventListener("click",function(e){e.preventDefault();closeAOE(false);closeRecursion(true)});
+ el.addEventListener("click",function(e){e.preventDefault();closeAOE(false);closeMmap(false);closeRecursion(true)});
 });
 $("recursionBack").addEventListener("click",function(){closeRecursion(true)});
 window.addEventListener("hashchange",function(){
  var hash=location.hash.slice(1);
  if(hash==="recursion"||hash==="recursion-new"){openRecursion(hash==="recursion-new",false);return}
  if(hash==="aoe"||/^aoe-[1-8]$/.test(hash)){openAOE(hash==="aoe"?0:Number(hash.slice(-1))-1,false);return}
+ if(hash==="mmap"){openMmap(false);return}
  if(lessons.some(function(x){return x.id===hash})){loadLesson(hash);return}
- if(hash==="lesson"){closeRecursion(false);closeAOE(false);}
+ if(hash==="lesson"){closeRecursion(false);closeAOE(false);closeMmap(false);}
 });
 
 $("reveal").onclick=showAnswer;
@@ -420,14 +565,17 @@ fetch("./lessons.json",{cache:"no-store"}).then(function(r){if(!r.ok)throw new E
  renderArchive(0);
  var isRecursion=targetHash==="recursion"||targetHash==="recursion-new";
  var isAOE=targetHash==="aoe"||/^aoe-[1-8]$/.test(targetHash);
+ var isMmap=targetHash==="mmap";
  var chosen=initialIndex>=0?lessons[initialIndex].id:(lessons[Math.min(lessons.length-1,archivePage*ARCHIVE_PAGE_SIZE)]||lessons[0]).id;
- loadLesson(isRecursion||isAOE?lessons[0].id:chosen,true);
+ loadLesson(isRecursion||isAOE||isMmap?lessons[0].id:chosen,true);
  if(isRecursion)openRecursion(targetHash==="recursion-new",false);
- if(isAOE)openAOE(targetHash==="aoe"?0:Number(targetHash.slice(-1))-1,false);}).catch(function(e){$("title").textContent="题目加载失败";$("question").textContent="无法读取 lessons.json。请通过 GitHub Pages 的在线网址访问本站，或稍后刷新。错误："+e.message;$("reveal").disabled=true});
+ if(isAOE)openAOE(targetHash==="aoe"?0:Number(targetHash.slice(-1))-1,false);
+ if(isMmap)openMmap(false);}).catch(function(e){$("title").textContent="题目加载失败";$("question").textContent="无法读取 lessons.json。请通过 GitHub Pages 的在线网址访问本站，或稍后刷新。错误："+e.message;$("reveal").disabled=true});
 })();
 </script>
 <script src="./recursion-extra.js?v=20261010b"></script>
 <script src="./recursion.js?v=20261010b"></script>
 <script src="./aoe.js?v=20261011c"></script>
+<script src="./mmap.js?v=20261012"></script>
 </body>
 </html>
