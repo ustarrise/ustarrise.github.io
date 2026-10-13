@@ -788,5 +788,90 @@
     "year": "LeetCode",
     "difficulty": "中等",
     "time": "15–20 分钟"
+  },
+  {
+    "id": "lc104-20261014",
+    "date": "2026-10-14",
+    "number": "104",
+    "category": "二叉树 · 递归与层序",
+    "title": "求二叉树最大深度",
+    "source": "https://leetcode.com/problems/maximum-depth-of-binary-tree/",
+    "question": "给定二叉链表存储的二叉树，求从根结点到最深叶结点的结点数（空树深度为0）。例如根1，子结点2和3，2的左孩子为4，最大深度为3。",
+    "constraint": "使用408范围内的二叉树、递归或队列，不采用动态规划库。",
+    "sample": "    1\n   / \\\n  2   3\n /\n4\n结果：3",
+    "brute": {
+      "title": "递归求左右子树高度",
+      "tag": "容易手写",
+      "idea": "空树深度为0。非空树的深度等于左右子树深度较大值+1。",
+      "complexity": "O(n)时间，O(h)递归栈",
+      "risk": "已达到线性时间，代码短且考场性价比很高，是本题首选。",
+      "code": "#include <stdio.h>\ntypedef struct Node{\n    int data;\n    struct Node *left,*right; // 二叉树的左右孩子\n}Node;\nint depth(Node *root){\n    if(root==NULL)return 0;  // 空树高度为0，递归出口\n    int a=depth(root->left); // 求左子树高度\n    int b=depth(root->right);// 求右子树高度\n    return (a>b?a:b)+1;      // 取更高子树并加上根所在一层\n}\nint main(void){\n    Node d={4,NULL,NULL},b={2,&d,NULL},c={3,NULL,NULL};\n    Node a={1,&b,&c};\n    printf(\"%d\\n\",depth(&a));\n    return 0;\n}",
+      "explain": [
+        "root==NULL是递归出口，否则会一直访问空指针。",
+        "左右子树的最大深度是两个独立子问题。",
+        "根本身占一层，所以结果是max(left,right)+1。"
+      ]
+    },
+    "optimal": {
+      "title": "使用队列按层遍历",
+      "tag": "进阶写法",
+      "idea": "二叉树逐层入队；每处理完整一层，深度加1。它与递归同为O(n)时间，不必因为迭代就认为更优。",
+      "complexity": "O(n)时间，O(w)队列空间（w为最大层宽）",
+      "risk": "适合考层序遍历，但本题递归法通常更简单，优化不意味着数量级更优。",
+      "code": "#include <stdio.h>\n#define MAXN 100\ntypedef struct Node{\n    int data;\n    struct Node *left,*right;\n}Node;\nint depth(Node *root){\n    if(!root)return 0;\n    Node *Q[MAXN];               // 顺序队列存储当前层及下一层结点\n    int front=0,rear=0,h=0;\n    Q[rear++]=root;              // 根结点先入队\n    while(front<rear){\n        int cnt=rear-front;      // 本轮开始时这一层的结点数\n        for(int i=0;i<cnt;i++){\n            Node *p=Q[front++];  // 逐个取出本层结点\n            if(p->left)Q[rear++]=p->left;\n            if(p->right)Q[rear++]=p->right;\n        }\n        h++;                      // 本层处理完，树高加一\n    }\n    return h;                    // 假定整棵树结点总数不超过MAXN\n}\nint main(void){\n    Node d={4,NULL,NULL},b={2,&d,NULL},c={3,NULL,NULL};\n    Node a={1,&b,&c};\n    printf(\"%d\\n\",depth(&a));\n    return 0;\n}",
+      "explain": [
+        "front和rear分别表示队头下标和队尾后一个位置。",
+        "cnt在这一层开始时就固定，避免把新入队的下一层结点混入本轮。",
+        "每完整处理一层再加1，直到队列为空。"
+      ]
+    },
+    "tips": [
+      "空二叉树高度必须是0。",
+      "递归解法栈空间O(h)，不是无条件O(1)。",
+      "层序遍历队列容量应足够；考试题通常可假定n不超过给定MAXN。"
+    ],
+    "variation": {
+      "question": "变式：用递归求二叉树叶结点数量。",
+      "idea": "空树没有叶结点；左右孩子均为空的结点贡献1；其他结点的叶子数等于左右子树叶子数之和。",
+      "code": "#include <stdio.h>\ntypedef struct Node{int data;struct Node*left,*right;}Node;\nint leafCount(Node*r){\n    if(!r)return 0;                      // 空树\n    if(!r->left && !r->right)return 1;   // 叶结点只有自己\n    return leafCount(r->left)+leafCount(r->right);\n}\nint main(void){\n    Node d={4,NULL,NULL},b={2,&d,NULL},c={3,NULL,NULL};\n    Node a={1,&b,&c};\n    printf(\"%d\\n\",leafCount(&a)); // 叶结点3、4，共2个\n    return 0;\n}"
+    },
+    "animation": {
+      "layout": "other",
+      "brute": [
+        {
+          "diagram": "    1\n   / \\\n  2   3\n /\n4",
+          "text": "递归先从根1进入左子树2。"
+        },
+        {
+          "diagram": "    1\n   / \\\n [2]  3\n /\n[4]",
+          "text": "结点4两侧都是空，深度1；因此结点2深度2。"
+        },
+        {
+          "diagram": "   [1]\n   / \\\n  2   3\n /\n4",
+          "text": "结点3深度1，根1取max(2,1)+1=3。"
+        }
+      ],
+      "optimal": [
+        {
+          "diagram": "当前队列：[1]\n深度 = 0",
+          "text": "根结点1入队。"
+        },
+        {
+          "diagram": "处理本层：[1]\n新增队列：[2,3]\n深度 = 1",
+          "text": "处理第一层，下一层2和3入队。"
+        },
+        {
+          "diagram": "处理本层：[2,3]\n新增队列：[4]\n深度 = 2",
+          "text": "处理第二层，4入队。"
+        },
+        {
+          "diagram": "处理本层：[4]\n下一层队列：空\n深度 = 3",
+          "text": "处理完第三层，队列为空，返回深度3。"
+        }
+      ]
+    },
+    "year": "LeetCode",
+    "difficulty": "中等",
+    "time": "15–20 分钟"
   }
 ]
