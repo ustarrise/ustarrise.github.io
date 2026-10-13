@@ -663,5 +663,130 @@
         }
       ]
     }
+  },
+  {
+    "id": "lc876-20261013",
+    "date": "2026-10-13",
+    "number": "876",
+    "category": "单链表 · 快慢指针",
+    "title": "寻找单链表的中间结点",
+    "source": "https://leetcode.com/problems/middle-of-the-linked-list/",
+    "question": "给定无头结点的单链表，求中间结点。长度为偶数时返回靠后的那个中间结点。例如1→2→3→4→5→6，返回结点4。",
+    "constraint": "不能随机访问链表结点；只能沿next移动。要求返回原链表中的结点指针。",
+    "sample": "1→2→3→4→5→6→NULL\n返回结点：4",
+    "brute": {
+      "title": "先数长度，再走到中间",
+      "tag": "容易手写",
+      "idea": "先扫描一次求n，再从第一个结点走n/2步。",
+      "complexity": "O(n)时间，O(1)空间（两遍）",
+      "risk": "已经是最优的渐近复杂度，考场非常值得优先写。",
+      "code": "#include <stdio.h>\ntypedef struct Node { int data; struct Node *next; } Node;\n// 第一次求长度，第二次从头走n/2步\nNode* middle(Node *head) {\n    int n=0;\n    for(Node *p=head;p!=NULL;p=p->next) n++; // 统计结点个数\n    Node *p=head;\n    for(int i=0;i<n/2;i++) p=p->next;         // 偶数时取靠后中点\n    return p;                                 // 空链表时也是NULL\n}\nint main(void){\n    Node f={6,NULL},e={5,&f},d={4,&e};\n    Node c={3,&d},b={2,&c},a={1,&b};\n    Node *p=middle(&a);\n    if(p) printf(\"%d\\n\",p->data);\n    return 0;\n}",
+      "explain": [
+        "第一次只统计数量，完全不需要数组。",
+        "从第一个结点移动n/2步：6个结点时移动3步恰好指向4。",
+        "head==NULL时n=0，返回NULL，不会解引用空指针。"
+      ]
+    },
+    "optimal": {
+      "title": "快指针走两步、慢指针走一步",
+      "tag": "进阶写法",
+      "idea": "fast每轮走2步，slow每轮走1步。当fast到链尾时slow恰好到中间位置。",
+      "complexity": "O(n)时间，O(1)空间（一遍）",
+      "risk": "没有降低数量级，但减少一次完整遍历；适合练习快慢指针。",
+      "code": "#include <stdio.h>\ntypedef struct Node { int data; struct Node *next; } Node;\nNode* middle(Node *head) {\n    Node *slow=head,*fast=head; // 两者同时从首结点出发\n    while(fast!=NULL && fast->next!=NULL) {\n        slow=slow->next;          // 慢指针每轮一步\n        fast=fast->next->next;    // 快指针每轮两步\n    }\n    return slow; // 偶数长度时指向靠后的中间结点\n}\nint main(void){\n    Node f={6,NULL},e={5,&f},d={4,&e};\n    Node c={3,&d},b={2,&c},a={1,&b};\n    Node *p=middle(&a);\n    if(p) printf(\"%d\\n\",p->data);\n    return 0;\n}",
+      "explain": [
+        "while同时检查fast和fast->next，才能安全访问fast->next->next。",
+        "每次慢指针只走一格，快指针走两格。",
+        "遇到偶数结点时fast为NULL，slow恰好停在第二中点。"
+      ]
+    },
+    "tips": [
+      "返回的是Node*地址，不能只返回data。",
+      "链表为空时应返回NULL。",
+      "快指针向后访问两步前必须检查fast->next是否为NULL。"
+    ],
+    "variation": {
+      "question": "变式：用快慢指针判断单链表是否存在环。",
+      "idea": "快慢指针分别走两步和一步；若存在环会在环中相遇，否则fast先到NULL。",
+      "code": "#include <stdio.h>\ntypedef struct Node{int data;struct Node*next;}Node;\nint hasCycle(Node*head){\n    Node*slow=head,*fast=head;\n    while(fast && fast->next){\n        slow=slow->next;            // 一次一步\n        fast=fast->next->next;      // 一次两步\n        if(slow==fast)return 1;    // 指针地址相等说明在环内相遇\n    }\n    return 0;\n}\nint main(void){\n    Node a={1,NULL},b={2,NULL},c={3,NULL};\n    a.next=&b;b.next=&c;c.next=&b; // 令c重新指向b，制造环\n    printf(\"%d\\n\",hasCycle(&a));\n    return 0;\n}"
+    },
+    "animation": {
+      "layout": "chains",
+      "rows": [
+        {
+          "label": "链表快指针 fast",
+          "values": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "sharedFrom": 100,
+          "pointerKey": "p"
+        },
+        {
+          "label": "链表慢指针 slow",
+          "values": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "sharedFrom": 100,
+          "pointerKey": "q"
+        }
+      ],
+      "brute": [
+        {
+          "p": 0,
+          "q": 0,
+          "text": "第一遍扫描得到长度n=6。"
+        },
+        {
+          "p": 1,
+          "q": 0,
+          "text": "第二遍走一步，p指向2。"
+        },
+        {
+          "p": 2,
+          "q": 0,
+          "text": "第二遍走两步，p指向3。"
+        },
+        {
+          "p": 3,
+          "q": 0,
+          "text": "第三步走到结点4，返回该结点。"
+        }
+      ],
+      "optimal": [
+        {
+          "p": 0,
+          "q": 0,
+          "text": "快慢指针都在结点1。"
+        },
+        {
+          "p": 2,
+          "q": 1,
+          "text": "第1轮：fast到3，slow到2。"
+        },
+        {
+          "p": 4,
+          "q": 2,
+          "text": "第2轮：fast到5，slow到3。"
+        },
+        {
+          "p": 5,
+          "q": 3,
+          "text": "第3轮：fast走过结点6后指向NULL；slow到4，结束。动画将fast标在最后一个已经过结点6。"
+        }
+      ]
+    },
+    "year": "LeetCode",
+    "difficulty": "中等",
+    "time": "15–20 分钟"
   }
 ]
