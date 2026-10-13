@@ -1,0 +1,35 @@
+name: 408 Daily Email Reminder
+
+on:
+  schedule:
+    # 22:00 UTC = 06:00 Asia/Shanghai
+    - cron: '0 22 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  email:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout latest master
+        uses: actions/checkout@v4
+        with:
+          ref: master
+
+      - name: Send today's published lesson link
+        env:
+          SMTP_HOST: ${{ secrets.DAILY408_SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.DAILY408_SMTP_PORT }}
+          SMTP_USER: ${{ secrets.DAILY408_SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.DAILY408_SMTP_PASSWORD }}
+          MAIL_TO: ${{ secrets.DAILY408_MAIL_TO }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Read the current remote master, not an outdated checkout.
+          git fetch origin master
+          git show origin/master:408-algorithm/lessons.json > /tmp/daily408-lessons.json
+          python3 408-algorithm/send_daily_email.py /tmp/daily408-lessons.json
