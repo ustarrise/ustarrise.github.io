@@ -52,6 +52,27 @@ def main():
     for obj in queue:
         validate(obj)
 
+    # 预测训练：仅发布人工审核、已编译测试的备用题，不生成未审查的新代码。
+    # 45/35/20 是长期选题目标，不改变已有课程的预定日期。
+    from collections import Counter
+    def topic_group(obj):
+        label = str(obj.get("category", "")) + " " + str(obj.get("title", ""))
+        if any(k in label for k in ("图", "二叉树", "树", "DFS", "BFS")):
+            return "综合变式"
+        if any(k in label for k in ("矩阵", "稀疏", "栈", "队列")):
+            return "预测补盲"
+        return "经典方法"
+
+    ids = [x["id"] for x in queue]
+    dates = [x["date"] for x in queue]
+    if len(ids) != len(set(ids)) or len(dates) != len(set(dates)):
+        raise ValueError("备用题存在重复ID或发布日期")
+    print("备用题覆盖（目标45%经典/35%综合/20%补盲）：",
+          dict(Counter(topic_group(x) for x in queue)))
+    for obj in queue:
+        if "预测" in str(obj.get("year", "")) and "真题" in str(obj.get("source", "")):
+            raise ValueError("预测练习不能冒充真题: " + obj["id"])
+
     existing_ids = {x["id"] for x in published}
     existing_dates = {x["date"] for x in published}
     if len(existing_ids) != len(published):
