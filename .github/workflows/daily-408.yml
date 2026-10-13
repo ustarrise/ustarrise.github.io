@@ -15,6 +15,7 @@ on:
       - '408-algorithm/pending-lessons.json'
       - '408-algorithm/validate_lessons.py'
       - '408-algorithm/publish_daily.py'
+      - '408-algorithm/真题趋势与预测选题.md'
       - '.github/workflows/daily-408.yml'
 
 permissions:
@@ -35,6 +36,9 @@ jobs:
         with:
           ref: master
           persist-credentials: true
+
+      - name: Check predictive selection policy and queue
+        run: python3 408-algorithm/publish_daily.py --dry-run
 
       - name: Compile and test all queued C solutions
         run: python3 408-algorithm/validate_lessons.py
