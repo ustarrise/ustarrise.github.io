@@ -1174,5 +1174,152 @@
         }
       ]
     }
+  },
+  {
+    "year": "408风格",
+    "difficulty": "中等",
+    "time": "15–20 分钟",
+    "id": "original-graph-bfs-20261017",
+    "date": "2026-10-17",
+    "number": "原创",
+    "category": "图 · DFS/BFS",
+    "title": "判断无向图是否连通",
+    "source": "",
+    "question": "给定一个含n个顶点、用邻接矩阵保存的无向图，从顶点0出发访问能到达的所有顶点，若最后每个顶点都被访问，则图连通。示例边有0-1、0-2、1-3、2-4，五个顶点全部相连。",
+    "constraint": "只使用408范围内的深度优先或广度优先遍历；图不一定连通，不包含自环和重边。",
+    "sample": "n=5\n边：(0,1) (0,2) (1,3) (2,4)\n输出：1（表示连通）",
+    "brute": {
+      "tag": "朴素保底",
+      "title": "递归DFS遍历",
+      "idea": "从0出发遇到未访问的邻接点就递归访问，最后统计visited中是否全部为1。",
+      "complexity": "邻接矩阵O(n²)时间，O(n)辅助空间",
+      "risk": "考纲经典，适合考场写。对于邻接矩阵，BFS在渐近时间上并不更优。",
+      "code": "#include <stdio.h>\n#define N 5\nvoid dfs(int u,int g[N][N],int vis[]){\n    vis[u]=1;                             // 标记当前顶点已访问\n    for(int v=0;v<N;v++){\n        if(g[u][v] && !vis[v])dfs(v,g,vis); // 发现邻接且未访问就递归\n    }\n}\nint connected(int g[N][N]){\n    int vis[N]={0};\n    dfs(0,g,vis);                         // 只从顶点0开始搜索\n    for(int i=0;i<N;i++)if(!vis[i])return 0; // 存在未访问点即不连通\n    return 1;\n}\nint main(void){\n    int g[N][N]={0};\n    int e[][2]={{0,1},{0,2},{1,3},{2,4}};\n    for(int i=0;i<4;i++){int u=e[i][0],v=e[i][1];g[u][v]=g[v][u]=1;}\n    printf(\"%d\\n\",connected(g));\n    return 0;\n}",
+      "explain": [
+        "visited必须先标记，再继续递归，否则环路会导致反复访问。",
+        "邻接矩阵每次访问顶点u时需扫描它所在的一整行。",
+        "连通无向图从0出发应能到达所有顶点。"
+      ]
+    },
+    "optimal": {
+      "tag": "考场比较",
+      "title": "队列BFS逐层遍历",
+      "idea": "从顶点0入队，弹出一个顶点就检查其所有邻接点，把没访问过的加入队列。最终统计访问总数。",
+      "complexity": "邻接矩阵O(n²)时间，O(n)辅助空间",
+      "risk": "与DFS复杂度相同，是必须掌握的另一种遍历，不必强行认为它更省时间。",
+      "code": "#include <stdio.h>\n#define N 5\nint connected(int g[N][N]){\n    int q[N],front=0,rear=0,vis[N]={0},count=0;\n    q[rear++]=0;vis[0]=1;                // 入队时立刻标记，避免重复入队\n    while(front<rear){\n        int u=q[front++];count++;       // 出队并计数\n        for(int v=0;v<N;v++){\n            if(g[u][v] && !vis[v]){\n                vis[v]=1;\n                q[rear++]=v;            // 只有未访问的邻接点才入队\n            }\n        }\n    }\n    return count==N;                    // n个顶点都能到达则连通\n}\nint main(void){\n    int g[N][N]={0};\n    int e[][2]={{0,1},{0,2},{1,3},{2,4}};\n    for(int i=0;i<4;i++){int u=e[i][0],v=e[i][1];g[u][v]=g[v][u]=1;}\n    printf(\"%d\\n\",connected(g));\n    return 0;\n}",
+      "explain": [
+        "BFS用先进先出的队列维护待访问的顶点。",
+        "入队时标记visited，保证每个顶点最多入队一次。",
+        "若count小于N，则至少有一个顶点与0不连通。"
+      ]
+    },
+    "tips": [
+      "邻接矩阵DFS和BFS的时间复杂度通常都是O(V²)，不是O(V+E)。",
+      "无向图录入边时g[u][v]与g[v][u]都应置1。",
+      "入队之前检查vis，防止重复入队造成队列溢出。"
+    ],
+    "variation": {
+      "question": "变式：用邻接矩阵BFS，求从顶点0到顶点4的最少边数。边仍是0-1、0-2、1-3、2-4。",
+      "idea": "BFS按层访问，0→2→4共两条边，答案2。每发现一个新顶点就赋dist[v]=dist[u]+1。",
+      "code": "#include <stdio.h>\n#define N 5\nint shortest(int g[N][N],int s,int target){\n    int q[N],front=0,rear=0,dist[N];\n    for(int i=0;i<N;i++)dist[i]=-1;       // -1表示还未访问\n    q[rear++]=s;dist[s]=0;\n    while(front<rear){\n        int u=q[front++];\n        if(u==target)return dist[u];     // BFS首次到达就是最短路径边数\n        for(int v=0;v<N;v++){\n            if(g[u][v] && dist[v]==-1){\n                dist[v]=dist[u]+1;\n                q[rear++]=v;\n            }\n        }\n    }\n    return -1;\n}\nint main(void){\n    int g[N][N]={0},e[][2]={{0,1},{0,2},{1,3},{2,4}};\n    for(int i=0;i<4;i++){int u=e[i][0],v=e[i][1];g[u][v]=g[v][u]=1;}\n    printf(\"%d\\n\",shortest(g,0,4));\n    return 0;\n}"
+    },
+    "animation": {
+      "layout": "array",
+      "brute": [
+        {
+          "array": [
+            1,
+            0,
+            0,
+            0,
+            0
+          ],
+          "text": "DFS：首先访问顶点0，visited[0]=1。"
+        },
+        {
+          "array": [
+            1,
+            1,
+            0,
+            0,
+            0
+          ],
+          "text": "访问邻接点1。"
+        },
+        {
+          "array": [
+            1,
+            1,
+            0,
+            1,
+            0
+          ],
+          "text": "从1继续深入3。"
+        },
+        {
+          "array": [
+            1,
+            1,
+            1,
+            1,
+            0
+          ],
+          "text": "回溯到0，访问2。"
+        },
+        {
+          "array": [
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "text": "从2访问4，全部已访问，图连通。"
+        }
+      ],
+      "optimal": [
+        {
+          "array": [
+            1,
+            0,
+            0,
+            0,
+            0
+          ],
+          "text": "BFS：顶点0入队并标记。"
+        },
+        {
+          "array": [
+            1,
+            1,
+            1,
+            0,
+            0
+          ],
+          "text": "弹出0，把1和2入队。"
+        },
+        {
+          "array": [
+            1,
+            1,
+            1,
+            1,
+            0
+          ],
+          "text": "弹出1，把3入队。"
+        },
+        {
+          "array": [
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "text": "弹出2，把4入队；之后队列处理完，全部已访问。"
+        }
+      ]
+    }
   }
 ]
