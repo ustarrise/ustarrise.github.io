@@ -2,24 +2,32 @@ name: 408 Daily Email Reminder
 
 on:
   schedule:
-    # 22:00 UTC = 06:00 Asia/Shanghai
+    # UTC 21:50/22:00/22:10 = Beijing next day 05:50/06:00/06:10
+    # Multiple triggers improve resilience; duplicate sends are guarded below.
+    - cron: '50 21 * * *'
     - cron: '0 22 * * *'
+    - cron: '10 22 * * *'
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
+
+concurrency:
+  group: daily-408-email
+  cancel-in-progress: false
 
 jobs:
   email:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 65
     steps:
       - name: Checkout latest master
         uses: actions/checkout@v4
         with:
           ref: master
+          persist-credentials: true
 
-      - name: Send today's published lesson link
+      - name: Wait for Beijing 06:00 and today's lesson, then send once
         env:
           SMTP_HOST: ${{ secrets.DAILY408_SMTP_HOST }}
           SMTP_PORT: ${{ secrets.DAILY408_SMTP_PORT }}
@@ -29,7 +37,53 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          # Read the current remote master, not an outdated checkout.
-          git fetch origin master
-          git show origin/master:408-algorithm/lessons.json > /tmp/daily408-lessons.json
-          python3 408-algorithm/send_daily_email.py /tmp/daily408-lessons.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          today="$(TZ=Asia/Shanghai date +%F)"
+          marker="408-algorithm/.email-sent/${today}.txt"
+          deadline="$(date -u -d "${today} 06:40:00 +0800" +%s)"
+          for attempt in $(seq 1 13); do
+            now="$(date +%s)"
+            if [ "$now" -gt "$deadline" ]; then
+              echo "::error::北京时间06:40仍未发送成功，停止当日重试"
+              exit 1
+            fi
+            beijing_clock="$(TZ=Asia/Shanghai date +%H%M)"
+            if [ "$beijing_clock" -lt 0600 ]; then
+              echo "尚未到北京时间06:00，等待5分钟"
+              sleep 300
+              continue
+            fi
+            git fetch origin master
+            if git cat-file -e "origin/master:${marker}" 2>/dev/null; then
+              echo "今天已经发送过邮件，避免重复发送"
+              exit 0
+            fi
+            git show origin/master:408-algorithm/lessons.json > /tmp/daily408-lessons.json
+            if ! python3 -c 'import json,sys; from datetime import datetime; from zoneinfo import ZoneInfo; d=datetime.now(ZoneInfo("Asia/Shanghai")).date().isoformat(); a=json.load(open(sys.argv[1])); sys.exit(0 if sum(x.get("date")==d for x in a)==1 else 1)' /tmp/daily408-lessons.json; then
+              echo "今日课程尚未发布，5分钟后重查 (${attempt}/13)"
+              sleep 300
+              continue
+            fi
+            # SMTP submission happens only after today's lesson exists.
+            # If SMTP fails, retry in 5 minutes; never mark the day as sent.
+            if ! python3 408-algorithm/send_daily_email.py /tmp/daily408-lessons.json; then
+              echo "邮件发送失败，5分钟后重试 (${attempt}/13)"
+              sleep 300
+              continue
+            fi
+            # Persist the sent marker on master. Concurrency serializes workflow runs.
+            git reset --hard origin/master
+            mkdir -p 408-algorithm/.email-sent
+            printf 'Sent on %s (Asia/Shanghai)\n' "$(TZ=Asia/Shanghai date '+%F %T')" > "$marker"
+            git add "$marker"
+            git commit -m "Record 408 reminder sent for ${today}"
+            if ! git push origin HEAD:master; then
+              echo "::error::邮件已提交给SMTP，但去重标记推送失败；请检查后续是否重复发送"
+              exit 1
+            fi
+            echo "今日邮件已发送且写入去重标记"
+            exit 0
+          done
+          echo "::error::超过最大检查次数，今日未能确认发送"
+          exit 1
