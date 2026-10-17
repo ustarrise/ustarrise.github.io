@@ -1321,5 +1321,152 @@
         }
       ]
     }
+  },
+  {
+    "year": "LeetCode",
+    "difficulty": "中等",
+    "time": "15–20 分钟",
+    "id": "lc232-20261018",
+    "date": "2026-10-18",
+    "number": "232",
+    "category": "栈 · 队列转换",
+    "title": "用两个栈模拟先进先出的队列",
+    "source": "https://leetcode.com/problems/implement-queue-using-stacks/",
+    "question": "实现队列的入队push与出队pop，保证先进入的元素先离开。先写最朴素的数组队列（出队时整体左移），再使用两个顺序栈实现队列。测试依次入队1、2、出队、查看队首。",
+    "constraint": "不得调用C++容器；只用数组、简单下标和循环。容量上限100；若为空可返回-1作为演示错误值。",
+    "sample": "push(1), push(2), pop() -> 1, peek() -> 2",
+    "brute": {
+      "tag": "朴素保底",
+      "title": "数组队列：出队时逐元素前移",
+      "idea": "a[0]永远保持队首，入队直接放到末尾；出队先取a[0]，再把其他元素左移一格。",
+      "complexity": "入队O(1)，出队O(n)，额外存储O(n)",
+      "risk": "最容易实现、正确性高；但若题目限定只能使用两个栈，则不符合结构约束。",
+      "code": "#include <stdio.h>\n#define CAP 100\ntypedef struct{int a[CAP];int len;}Queue;\nvoid push(Queue*q,int x){\n    if(q->len<CAP)q->a[q->len++]=x;  // 队尾追加元素\n}\nint pop(Queue*q){\n    if(q->len==0)return -1;         // 空队列保护\n    int x=q->a[0];                  // 先保存队首\n    for(int i=1;i<q->len;i++)\n        q->a[i-1]=q->a[i];          // 后面的元素全部左移\n    q->len--;                      // 当前有效长度减1\n    return x;\n}\nint peek(Queue*q){\n    return q->len? q->a[0]:-1;     // 队首是a[0]\n}\nint main(void){\n    Queue q={{0},0};\n    push(&q,1);push(&q,2);\n    int first=pop(&q);          // 先完成出队，再查询新的队首\n    int second=peek(&q);\n    printf(\"%d %d\\n\",first,second);\n    return 0;\n}",
+      "explain": [
+        "len表示当前有效元素个数，入队时用a[len++]存储。",
+        "出队必须先保存a[0]，不然它会被左移操作覆盖。",
+        "所有元素左移一格以后，len减1代表尾部空位。"
+      ]
+    },
+    "optimal": {
+      "tag": "考场比较",
+      "title": "输入栈 + 输出栈（懒惰转移）",
+      "idea": "新元素全部压入in栈。需要取队首而out栈为空时，把in中的元素逐个弹出压入out，这样原本最早入队的元素来到out栈顶。",
+      "complexity": "每次入队O(1)，出队摊还O(1)，空间O(n)",
+      "risk": "原题限定‘只用两个栈’时应写这种方法；记住只有out为空才倒入元素。",
+      "code": "#include <stdio.h>\n#define CAP 100\ntypedef struct{\n    int in[CAP],out[CAP];\n    int ni,no;                          // 两个栈当前元素数\n}Queue;\nvoid push(Queue*q,int x){\n    if(q->ni+q->no<CAP)q->in[q->ni++]=x; // 新元素先压入in\n}\nvoid refill(Queue*q){\n    if(q->no==0){                     // out不空时不能重新倒入\n        while(q->ni>0)\n            q->out[q->no++]=q->in[--q->ni]; // 倒序后旧元素在栈顶\n    }\n}\nint pop(Queue*q){\n    refill(q);\n    return q->no? q->out[--q->no]:-1; // 弹出out栈顶\n}\nint peek(Queue*q){\n    refill(q);\n    return q->no? q->out[q->no-1]:-1;\n}\nint main(void){\n    Queue q={{0},{0},0,0};\n    push(&q,1);push(&q,2);\n    int a=pop(&q);int b=peek(&q);\n    printf(\"%d %d\\n\",a,b);\n    return 0;\n}",
+      "explain": [
+        "in栈负责接收新元素，out栈负责把最早入队者送到栈顶。",
+        "只有out为空才把in全部倒入，否则顺序会错误。",
+        "每个元素最多进出两个栈各一次，因此单次出队的均摊复杂度O(1)。"
+      ]
+    },
+    "tips": [
+      "两个栈中的元素总数不能超过CAP。",
+      "不能每次pop都直接pop输入栈，否则变成后进先出。",
+      "不要在out尚有元素时把in的元素直接倒入out。"
+    ],
+    "variation": {
+      "question": "变式：用定长数组实现循环队列，能够O(1)入队和出队。",
+      "idea": "采用一个额外空位区分队满与队空；front==rear表示空，(rear+1)%CAP==front表示满。",
+      "code": "#include <stdio.h>\n#define CAP 6\ntypedef struct{int a[CAP],front,rear;}Queue;\nint push(Queue*q,int x){\n    if((q->rear+1)%CAP==q->front)return 0; // 保留一个空位\n    q->a[q->rear]=x;\n    q->rear=(q->rear+1)%CAP;              // 队尾循环移动\n    return 1;\n}\nint pop(Queue*q,int*out){\n    if(q->front==q->rear)return 0;        // 队列为空\n    *out=q->a[q->front];                  // 输出队首\n    q->front=(q->front+1)%CAP;            // 队头循环移动\n    return 1;\n}\nint main(void){\n    Queue q={{0},0,0};int x;\n    push(&q,1);push(&q,2);\n    pop(&q,&x);printf(\"%d\\n\",x);\n    return 0;\n}"
+    },
+    "animation": {
+      "layout": "array",
+      "brute": [
+        {
+          "array": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "text": "队列初始为空（这里0表示示意空位）。"
+        },
+        {
+          "array": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "text": "push(1)：元素放入数组下标0。"
+        },
+        {
+          "array": [
+            1,
+            2,
+            0,
+            0
+          ],
+          "text": "push(2)：元素2追加到下标1。"
+        },
+        {
+          "array": [
+            2,
+            0,
+            0,
+            0
+          ],
+          "text": "pop：返回1，并把2左移到队首。"
+        },
+        {
+          "array": [
+            2,
+            0,
+            0,
+            0
+          ],
+          "text": "peek：查看队首2，不删除。"
+        }
+      ],
+      "optimal": [
+        {
+          "array": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "text": "in和out两个栈都是空的（0为示意空位）。"
+        },
+        {
+          "array": [
+            1,
+            2,
+            0,
+            0
+          ],
+          "text": "push1,push2都压入in，此时in栈顶是2。"
+        },
+        {
+          "array": [
+            2,
+            1,
+            0,
+            0
+          ],
+          "text": "准备pop，out为空，把in中的2、1依次倒入out；out栈顶是1。"
+        },
+        {
+          "array": [
+            2,
+            0,
+            0,
+            0
+          ],
+          "text": "pop从out栈顶弹出1，剩下队首是2。"
+        },
+        {
+          "array": [
+            2,
+            0,
+            0,
+            0
+          ],
+          "text": "peek读取out栈顶2。"
+        }
+      ]
+    }
   }
 ]
