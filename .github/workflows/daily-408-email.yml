@@ -41,13 +41,8 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           today="$(TZ=Asia/Shanghai date +%F)"
           marker="408-algorithm/.email-sent/${today}.txt"
-          deadline="$(date -u -d "${today} 06:40:00 +0800" +%s)"
-          for attempt in $(seq 1 13); do
-            now="$(date +%s)"
-            if [ "$now" -gt "$deadline" ]; then
-              echo "::error::北京时间06:40仍未发送成功，停止当日重试"
-              exit 1
-            fi
+          # A scheduled run can start hours late; do not reject it by wall-clock cutoff.
+          for attempt in $(seq 1 10); do
             beijing_clock="$(TZ=Asia/Shanghai date +%H%M)"
             if [ "$beijing_clock" -lt 0600 ]; then
               echo "尚未到北京时间06:00，等待5分钟"
@@ -85,5 +80,5 @@ jobs:
             echo "今日邮件已发送且写入去重标记"
             exit 0
           done
-          echo "::error::超过最大检查次数，今日未能确认发送"
+          echo "::error::本次运行重试次数耗尽，今日未能确认发送"
           exit 1
