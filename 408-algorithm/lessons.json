@@ -1468,5 +1468,90 @@
         }
       ]
     }
+  },
+  {
+    "year": "408风格",
+    "difficulty": "基础—中等",
+    "time": "15–20 分钟",
+    "id": "array-two-pointer-20261019",
+    "date": "2026-10-19",
+    "number": "原创",
+    "category": "数组 · 双指针",
+    "title": "有序数组原地去重",
+    "source": "",
+    "question": "给定非递减数组[1,1,2,2,3]，原地保留每种元素一次，输出新长度和前缀。",
+    "constraint": "C语言实现，尽量使用408大纲内的数组、指针、队列和递归；说明是否满足原题的空间与结构限制。",
+    "sample": "输入：5\n1 1 2 2 3\n输出：3\n1 2 3",
+    "brute": {
+      "tag": "朴素保底",
+      "title": "直观解法",
+      "idea": "朴素法逐个比较已收集元素",
+      "complexity": "O(n²)时间，O(n)空间",
+      "risk": "先保证结果正确；注意朴素解法可能不满足原地或数据结构限制。",
+      "code": "#include <stdio.h>\nint main(void){int a[]={1,1,2,2,3},n=5,b[5],k=0;for(int i=0;i<n;i++){int seen=0;for(int j=0;j<k;j++)if(b[j]==a[i])seen=1;if(!seen)b[k++]=a[i];}printf(\"%d\\n\",k);for(int i=0;i<k;i++)printf(\"%d%c\",b[i],i+1==k?'\\n':' ');return 0;}",
+      "explain": [
+        "朴素法逐个比较已收集元素",
+        "根据代码中循环或递归的访问次数计算时间复杂度。",
+        "检查空输入和边界条件。"
+      ]
+    },
+    "optimal": {
+      "tag": "考场最优",
+      "title": "408标准实现",
+      "idea": "快慢指针：读指针i扫描，写指针k仅在遇到新值时前进",
+      "complexity": "O(n)时间，O(1)额外空间",
+      "risk": "先明确循环不变式或递归返回值的含义。",
+      "code": "#include <stdio.h>\nint main(void){int a[]={1,1,2,2,3},n=5,k=0;for(int i=0;i<n;i++)if(k==0||a[i]!=a[k-1])a[k++]=a[i];printf(\"%d\\n\",k);for(int i=0;i<k;i++)printf(\"%d%c\",a[i],i+1==k?'\\n':' ');return 0;}",
+      "explain": [
+        "快慢指针：读指针i扫描，写指针k仅在遇到新值时前进",
+        "写清楚指针移动、终止条件和返回值。",
+        "复杂度由每个元素或结点访问次数决定。"
+      ]
+    },
+    "tips": [
+      "朴素法逐个比较已收集元素",
+      "快慢指针：读指针i扫描，写指针k仅在遇到新值时前进",
+      "先列出反例或边界输入，再决定采用哪种实现。"
+    ],
+    "variation": {
+      "question": "变式：说明输入为空时如何处理，并分析空间复杂度是否满足原地要求。",
+      "idea": "先区分额外存储与输入数据本身；递归调用栈也计入辅助空间。",
+      "code": "#include <stdio.h>\nint main(void){int a[]={1,1,2,2,3},n=5,k=0;for(int i=0;i<n;i++)if(k==0||a[i]!=a[k-1])a[k++]=a[i];printf(\"%d\\n\",k);for(int i=0;i<k;i++)printf(\"%d%c\",a[i],i+1==k?'\\n':' ');return 0;}"
+    },
+    "animation": {
+      "layout": "array",
+      "brute": [
+        {
+          "array": [
+            1,
+            1,
+            2,
+            2,
+            3
+          ],
+          "text": "朴素法：逐项检查并维护结果。"
+        }
+      ],
+      "optimal": [
+        {
+          "array": [
+            1,
+            1,
+            2,
+            2,
+            3
+          ],
+          "text": "快慢指针：读指针i扫描，写指针k仅在遇到新值时前进"
+        },
+        {
+          "array": [
+            1,
+            2,
+            3
+          ],
+          "text": "执行结束后检查输出和边界。"
+        }
+      ]
+    }
   }
 ]
