@@ -1553,5 +1553,90 @@
         }
       ]
     }
+  },
+  {
+    "year": "408风格",
+    "difficulty": "基础—中等",
+    "time": "15–20 分钟",
+    "id": "list-reverse-20261020",
+    "date": "2026-10-20",
+    "number": "原创",
+    "category": "链表 · 指针",
+    "title": "单链表原地逆置",
+    "source": "",
+    "question": "给定单链表1→2→3→4，逆置后依次输出4 3 2 1。",
+    "constraint": "C语言实现，尽量使用408大纲内的数组、指针、队列和递归；说明是否满足原题的空间与结构限制。",
+    "sample": "输入：1 2 3 4\n输出：4 3 2 1",
+    "brute": {
+      "tag": "朴素保底",
+      "title": "直观解法",
+      "idea": "数组倒序输出仅作为结果保底，不满足原地链表逆置的限制",
+      "complexity": "O(n)时间，O(n)额外空间",
+      "risk": "先保证结果正确；注意朴素解法可能不满足原地或数据结构限制。",
+      "code": "#include <stdio.h>\nint main(void){int a[]={1,2,3,4},b[4];for(int i=0;i<4;i++)b[i]=a[3-i];for(int i=0;i<4;i++)printf(\"%d%c\",b[i],i==3?'\\n':' ');return 0;}",
+      "explain": [
+        "数组倒序输出仅作为结果保底，不满足原地链表逆置的限制",
+        "根据代码中循环或递归的访问次数计算时间复杂度。",
+        "检查空输入和边界条件。"
+      ]
+    },
+    "optimal": {
+      "tag": "考场最优",
+      "title": "408标准实现",
+      "idea": "三指针prev、cur、next逐条改变链表指向",
+      "complexity": "O(n)时间，O(1)额外空间",
+      "risk": "先明确循环不变式或递归返回值的含义。",
+      "code": "#include <stdio.h>\ntypedef struct Node{int x;struct Node*next;}Node;\nint main(void){Node a[4];for(int i=0;i<4;i++){a[i].x=i+1;a[i].next=i<3?&a[i+1]:NULL;}Node*prev=NULL,*cur=&a[0];while(cur){Node*next=cur->next;cur->next=prev;prev=cur;cur=next;}for(Node*p=prev;p;p=p->next)printf(\"%d%c\",p->x,p->next?' ':'\\n');return 0;}",
+      "explain": [
+        "三指针prev、cur、next逐条改变链表指向",
+        "写清楚指针移动、终止条件和返回值。",
+        "复杂度由每个元素或结点访问次数决定。"
+      ]
+    },
+    "tips": [
+      "数组倒序输出仅作为结果保底，不满足原地链表逆置的限制",
+      "三指针prev、cur、next逐条改变链表指向",
+      "先列出反例或边界输入，再决定采用哪种实现。"
+    ],
+    "variation": {
+      "question": "变式：说明输入为空时如何处理，并分析空间复杂度是否满足原地要求。",
+      "idea": "先区分额外存储与输入数据本身；递归调用栈也计入辅助空间。",
+      "code": "#include <stdio.h>\ntypedef struct Node{int x;struct Node*next;}Node;\nint main(void){Node a[4];for(int i=0;i<4;i++){a[i].x=i+1;a[i].next=i<3?&a[i+1]:NULL;}Node*prev=NULL,*cur=&a[0];while(cur){Node*next=cur->next;cur->next=prev;prev=cur;cur=next;}for(Node*p=prev;p;p=p->next)printf(\"%d%c\",p->x,p->next?' ':'\\n');return 0;}"
+    },
+    "animation": {
+      "layout": "array",
+      "brute": [
+        {
+          "array": [
+            1,
+            1,
+            2,
+            2,
+            3
+          ],
+          "text": "朴素法：逐项检查并维护结果。"
+        }
+      ],
+      "optimal": [
+        {
+          "array": [
+            1,
+            1,
+            2,
+            2,
+            3
+          ],
+          "text": "三指针prev、cur、next逐条改变链表指向"
+        },
+        {
+          "array": [
+            1,
+            2,
+            3
+          ],
+          "text": "执行结束后检查输出和边界。"
+        }
+      ]
+    }
   }
 ]
