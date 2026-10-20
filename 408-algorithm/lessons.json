@@ -1638,5 +1638,90 @@
         }
       ]
     }
+  },
+  {
+    "year": "408风格",
+    "difficulty": "基础—中等",
+    "time": "15–20 分钟",
+    "id": "tree-leaves-20261021",
+    "date": "2026-10-21",
+    "number": "原创",
+    "category": "二叉树 · 递归",
+    "title": "统计二叉树的叶子结点数",
+    "source": "",
+    "question": "给定二叉树：1的左右孩子为2、3，2的左孩子为4。统计叶子结点数量，答案为2（结点3、4）。",
+    "constraint": "C语言实现，尽量使用408大纲内的数组、指针、队列和递归；说明是否满足原题的空间与结构限制。",
+    "sample": "输入：树边：1-2,1-3,2-4\n输出：2",
+    "brute": {
+      "tag": "朴素保底",
+      "title": "直观解法",
+      "idea": "层序遍历逐个检查左右孩子是否为空",
+      "complexity": "O(n)时间，O(n)队列空间",
+      "risk": "先保证结果正确；注意朴素解法可能不满足原地或数据结构限制。",
+      "code": "#include <stdio.h>\ntypedef struct Node{int l,r;}Node;\nint main(void){Node t[5]={{0,0},{2,3},{4,0},{0,0},{0,0}};int q[5],front=0,rear=0,count=0;q[rear++]=1;while(front<rear){int u=q[front++];if(!t[u].l&&!t[u].r)count++;if(t[u].l)q[rear++]=t[u].l;if(t[u].r)q[rear++]=t[u].r;}printf(\"%d\\n\",count);return 0;}",
+      "explain": [
+        "层序遍历逐个检查左右孩子是否为空",
+        "根据代码中循环或递归的访问次数计算时间复杂度。",
+        "检查空输入和边界条件。"
+      ]
+    },
+    "optimal": {
+      "tag": "考场最优",
+      "title": "408标准实现",
+      "idea": "递归树：空树返回0，叶子返回1，非叶子返回左右子树之和",
+      "complexity": "O(n)时间，O(h)递归栈空间",
+      "risk": "先明确循环不变式或递归返回值的含义。",
+      "code": "#include <stdio.h>\ntypedef struct Node{int l,r;}Node;\nint leaves(Node*t,int u){if(!u)return 0;if(!t[u].l&&!t[u].r)return 1;return leaves(t,t[u].l)+leaves(t,t[u].r);}\nint main(void){Node t[5]={{0,0},{2,3},{4,0},{0,0},{0,0}};printf(\"%d\\n\",leaves(t,1));return 0;}",
+      "explain": [
+        "递归树：空树返回0，叶子返回1，非叶子返回左右子树之和",
+        "写清楚指针移动、终止条件和返回值。",
+        "复杂度由每个元素或结点访问次数决定。"
+      ]
+    },
+    "tips": [
+      "层序遍历逐个检查左右孩子是否为空",
+      "递归树：空树返回0，叶子返回1，非叶子返回左右子树之和",
+      "先列出反例或边界输入，再决定采用哪种实现。"
+    ],
+    "variation": {
+      "question": "变式：说明输入为空时如何处理，并分析空间复杂度是否满足原地要求。",
+      "idea": "先区分额外存储与输入数据本身；递归调用栈也计入辅助空间。",
+      "code": "#include <stdio.h>\ntypedef struct Node{int l,r;}Node;\nint leaves(Node*t,int u){if(!u)return 0;if(!t[u].l&&!t[u].r)return 1;return leaves(t,t[u].l)+leaves(t,t[u].r);}\nint main(void){Node t[5]={{0,0},{2,3},{4,0},{0,0},{0,0}};printf(\"%d\\n\",leaves(t,1));return 0;}"
+    },
+    "animation": {
+      "layout": "array",
+      "brute": [
+        {
+          "array": [
+            1,
+            1,
+            2,
+            2,
+            3
+          ],
+          "text": "朴素法：逐项检查并维护结果。"
+        }
+      ],
+      "optimal": [
+        {
+          "array": [
+            1,
+            1,
+            2,
+            2,
+            3
+          ],
+          "text": "递归树：空树返回0，叶子返回1，非叶子返回左右子树之和"
+        },
+        {
+          "array": [
+            1,
+            2,
+            3
+          ],
+          "text": "执行结束后检查输出和边界。"
+        }
+      ]
+    }
   }
 ]
