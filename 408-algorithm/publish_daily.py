@@ -35,6 +35,10 @@ def validate(lesson):
                 raise ValueError(f"{lesson['id']}.{approach}.{k} missing")
         if "int main(" not in val["code"] and "int main(void)" not in val["code"]:
             raise ValueError(f"{lesson['id']}.{approach} lacks main()")
+        if max(map(len, val["code"].splitlines()), default=0) > 110:
+            raise ValueError(f"{lesson['id']}.{approach} contains overlong C code lines; format it before publishing")
+    if max(map(len, lesson["variation"]["code"].splitlines()), default=0) > 110:
+        raise ValueError(f"{lesson['id']}.variation contains overlong C code lines; format it before publishing")
     if not lesson["animation"].get("brute") or not lesson["animation"].get("optimal"):
         raise ValueError(f"{lesson['id']} lacks animation")
     if not lesson["variation"].get("code"):
