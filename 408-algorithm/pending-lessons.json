@@ -1,1 +1,1602 @@
-[{"id":"lc88-20261012","date":"2026-10-12","number":"88","category":"顺序表 · 双指针","title":"合并两个有序数组","source":"https://leetcode.com/problems/merge-sorted-array/","question":"A中前m个数已按升序排列，数组A后方预留n个空位；B中n个数也有序。将B合并到A中，使A整体升序，不能把空位0当成有效数据。示例 A=[1,3,5,0,0,0], m=3, B=[2,4,6], n=3。","constraint":"数组A容量为m+n；有效长度只算前m个元素。允许朴素法开临时数组，优化法要求O(1)额外空间。","sample":"A: [1,3,5,0,0,0]，B: [2,4,6]\n结果: [1,2,3,4,5,6]","brute":{"title":"用辅助数组从头归并","tag":"容易手写","idea":"各设一个下标分别扫描A和B，谁小就放入temp，最后把temp复制回A。","complexity":"O(m+n)时间，O(m+n)空间","risk":"正确且直观；如果题目特别要求原地、额外空间O(1)，则不能满足。","code":"#include <stdio.h>\n#define MAXN 1000\n\n// 朴素归并：额外申请一块临时数组，避免覆盖尚未比较的元素\nvoid merge(int A[], int m, int B[], int n) {\n    int temp[MAXN];                // 辅助空间：最多存放m+n个数\n    int i = 0, j = 0, k = 0;      // i遍历A，j遍历B，k填写temp\n    if (m+n > MAXN) return;       // 保护测试程序的固定容量\n    while (i < m && j < n) {\n        if (A[i] <= B[j]) temp[k++] = A[i++];\n        else temp[k++] = B[j++];  // 选当前较小的数，两个相同值也能正确处理\n    }\n    while (i < m) temp[k++] = A[i++];  // A中剩余的元素\n    while (j < n) temp[k++] = B[j++];  // B中剩余的元素\n    for (i = 0; i < m+n; i++) A[i] = temp[i]; // 结果复制回A\n}\nint main(void) {\n    int A[6] = {1,3,5,0,0,0}, B[3] = {2,4,6};\n    merge(A,3,B,3);\n    for (int i=0;i<6;i++) printf(\"%d%c\",A[i],i==5?'\\n':' ');\n    return 0;\n}","explain":["i、j分别指向两段有效数据的当前最小值。","temp[k++]先写入再推进下标，不会覆盖源数组。","某数组到达末尾后，另一段直接全部复制即可。"]},"optimal":{"title":"从后向前原地归并","tag":"进阶写法","idea":"把A末尾的空位当作输出位置。两个数组的最大值放到A最末尾，谁大谁后移指针，这样覆盖不会破坏未处理数据。","complexity":"O(m+n)时间，O(1)额外空间","risk":"满足最小额外空间要求，考场优先掌握。","code":"#include <stdio.h>\n\n// 从右到左：永远把两段未处理数据中的最大值写到A末尾\nvoid merge(int A[], int m, int B[], int n) {\n    int i = m-1;             // A最后一个有效元素\n    int j = n-1;             // B最后一个元素\n    int k = m+n-1;           // A最后一个容量位置\n    while (j >= 0) {         // B全部放进A就完成；A剩下的不需动\n        if (i >= 0 && A[i] > B[j])\n            A[k--] = A[i--]; // A较大，把A的值放到最终末尾\n        else\n            A[k--] = B[j--]; // B较大或A已耗尽\n    }\n}\nint main(void) {\n    int A[6] = {1,3,5,0,0,0}, B[3] = {2,4,6};\n    merge(A,3,B,3);\n    for (int i=0;i<6;i++) printf(\"%d%c\",A[i],i==5?'\\n':' ');\n    return 0;\n}","explain":["i=m−1只指向A的有效元素，不能把预留空位当成数据。","k从最右端开始写，使尚未处理的A前段始终安全。","只需while(j>=0)，因为B耗尽后A剩余元素已经在正确位置。"]},"tips":["注意A后面n个0是预留空间，不是待合并数据。","原地方法必须从右往左，避免覆盖A的有效元素。","空B无需移动；空A则直接复制B。"],"variation":{"question":"变式：分别给出降序A=[9,7,5,0,0]和B=[8,6]，把两段数据按降序合并到A。","idea":"结果 [9,8,7,6,5]。仿照从后归并，把两段中较小的元素放在A的最后一格。","code":"#include <stdio.h>\nvoid mergeDesc(int A[],int m,int B[],int n){\n    int i=m-1,j=n-1,k=m+n-1; // 降序时较小元素应该放到右侧\n    while(j>=0){\n        if(i>=0 && A[i]<B[j]) A[k--]=A[i--];\n        else A[k--]=B[j--];\n    }\n}\nint main(void){\n    int A[5]={9,7,5,0,0},B[2]={8,6};\n    mergeDesc(A,3,B,2);\n    for(int i=0;i<5;i++) printf(\"%d%c\",A[i],i==4?'\\n':' ');\n    return 0;\n}"},"animation":{"layout":"array","brute":[{"array":[1,3,5,0,0,0],"text":"初始：两个指针分别指向A和B的最小元素，准备写入temp。"},{"array":[1,2,3,0,0,0],"text":"temp开始得到1、2、3；这里显示临时数组目前的前3个数。"},{"array":[1,2,3,4,5,6],"text":"把4、5、6加入temp，最后整体复制回A。"}],"optimal":[{"array":[1,3,5,0,0,0],"text":"起点：i指向5，j指向6，k指向A[5]。"},{"array":[1,3,5,0,0,6],"text":"6较大，写入A[5]，j左移。"},{"array":[1,3,5,0,5,6],"text":"5较大，写入A[4]，i左移。"},{"array":[1,3,5,4,5,6],"text":"4较大，写入A[3]，j左移。"},{"array":[1,3,3,4,5,6],"text":"3较大，写入A[2]，i左移。"},{"array":[1,2,3,4,5,6],"text":"2从B写入A[1]，B耗尽，结束。"}]},"year":"LeetCode","difficulty":"中等","time":"15–20 分钟"},{"id":"lc876-20261013","date":"2026-10-13","number":"876","category":"单链表 · 快慢指针","title":"寻找单链表的中间结点","source":"https://leetcode.com/problems/middle-of-the-linked-list/","question":"给定无头结点的单链表，求中间结点。长度为偶数时返回靠后的那个中间结点。例如1→2→3→4→5→6，返回结点4。","constraint":"不能随机访问链表结点；只能沿next移动。要求返回原链表中的结点指针。","sample":"1→2→3→4→5→6→NULL\n返回结点：4","brute":{"title":"先数长度，再走到中间","tag":"容易手写","idea":"先扫描一次求n，再从第一个结点走n/2步。","complexity":"O(n)时间，O(1)空间（两遍）","risk":"已经是最优的渐近复杂度，考场非常值得优先写。","code":"#include <stdio.h>\ntypedef struct Node { int data; struct Node *next; } Node;\n// 第一次求长度，第二次从头走n/2步\nNode* middle(Node *head) {\n    int n=0;\n    for(Node *p=head;p!=NULL;p=p->next) n++; // 统计结点个数\n    Node *p=head;\n    for(int i=0;i<n/2;i++) p=p->next;         // 偶数时取靠后中点\n    return p;                                 // 空链表时也是NULL\n}\nint main(void){\n    Node f={6,NULL},e={5,&f},d={4,&e};\n    Node c={3,&d},b={2,&c},a={1,&b};\n    Node *p=middle(&a);\n    if(p) printf(\"%d\\n\",p->data);\n    return 0;\n}","explain":["第一次只统计数量，完全不需要数组。","从第一个结点移动n/2步：6个结点时移动3步恰好指向4。","head==NULL时n=0，返回NULL，不会解引用空指针。"]},"optimal":{"title":"快指针走两步、慢指针走一步","tag":"进阶写法","idea":"fast每轮走2步，slow每轮走1步。当fast到链尾时slow恰好到中间位置。","complexity":"O(n)时间，O(1)空间（一遍）","risk":"没有降低数量级，但减少一次完整遍历；适合练习快慢指针。","code":"#include <stdio.h>\ntypedef struct Node { int data; struct Node *next; } Node;\nNode* middle(Node *head) {\n    Node *slow=head,*fast=head; // 两者同时从首结点出发\n    while(fast!=NULL && fast->next!=NULL) {\n        slow=slow->next;          // 慢指针每轮一步\n        fast=fast->next->next;    // 快指针每轮两步\n    }\n    return slow; // 偶数长度时指向靠后的中间结点\n}\nint main(void){\n    Node f={6,NULL},e={5,&f},d={4,&e};\n    Node c={3,&d},b={2,&c},a={1,&b};\n    Node *p=middle(&a);\n    if(p) printf(\"%d\\n\",p->data);\n    return 0;\n}","explain":["while同时检查fast和fast->next，才能安全访问fast->next->next。","每次慢指针只走一格，快指针走两格。","遇到偶数结点时fast为NULL，slow恰好停在第二中点。"]},"tips":["返回的是Node*地址，不能只返回data。","链表为空时应返回NULL。","快指针向后访问两步前必须检查fast->next是否为NULL。"],"variation":{"question":"变式：用快慢指针判断单链表是否存在环。","idea":"快慢指针分别走两步和一步；若存在环会在环中相遇，否则fast先到NULL。","code":"#include <stdio.h>\ntypedef struct Node{int data;struct Node*next;}Node;\nint hasCycle(Node*head){\n    Node*slow=head,*fast=head;\n    while(fast && fast->next){\n        slow=slow->next;            // 一次一步\n        fast=fast->next->next;      // 一次两步\n        if(slow==fast)return 1;    // 指针地址相等说明在环内相遇\n    }\n    return 0;\n}\nint main(void){\n    Node a={1,NULL},b={2,NULL},c={3,NULL};\n    a.next=&b;b.next=&c;c.next=&b; // 令c重新指向b，制造环\n    printf(\"%d\\n\",hasCycle(&a));\n    return 0;\n}"},"animation":{"layout":"chains","rows":[{"label":"链表快指针 fast","values":[1,2,3,4,5,6],"sharedFrom":100,"pointerKey":"p"},{"label":"链表慢指针 slow","values":[1,2,3,4,5,6],"sharedFrom":100,"pointerKey":"q"}],"brute":[{"p":0,"q":0,"text":"第一遍扫描得到长度n=6。"},{"p":1,"q":0,"text":"第二遍走一步，p指向2。"},{"p":2,"q":0,"text":"第二遍走两步，p指向3。"},{"p":3,"q":0,"text":"第三步走到结点4，返回该结点。"}],"optimal":[{"p":0,"q":0,"text":"快慢指针都在结点1。"},{"p":2,"q":1,"text":"第1轮：fast到3，slow到2。"},{"p":4,"q":2,"text":"第2轮：fast到5，slow到3。"},{"p":5,"q":3,"text":"第3轮：fast走过结点6后指向NULL；slow到4，结束。动画将fast标在最后一个已经过结点6。"}]},"year":"LeetCode","difficulty":"中等","time":"15–20 分钟"},{"id":"lc104-20261014","date":"2026-10-14","number":"104","category":"二叉树 · 递归与层序","title":"求二叉树最大深度","source":"https://leetcode.com/problems/maximum-depth-of-binary-tree/","question":"给定二叉链表存储的二叉树，求从根结点到最深叶结点的结点数（空树深度为0）。例如根1，子结点2和3，2的左孩子为4，最大深度为3。","constraint":"使用408范围内的二叉树、递归或队列，不采用动态规划库。","sample":"    1\n   / \\\n  2   3\n /\n4\n结果：3","brute":{"title":"递归求左右子树高度","tag":"容易手写","idea":"空树深度为0。非空树的深度等于左右子树深度较大值+1。","complexity":"O(n)时间，O(h)递归栈","risk":"已达到线性时间，代码短且考场性价比很高，是本题首选。","code":"#include <stdio.h>\ntypedef struct Node{\n    int data;\n    struct Node *left,*right; // 二叉树的左右孩子\n}Node;\nint depth(Node *root){\n    if(root==NULL)return 0;  // 空树高度为0，递归出口\n    int a=depth(root->left); // 求左子树高度\n    int b=depth(root->right);// 求右子树高度\n    return (a>b?a:b)+1;      // 取更高子树并加上根所在一层\n}\nint main(void){\n    Node d={4,NULL,NULL},b={2,&d,NULL},c={3,NULL,NULL};\n    Node a={1,&b,&c};\n    printf(\"%d\\n\",depth(&a));\n    return 0;\n}","explain":["root==NULL是递归出口，否则会一直访问空指针。","左右子树的最大深度是两个独立子问题。","根本身占一层，所以结果是max(left,right)+1。"]},"optimal":{"title":"使用队列按层遍历","tag":"进阶写法","idea":"二叉树逐层入队；每处理完整一层，深度加1。它与递归同为O(n)时间，不必因为迭代就认为更优。","complexity":"O(n)时间，O(w)队列空间（w为最大层宽）","risk":"适合考层序遍历，但本题递归法通常更简单，优化不意味着数量级更优。","code":"#include <stdio.h>\n#define MAXN 100\ntypedef struct Node{\n    int data;\n    struct Node *left,*right;\n}Node;\nint depth(Node *root){\n    if(!root)return 0;\n    Node *Q[MAXN];               // 顺序队列存储当前层及下一层结点\n    int front=0,rear=0,h=0;\n    Q[rear++]=root;              // 根结点先入队\n    while(front<rear){\n        int cnt=rear-front;      // 本轮开始时这一层的结点数\n        for(int i=0;i<cnt;i++){\n            Node *p=Q[front++];  // 逐个取出本层结点\n            if(p->left)Q[rear++]=p->left;\n            if(p->right)Q[rear++]=p->right;\n        }\n        h++;                      // 本层处理完，树高加一\n    }\n    return h;                    // 假定整棵树结点总数不超过MAXN\n}\nint main(void){\n    Node d={4,NULL,NULL},b={2,&d,NULL},c={3,NULL,NULL};\n    Node a={1,&b,&c};\n    printf(\"%d\\n\",depth(&a));\n    return 0;\n}","explain":["front和rear分别表示队头下标和队尾后一个位置。","cnt在这一层开始时就固定，避免把新入队的下一层结点混入本轮。","每完整处理一层再加1，直到队列为空。"]},"tips":["空二叉树高度必须是0。","递归解法栈空间O(h)，不是无条件O(1)。","层序遍历队列容量应足够；考试题通常可假定n不超过给定MAXN。"],"variation":{"question":"变式：用递归求二叉树叶结点数量。","idea":"空树没有叶结点；左右孩子均为空的结点贡献1；其他结点的叶子数等于左右子树叶子数之和。","code":"#include <stdio.h>\ntypedef struct Node{int data;struct Node*left,*right;}Node;\nint leafCount(Node*r){\n    if(!r)return 0;                      // 空树\n    if(!r->left && !r->right)return 1;   // 叶结点只有自己\n    return leafCount(r->left)+leafCount(r->right);\n}\nint main(void){\n    Node d={4,NULL,NULL},b={2,&d,NULL},c={3,NULL,NULL};\n    Node a={1,&b,&c};\n    printf(\"%d\\n\",leafCount(&a)); // 叶结点3、4，共2个\n    return 0;\n}"},"animation":{"layout":"other","brute":[{"diagram":"    1\n   / \\\n  2   3\n /\n4","text":"递归先从根1进入左子树2。"},{"diagram":"    1\n   / \\\n [2]  3\n /\n[4]","text":"结点4两侧都是空，深度1；因此结点2深度2。"},{"diagram":"   [1]\n   / \\\n  2   3\n /\n4","text":"结点3深度1，根1取max(2,1)+1=3。"}],"optimal":[{"diagram":"当前队列：[1]\n深度 = 0","text":"根结点1入队。"},{"diagram":"处理本层：[1]\n新增队列：[2,3]\n深度 = 1","text":"处理第一层，下一层2和3入队。"},{"diagram":"处理本层：[2,3]\n新增队列：[4]\n深度 = 2","text":"处理第二层，4入队。"},{"diagram":"处理本层：[4]\n下一层队列：空\n深度 = 3","text":"处理完第三层，队列为空，返回深度3。"}]},"year":"LeetCode","difficulty":"中等","time":"15–20 分钟"},{"year":"LeetCode","difficulty":"中等","time":"15–20 分钟","id":"lc704-20261015","date":"2026-10-15","number":"704","category":"查找 · 有序顺序表","title":"在有序数组中寻找目标值","source":"https://leetcode.com/problems/binary-search/","question":"给定n个升序且互不相同的整数和目标值target，找到target返回其下标（从0开始），没有则返回-1。例如[1,3,5,7,9,11]中寻找7，返回3。","constraint":"数组已经升序，不能提前假设目标一定存在；写出易手写的线性查找及二分查找。","sample":"数组: [1,3,5,7,9,11]\ntarget = 7\n返回: 3","brute":{"tag":"朴素保底","title":"从头到尾顺序查找","idea":"依次检查每个数组元素，等于target就返回下标；全部遍历仍没找到则返回-1。","complexity":"O(n)时间，O(1)空间","risk":"完全正确，极易手写。但数组已排序且明确要求尽可能高效时，不如折半查找。","code":"#include <stdio.h>\n// 顺序查找：每个元素最多比较一次\nint search(int a[],int n,int target){\n    for(int i=0;i<n;i++){\n        if(a[i]==target)return i; // 找到立即返回\n    }\n    return -1;                    // 遍历结束说明不存在\n}\nint main(void){\n    int a[]={1,3,5,7,9,11};\n    printf(\"%d\\n\",search(a,6,7)); // 结果3\n    return 0;\n}","explain":["循环从下标0遍历到n−1。","找到就返回下标，不能返回元素值。","必须写未找到时的return -1。"]},"optimal":{"tag":"考场比较","title":"折半查找（二分查找）","idea":"左右边界l、r维护可能存在目标的闭区间。比较中点，小了丢掉左半段，大了丢掉右半段。","complexity":"O(log n)时间，O(1)空间","risk":"408重点算法，写清楚区间边界就很可靠，考场推荐。","code":"#include <stdio.h>\n// 采用闭区间[l,r]，循环条件是l<=r\nint search(int a[],int n,int target){\n    int l=0,r=n-1;\n    while(l<=r){\n        int mid=l+(r-l)/2;        // 求中点，避免l+r过大\n        if(a[mid]==target)return mid;\n        if(a[mid]<target)l=mid+1;// 左半部分都太小，直接丢弃\n        else r=mid-1;            // 右半部分都太大，直接丢弃\n    }\n    return -1;                    // 区间变空说明目标不存在\n}\nint main(void){\n    int a[]={1,3,5,7,9,11};\n    printf(\"%d\\n\",search(a,6,7));\n    return 0;\n}","explain":["闭区间初始化为[0,n−1]，所以使用l<=r。","mid确定后若不相等，就排除mid本身，用mid+1或mid−1。","每轮候选区间约缩小一半，所以O(log n)。"]},"tips":["数组必须有序才能用二分查找。","注意是a[mid]与target比较，不是mid和target比较。","闭区间采用l<=r以及mid±1；不要混用半开区间的写法。"],"variation":{"question":"变式：有重复值的升序数组[1,2,2,2,4]，找数字2第一次出现的下标。","idea":"维护左闭右开区间[l,r)，每次若a[mid]>=2便收缩右端；循环结束后检查a[l]是否为2，答案为1。","code":"#include <stdio.h>\nint firstAtLeast(int a[],int n,int x){\n    int l=0,r=n;                // 搜索区间[l,r)\n    while(l<r){\n        int mid=l+(r-l)/2;\n        if(a[mid]>=x)r=mid;    // 保留mid，可能是第一个位置\n        else l=mid+1;          // 中点太小，必不可能是答案\n    }\n    return l<n && a[l]==x?l:-1; // 必须检查元素确实等于x\n}\nint main(void){\n    int a[]={1,2,2,2,4};\n    printf(\"%d\\n\",firstAtLeast(a,5,2));\n    return 0;\n}"},"animation":{"layout":"array","brute":[{"array":[1,3,5,7,9,11],"text":"开始从a[0]顺序检查target=7。"},{"array":[1,3,5,7,9,11],"text":"下标0、1、2分别为1、3、5，都不是7。"},{"array":[1,3,5,7,9,11],"text":"下标3是7，立刻返回3。"}],"optimal":[{"array":[1,3,5,7,9,11],"text":"闭区间[0,5]，mid=2，a[2]=5<7，左边都排除。"},{"array":[1,3,5,7,9,11],"text":"剩余[3,5]，mid=4，a[4]=9>7，右侧都排除。"},{"array":[1,3,5,7,9,11],"text":"剩余[3,3]，mid=3，a[3]=7，返回3。"}]}},{"year":"408风格","difficulty":"中等","time":"15–20 分钟","id":"original-insert-20261016","date":"2026-10-16","number":"原创","category":"内部排序 · 插入排序","title":"从冒泡排序理解直接插入排序","source":"","question":"给定整数数组[5,2,4,6,1,3]，设计简单的升序排序函数。先给出最容易想到的冒泡排序，再用408常考的直接插入排序实现，并说明排序过程中哪些元素已经有序。","constraint":"不得调用库排序函数；要求稳定排序，解释比较次数、移动次数和最好最坏时间复杂度。","sample":"输入: 5 2 4 6 1 3\n输出: 1 2 3 4 5 6","brute":{"tag":"朴素保底","title":"冒泡排序","idea":"不断比较相邻元素，逆序就交换。每一趟把尚未归位的最大值送到右端。","complexity":"最坏O(n²)时间，O(1)空间","risk":"思路直观，容易正确，但对接近有序的数据也会重复比较（可以加提前退出标志）。","code":"#include <stdio.h>\n// 每一趟将剩余最大值逐渐交换到右端\nvoid sort(int a[],int n){\n    for(int i=0;i<n-1;i++){\n        int changed=0;                 // 本轮是否发生逆序交换\n        for(int j=0;j<n-1-i;j++){\n            if(a[j]>a[j+1]){\n                int t=a[j];a[j]=a[j+1];a[j+1]=t;\n                changed=1;             // 记录有交换\n            }\n        }\n        if(!changed)break;             // 已经有序则提前停止\n    }\n}\nint main(void){\n    int a[]={5,2,4,6,1,3};\n    sort(a,6);\n    for(int i=0;i<6;i++)printf(\"%d%c\",a[i],i==5?'\\n':' ');\n    return 0;\n}","explain":["内层只扫到n−1−i，因为后i个数已固定在正确位置。","严格大于才交换，保证相同关键字的相对次序不变。","changed为0说明整趟没有逆序，整个数组已经有序。"]},"optimal":{"tag":"考场比较","title":"直接插入排序","idea":"把前面部分视为已排好序。取出下一个元素key，从已排序段右端往左移动比key大的元素，再插入空位。","complexity":"最坏O(n²)、最好O(n)，O(1)空间","risk":"近乎有序时移动次数少；408基础排序重点，考场应掌握。","code":"#include <stdio.h>\n// 保持左边区间a[0..i-1]有序，把a[i]插进去\nvoid sort(int a[],int n){\n    for(int i=1;i<n;i++){\n        int key=a[i];              // 保存待插入元素，防止被覆盖\n        int j=i-1;\n        while(j>=0 && a[j]>key){\n            a[j+1]=a[j];           // 右移比key大的元素\n            j--;\n        }\n        a[j+1]=key;                // 将key写入腾出的正确位置\n    }\n}\nint main(void){\n    int a[]={5,2,4,6,1,3};\n    sort(a,6);\n    for(int i=0;i<6;i++)printf(\"%d%c\",a[i],i==5?'\\n':' ');\n    return 0;\n}","explain":["外层从i=1开始，因为单个元素天然有序。","保存key，再从右往左移动大于它的数，不在循环里反复交换。","循环终止时j+1恰好是key的插入位置。"]},"tips":["插入排序的已排序区间是a[0..i−1]，不是整个数组。","循环要写j>=0以避免越界读取a[−1]。","相同关键字不右移，保持排序稳定性。"],"variation":{"question":"变式：把[1,4,3,5,2]按降序直接插入排序。","idea":"只需将右移条件由a[j]>key改为a[j]<key，结果[5,4,3,2,1]。","code":"#include <stdio.h>\nvoid insertionDesc(int a[],int n){\n    for(int i=1;i<n;i++){\n        int key=a[i],j=i-1;\n        while(j>=0 && a[j]<key){ // 逆序：比key小的右移\n            a[j+1]=a[j];j--;\n        }\n        a[j+1]=key;\n    }\n}\nint main(void){\n    int a[]={1,4,3,5,2};\n    insertionDesc(a,5);\n    for(int i=0;i<5;i++)printf(\"%d%c\",a[i],i==4?'\\n':' ');\n    return 0;\n}"},"animation":{"layout":"array","brute":[{"array":[5,2,4,6,1,3],"text":"初始；开始冒泡。"},{"array":[2,4,5,1,3,6],"text":"第一趟，6沉到最右侧。"},{"array":[2,4,1,3,5,6],"text":"第二趟，5归位。"},{"array":[2,1,3,4,5,6],"text":"第三趟，4归位。"},{"array":[1,2,3,4,5,6],"text":"第四趟，全部有序。"}],"optimal":[{"array":[5,2,4,6,1,3],"text":"起点：左边单元素[5]已经有序。"},{"array":[2,5,4,6,1,3],"text":"插入key=2后，前两个位置有序。"},{"array":[2,4,5,6,1,3],"text":"插入key=4后，前3位有序。"},{"array":[2,4,5,6,1,3],"text":"key=6无需移动，前4位有序。"},{"array":[1,2,4,5,6,3],"text":"key=1插到最前，前5位有序。"},{"array":[1,2,3,4,5,6],"text":"key=3插到下标2，全数组有序。"}]}},{"year":"408风格","difficulty":"中等","time":"15–20 分钟","id":"original-graph-bfs-20261017","date":"2026-10-17","number":"原创","category":"图 · DFS/BFS","title":"判断无向图是否连通","source":"","question":"给定一个含n个顶点、用邻接矩阵保存的无向图，从顶点0出发访问能到达的所有顶点，若最后每个顶点都被访问，则图连通。示例边有0-1、0-2、1-3、2-4，五个顶点全部相连。","constraint":"只使用408范围内的深度优先或广度优先遍历；图不一定连通，不包含自环和重边。","sample":"n=5\n边：(0,1) (0,2) (1,3) (2,4)\n输出：1（表示连通）","brute":{"tag":"朴素保底","title":"递归DFS遍历","idea":"从0出发遇到未访问的邻接点就递归访问，最后统计visited中是否全部为1。","complexity":"邻接矩阵O(n²)时间，O(n)辅助空间","risk":"考纲经典，适合考场写。对于邻接矩阵，BFS在渐近时间上并不更优。","code":"#include <stdio.h>\n#define N 5\nvoid dfs(int u,int g[N][N],int vis[]){\n    vis[u]=1;                             // 标记当前顶点已访问\n    for(int v=0;v<N;v++){\n        if(g[u][v] && !vis[v])dfs(v,g,vis); // 发现邻接且未访问就递归\n    }\n}\nint connected(int g[N][N]){\n    int vis[N]={0};\n    dfs(0,g,vis);                         // 只从顶点0开始搜索\n    for(int i=0;i<N;i++)if(!vis[i])return 0; // 存在未访问点即不连通\n    return 1;\n}\nint main(void){\n    int g[N][N]={0};\n    int e[][2]={{0,1},{0,2},{1,3},{2,4}};\n    for(int i=0;i<4;i++){int u=e[i][0],v=e[i][1];g[u][v]=g[v][u]=1;}\n    printf(\"%d\\n\",connected(g));\n    return 0;\n}","explain":["visited必须先标记，再继续递归，否则环路会导致反复访问。","邻接矩阵每次访问顶点u时需扫描它所在的一整行。","连通无向图从0出发应能到达所有顶点。"]},"optimal":{"tag":"考场比较","title":"队列BFS逐层遍历","idea":"从顶点0入队，弹出一个顶点就检查其所有邻接点，把没访问过的加入队列。最终统计访问总数。","complexity":"邻接矩阵O(n²)时间，O(n)辅助空间","risk":"与DFS复杂度相同，是必须掌握的另一种遍历，不必强行认为它更省时间。","code":"#include <stdio.h>\n#define N 5\nint connected(int g[N][N]){\n    int q[N],front=0,rear=0,vis[N]={0},count=0;\n    q[rear++]=0;vis[0]=1;                // 入队时立刻标记，避免重复入队\n    while(front<rear){\n        int u=q[front++];count++;       // 出队并计数\n        for(int v=0;v<N;v++){\n            if(g[u][v] && !vis[v]){\n                vis[v]=1;\n                q[rear++]=v;            // 只有未访问的邻接点才入队\n            }\n        }\n    }\n    return count==N;                    // n个顶点都能到达则连通\n}\nint main(void){\n    int g[N][N]={0};\n    int e[][2]={{0,1},{0,2},{1,3},{2,4}};\n    for(int i=0;i<4;i++){int u=e[i][0],v=e[i][1];g[u][v]=g[v][u]=1;}\n    printf(\"%d\\n\",connected(g));\n    return 0;\n}","explain":["BFS用先进先出的队列维护待访问的顶点。","入队时标记visited，保证每个顶点最多入队一次。","若count小于N，则至少有一个顶点与0不连通。"]},"tips":["邻接矩阵DFS和BFS的时间复杂度通常都是O(V²)，不是O(V+E)。","无向图录入边时g[u][v]与g[v][u]都应置1。","入队之前检查vis，防止重复入队造成队列溢出。"],"variation":{"question":"变式：用邻接矩阵BFS，求从顶点0到顶点4的最少边数。边仍是0-1、0-2、1-3、2-4。","idea":"BFS按层访问，0→2→4共两条边，答案2。每发现一个新顶点就赋dist[v]=dist[u]+1。","code":"#include <stdio.h>\n#define N 5\nint shortest(int g[N][N],int s,int target){\n    int q[N],front=0,rear=0,dist[N];\n    for(int i=0;i<N;i++)dist[i]=-1;       // -1表示还未访问\n    q[rear++]=s;dist[s]=0;\n    while(front<rear){\n        int u=q[front++];\n        if(u==target)return dist[u];     // BFS首次到达就是最短路径边数\n        for(int v=0;v<N;v++){\n            if(g[u][v] && dist[v]==-1){\n                dist[v]=dist[u]+1;\n                q[rear++]=v;\n            }\n        }\n    }\n    return -1;\n}\nint main(void){\n    int g[N][N]={0},e[][2]={{0,1},{0,2},{1,3},{2,4}};\n    for(int i=0;i<4;i++){int u=e[i][0],v=e[i][1];g[u][v]=g[v][u]=1;}\n    printf(\"%d\\n\",shortest(g,0,4));\n    return 0;\n}"},"animation":{"layout":"array","brute":[{"array":[1,0,0,0,0],"text":"DFS：首先访问顶点0，visited[0]=1。"},{"array":[1,1,0,0,0],"text":"访问邻接点1。"},{"array":[1,1,0,1,0],"text":"从1继续深入3。"},{"array":[1,1,1,1,0],"text":"回溯到0，访问2。"},{"array":[1,1,1,1,1],"text":"从2访问4，全部已访问，图连通。"}],"optimal":[{"array":[1,0,0,0,0],"text":"BFS：顶点0入队并标记。"},{"array":[1,1,1,0,0],"text":"弹出0，把1和2入队。"},{"array":[1,1,1,1,0],"text":"弹出1，把3入队。"},{"array":[1,1,1,1,1],"text":"弹出2，把4入队；之后队列处理完，全部已访问。"}]}},{"year":"LeetCode","difficulty":"中等","time":"15–20 分钟","id":"lc232-20261018","date":"2026-10-18","number":"232","category":"栈 · 队列转换","title":"用两个栈模拟先进先出的队列","source":"https://leetcode.com/problems/implement-queue-using-stacks/","question":"实现队列的入队push与出队pop，保证先进入的元素先离开。先写最朴素的数组队列（出队时整体左移），再使用两个顺序栈实现队列。测试依次入队1、2、出队、查看队首。","constraint":"不得调用C++容器；只用数组、简单下标和循环。容量上限100；若为空可返回-1作为演示错误值。","sample":"push(1), push(2), pop() -> 1, peek() -> 2","brute":{"tag":"朴素保底","title":"数组队列：出队时逐元素前移","idea":"a[0]永远保持队首，入队直接放到末尾；出队先取a[0]，再把其他元素左移一格。","complexity":"入队O(1)，出队O(n)，额外存储O(n)","risk":"最容易实现、正确性高；但若题目限定只能使用两个栈，则不符合结构约束。","code":"#include <stdio.h>\n#define CAP 100\ntypedef struct{int a[CAP];int len;}Queue;\nvoid push(Queue*q,int x){\n    if(q->len<CAP)q->a[q->len++]=x;  // 队尾追加元素\n}\nint pop(Queue*q){\n    if(q->len==0)return -1;         // 空队列保护\n    int x=q->a[0];                  // 先保存队首\n    for(int i=1;i<q->len;i++)\n        q->a[i-1]=q->a[i];          // 后面的元素全部左移\n    q->len--;                      // 当前有效长度减1\n    return x;\n}\nint peek(Queue*q){\n    return q->len? q->a[0]:-1;     // 队首是a[0]\n}\nint main(void){\n    Queue q={{0},0};\n    push(&q,1);push(&q,2);\n    int first=pop(&q);          // 先完成出队，再查询新的队首\n    int second=peek(&q);\n    printf(\"%d %d\\n\",first,second);\n    return 0;\n}","explain":["len表示当前有效元素个数，入队时用a[len++]存储。","出队必须先保存a[0]，不然它会被左移操作覆盖。","所有元素左移一格以后，len减1代表尾部空位。"]},"optimal":{"tag":"考场比较","title":"输入栈 + 输出栈（懒惰转移）","idea":"新元素全部压入in栈。需要取队首而out栈为空时，把in中的元素逐个弹出压入out，这样原本最早入队的元素来到out栈顶。","complexity":"每次入队O(1)，出队摊还O(1)，空间O(n)","risk":"原题限定‘只用两个栈’时应写这种方法；记住只有out为空才倒入元素。","code":"#include <stdio.h>\n#define CAP 100\ntypedef struct{\n    int in[CAP],out[CAP];\n    int ni,no;                          // 两个栈当前元素数\n}Queue;\nvoid push(Queue*q,int x){\n    if(q->ni+q->no<CAP)q->in[q->ni++]=x; // 新元素先压入in\n}\nvoid refill(Queue*q){\n    if(q->no==0){                     // out不空时不能重新倒入\n        while(q->ni>0)\n            q->out[q->no++]=q->in[--q->ni]; // 倒序后旧元素在栈顶\n    }\n}\nint pop(Queue*q){\n    refill(q);\n    return q->no? q->out[--q->no]:-1; // 弹出out栈顶\n}\nint peek(Queue*q){\n    refill(q);\n    return q->no? q->out[q->no-1]:-1;\n}\nint main(void){\n    Queue q={{0},{0},0,0};\n    push(&q,1);push(&q,2);\n    int a=pop(&q);int b=peek(&q);\n    printf(\"%d %d\\n\",a,b);\n    return 0;\n}","explain":["in栈负责接收新元素，out栈负责把最早入队者送到栈顶。","只有out为空才把in全部倒入，否则顺序会错误。","每个元素最多进出两个栈各一次，因此单次出队的均摊复杂度O(1)。"]},"tips":["两个栈中的元素总数不能超过CAP。","不能每次pop都直接pop输入栈，否则变成后进先出。","不要在out尚有元素时把in的元素直接倒入out。"],"variation":{"question":"变式：用定长数组实现循环队列，能够O(1)入队和出队。","idea":"采用一个额外空位区分队满与队空；front==rear表示空，(rear+1)%CAP==front表示满。","code":"#include <stdio.h>\n#define CAP 6\ntypedef struct{int a[CAP],front,rear;}Queue;\nint push(Queue*q,int x){\n    if((q->rear+1)%CAP==q->front)return 0; // 保留一个空位\n    q->a[q->rear]=x;\n    q->rear=(q->rear+1)%CAP;              // 队尾循环移动\n    return 1;\n}\nint pop(Queue*q,int*out){\n    if(q->front==q->rear)return 0;        // 队列为空\n    *out=q->a[q->front];                  // 输出队首\n    q->front=(q->front+1)%CAP;            // 队头循环移动\n    return 1;\n}\nint main(void){\n    Queue q={{0},0,0};int x;\n    push(&q,1);push(&q,2);\n    pop(&q,&x);printf(\"%d\\n\",x);\n    return 0;\n}"},"animation":{"layout":"array","brute":[{"array":[0,0,0,0],"text":"队列初始为空（这里0表示示意空位）。"},{"array":[1,0,0,0],"text":"push(1)：元素放入数组下标0。"},{"array":[1,2,0,0],"text":"push(2)：元素2追加到下标1。"},{"array":[2,0,0,0],"text":"pop：返回1，并把2左移到队首。"},{"array":[2,0,0,0],"text":"peek：查看队首2，不删除。"}],"optimal":[{"array":[0,0,0,0],"text":"in和out两个栈都是空的（0为示意空位）。"},{"array":[1,2,0,0],"text":"push1,push2都压入in，此时in栈顶是2。"},{"array":[2,1,0,0],"text":"准备pop，out为空，把in中的2、1依次倒入out；out栈顶是1。"},{"array":[2,0,0,0],"text":"pop从out栈顶弹出1，剩下队首是2。"},{"array":[2,0,0,0],"text":"peek读取out栈顶2。"}]}},{"year":"408风格","difficulty":"基础—中等","time":"15–20 分钟","id":"array-two-pointer-20261019","date":"2026-10-19","number":"原创","category":"数组 · 双指针","title":"有序数组原地去重","source":"","question":"给定非递减数组[1,1,2,2,3]，原地保留每种元素一次，输出新长度和前缀。","constraint":"C语言实现，尽量使用408大纲内的数组、指针、队列和递归；说明是否满足原题的空间与结构限制。","sample":"输入：5\n1 1 2 2 3\n输出：3\n1 2 3","brute":{"tag":"朴素保底","title":"直观解法","idea":"朴素法逐个比较已收集元素","complexity":"O(n²)时间，O(n)空间","risk":"先保证结果正确；注意朴素解法可能不满足原地或数据结构限制。","code":"#include <stdio.h>\nint main(void){int a[]={1,1,2,2,3},n=5,b[5],k=0;for(int i=0;i<n;i++){int seen=0;for(int j=0;j<k;j++)if(b[j]==a[i])seen=1;if(!seen)b[k++]=a[i];}printf(\"%d\\n\",k);for(int i=0;i<k;i++)printf(\"%d%c\",b[i],i+1==k?'\\n':' ');return 0;}","explain":["朴素法逐个比较已收集元素","根据代码中循环或递归的访问次数计算时间复杂度。","检查空输入和边界条件。"]},"optimal":{"tag":"考场最优","title":"408标准实现","idea":"快慢指针：读指针i扫描，写指针k仅在遇到新值时前进","complexity":"O(n)时间，O(1)额外空间","risk":"先明确循环不变式或递归返回值的含义。","code":"#include <stdio.h>\nint main(void){int a[]={1,1,2,2,3},n=5,k=0;for(int i=0;i<n;i++)if(k==0||a[i]!=a[k-1])a[k++]=a[i];printf(\"%d\\n\",k);for(int i=0;i<k;i++)printf(\"%d%c\",a[i],i+1==k?'\\n':' ');return 0;}","explain":["快慢指针：读指针i扫描，写指针k仅在遇到新值时前进","写清楚指针移动、终止条件和返回值。","复杂度由每个元素或结点访问次数决定。"]},"tips":["朴素法逐个比较已收集元素","快慢指针：读指针i扫描，写指针k仅在遇到新值时前进","先列出反例或边界输入，再决定采用哪种实现。"],"variation":{"question":"变式：说明输入为空时如何处理，并分析空间复杂度是否满足原地要求。","idea":"先区分额外存储与输入数据本身；递归调用栈也计入辅助空间。","code":"#include <stdio.h>\nint main(void){int a[]={1,1,2,2,3},n=5,k=0;for(int i=0;i<n;i++)if(k==0||a[i]!=a[k-1])a[k++]=a[i];printf(\"%d\\n\",k);for(int i=0;i<k;i++)printf(\"%d%c\",a[i],i+1==k?'\\n':' ');return 0;}"},"animation":{"layout":"array","brute":[{"array":[1,1,2,2,3],"text":"朴素法：逐项检查并维护结果。"}],"optimal":[{"array":[1,1,2,2,3],"text":"快慢指针：读指针i扫描，写指针k仅在遇到新值时前进"},{"array":[1,2,3],"text":"执行结束后检查输出和边界。"}]}},{"year":"408风格","difficulty":"基础—中等","time":"15–20 分钟","id":"list-reverse-20261020","date":"2026-10-20","number":"原创","category":"链表 · 指针","title":"单链表原地逆置","source":"","question":"给定单链表1→2→3→4，逆置后依次输出4 3 2 1。","constraint":"C语言实现，尽量使用408大纲内的数组、指针、队列和递归；说明是否满足原题的空间与结构限制。","sample":"输入：1 2 3 4\n输出：4 3 2 1","brute":{"tag":"朴素保底","title":"直观解法","idea":"数组倒序输出仅作为结果保底，不满足原地链表逆置的限制","complexity":"O(n)时间，O(n)额外空间","risk":"先保证结果正确；注意朴素解法可能不满足原地或数据结构限制。","code":"#include <stdio.h>\nint main(void){int a[]={1,2,3,4},b[4];for(int i=0;i<4;i++)b[i]=a[3-i];for(int i=0;i<4;i++)printf(\"%d%c\",b[i],i==3?'\\n':' ');return 0;}","explain":["数组倒序输出仅作为结果保底，不满足原地链表逆置的限制","根据代码中循环或递归的访问次数计算时间复杂度。","检查空输入和边界条件。"]},"optimal":{"tag":"考场最优","title":"408标准实现","idea":"三指针prev、cur、next逐条改变链表指向","complexity":"O(n)时间，O(1)额外空间","risk":"先明确循环不变式或递归返回值的含义。","code":"#include <stdio.h>\ntypedef struct Node{int x;struct Node*next;}Node;\nint main(void){Node a[4];for(int i=0;i<4;i++){a[i].x=i+1;a[i].next=i<3?&a[i+1]:NULL;}Node*prev=NULL,*cur=&a[0];while(cur){Node*next=cur->next;cur->next=prev;prev=cur;cur=next;}for(Node*p=prev;p;p=p->next)printf(\"%d%c\",p->x,p->next?' ':'\\n');return 0;}","explain":["三指针prev、cur、next逐条改变链表指向","写清楚指针移动、终止条件和返回值。","复杂度由每个元素或结点访问次数决定。"]},"tips":["数组倒序输出仅作为结果保底，不满足原地链表逆置的限制","三指针prev、cur、next逐条改变链表指向","先列出反例或边界输入，再决定采用哪种实现。"],"variation":{"question":"变式：说明输入为空时如何处理，并分析空间复杂度是否满足原地要求。","idea":"先区分额外存储与输入数据本身；递归调用栈也计入辅助空间。","code":"#include <stdio.h>\ntypedef struct Node{int x;struct Node*next;}Node;\nint main(void){Node a[4];for(int i=0;i<4;i++){a[i].x=i+1;a[i].next=i<3?&a[i+1]:NULL;}Node*prev=NULL,*cur=&a[0];while(cur){Node*next=cur->next;cur->next=prev;prev=cur;cur=next;}for(Node*p=prev;p;p=p->next)printf(\"%d%c\",p->x,p->next?' ':'\\n');return 0;}"},"animation":{"layout":"array","brute":[{"array":[1,1,2,2,3],"text":"朴素法：逐项检查并维护结果。"}],"optimal":[{"array":[1,1,2,2,3],"text":"三指针prev、cur、next逐条改变链表指向"},{"array":[1,2,3],"text":"执行结束后检查输出和边界。"}]}},{"year":"408风格","difficulty":"基础—中等","time":"15–20 分钟","id":"tree-leaves-20261021","date":"2026-10-21","number":"原创","category":"二叉树 · 递归","title":"统计二叉树的叶子结点数","source":"","question":"给定二叉树：1的左右孩子为2、3，2的左孩子为4。统计叶子结点数量，答案为2（结点3、4）。","constraint":"C语言实现，尽量使用408大纲内的数组、指针、队列和递归；说明是否满足原题的空间与结构限制。","sample":"输入：树边：1-2,1-3,2-4\n输出：2","brute":{"tag":"朴素保底","title":"直观解法","idea":"层序遍历逐个检查左右孩子是否为空","complexity":"O(n)时间，O(n)队列空间","risk":"先保证结果正确；注意朴素解法可能不满足原地或数据结构限制。","code":"#include <stdio.h>\ntypedef struct Node{int l,r;}Node;\nint main(void){Node t[5]={{0,0},{2,3},{4,0},{0,0},{0,0}};int q[5],front=0,rear=0,count=0;q[rear++]=1;while(front<rear){int u=q[front++];if(!t[u].l&&!t[u].r)count++;if(t[u].l)q[rear++]=t[u].l;if(t[u].r)q[rear++]=t[u].r;}printf(\"%d\\n\",count);return 0;}","explain":["层序遍历逐个检查左右孩子是否为空","根据代码中循环或递归的访问次数计算时间复杂度。","检查空输入和边界条件。"]},"optimal":{"tag":"考场最优","title":"408标准实现","idea":"递归树：空树返回0，叶子返回1，非叶子返回左右子树之和","complexity":"O(n)时间，O(h)递归栈空间","risk":"先明确循环不变式或递归返回值的含义。","code":"#include <stdio.h>\ntypedef struct Node{int l,r;}Node;\nint leaves(Node*t,int u){if(!u)return 0;if(!t[u].l&&!t[u].r)return 1;return leaves(t,t[u].l)+leaves(t,t[u].r);}\nint main(void){Node t[5]={{0,0},{2,3},{4,0},{0,0},{0,0}};printf(\"%d\\n\",leaves(t,1));return 0;}","explain":["递归树：空树返回0，叶子返回1，非叶子返回左右子树之和","写清楚指针移动、终止条件和返回值。","复杂度由每个元素或结点访问次数决定。"]},"tips":["层序遍历逐个检查左右孩子是否为空","递归树：空树返回0，叶子返回1，非叶子返回左右子树之和","先列出反例或边界输入，再决定采用哪种实现。"],"variation":{"question":"变式：说明输入为空时如何处理，并分析空间复杂度是否满足原地要求。","idea":"先区分额外存储与输入数据本身；递归调用栈也计入辅助空间。","code":"#include <stdio.h>\ntypedef struct Node{int l,r;}Node;\nint leaves(Node*t,int u){if(!u)return 0;if(!t[u].l&&!t[u].r)return 1;return leaves(t,t[u].l)+leaves(t,t[u].r);}\nint main(void){Node t[5]={{0,0},{2,3},{4,0},{0,0},{0,0}};printf(\"%d\\n\",leaves(t,1));return 0;}"},"animation":{"layout":"array","brute":[{"array":[1,1,2,2,3],"text":"朴素法：逐项检查并维护结果。"}],"optimal":[{"array":[1,1,2,2,3],"text":"递归树：空树返回0，叶子返回1，非叶子返回左右子树之和"},{"array":[1,2,3],"text":"执行结束后检查输出和边界。"}]}},{"id":"lc215-20261022","date":"2026-10-22","year":"LeetCode · 408方法训练","number":"215","category":"数组 · 快速划分 · 第k大","title":"无序数组中寻找第k大元素","difficulty":"中等","time":"15–20分钟","source":"https://leetcode.com/problems/kth-largest-element-in-an-array/","question":"给定整数数组a和k，求降序排列后的第k个元素，重复值分别计数。例如[3,2,1,5,6,4]，k=2，答案5。","constraint":"1≤k≤n，元素可重复；用408范围内的C语言实现，禁止排序库。与2016年408第k小的划分思想相关，并非原题复刻。","sample":"a=[3,2,1,5,6,4],k=2\n输出：5","brute":{"tag":"朴素保底","title":"选择排序","idea":"每趟把剩余最大值换到前面，最后返回a[k-1]。","complexity":"时间O(n²)，空间O(1)","risk":"能做但原题n很大时可能超时。","code":"#include <stdio.h>\nint kth_sort(int a[],int n,int k){\n    for(int i=0;i<n;i++){\n        int p=i;\n        for(int j=i+1;j<n;j++)if(a[j]>a[p])p=j; // 找剩余最大值\n        int t=a[i];a[i]=a[p];a[p]=t;              // 最大值放前面\n    }\n    return a[k-1];                               // 第k大对应下标k-1\n}\nint main(void){\n    int a[]={3,2,1,5,6,4};\n    printf(\"%d\\n\",kth_sort(a,6,2));\n    return 0;\n}","explain":["第1趟选6，第2趟选5，返回第2位。","比较次数为(n-1)+…+1，故O(n²)。","[5,5,3]的第2大仍是5，不能去重。"]},"optimal":{"tag":"考场最优","title":"快速选择","idea":"以末元素为枢轴，把≥枢轴的数放左边；只在含目标下标k-1的一侧继续。","complexity":"平均O(n)，最坏O(n²)，空间O(1)","risk":"固定枢轴可能退化，不能把平均复杂度当最坏。","code":"#include <stdio.h>\nint kth_select(int a[],int n,int k){\n    int left=0,right=n-1,target=k-1;\n    while(left<=right){\n        int pivot=a[right],i=left;\n        for(int j=left;j<right;j++){\n            if(a[j]>=pivot){                 // 大的数移到左侧\n                int t=a[i];a[i]=a[j];a[j]=t;\n                i++;\n            }\n        }\n        int t=a[i];a[i]=a[right];a[right]=t; // 枢轴落在最终排名i\n        if(i==target)return a[i];\n        if(i>target)right=i-1;             // 只保留左侧\n        else left=i+1;                    // 只保留右侧\n    }\n    return 0;                              // 题目保证k合法\n}\nint main(void){\n    int a[]={3,2,1,5,6,4};\n    printf(\"%d\\n\",kth_select(a,6,2));\n    return 0;\n}","explain":["划分后枢轴的下标i已确定，不必再参与排序。","若i>k-1，只需左区间；否则只需右区间。","平均处理n+n/2+…=O(n)，极端可能O(n²)。"]},"variation":{"question":"变式：求同一数组的第2小元素，输出2。","idea":"把划分条件改为≤枢轴，目标仍是k-1。","code":"#include <stdio.h>\nint kth_smallest(int a[],int n,int k){\n    int left=0,right=n-1,target=k-1;\n    while(left<=right){\n        int pivot=a[right],i=left;\n        for(int j=left;j<right;j++)if(a[j]<=pivot){\n            int t=a[i];a[i]=a[j];a[j]=t;i++; // 小数放左侧\n        }\n        int t=a[i];a[i]=a[right];a[right]=t;\n        if(i==target)return a[i];\n        if(i>target)right=i-1;else left=i+1;\n    }\n    return 0;\n}\nint main(void){int a[]={3,2,1,5,6,4};printf(\"%d\\n\",kth_smallest(a,6,2));return 0;}"},"animation":{"layout":"array","brute":[{"array":[3,2,1,5,6,4],"text":"初始数组。"},{"array":[6,2,1,5,3,4],"text":"选择排序第一趟，6换到前面。"},{"array":[6,5,1,2,3,4],"text":"第二趟5就位。"}],"optimal":[{"array":[3,2,1,5,6,4],"text":"以4为枢轴，目标下标1。"},{"array":[5,6,4,3,2,1],"text":"枢轴4落在下标2，缩小到左区间。"},{"array":[6,5,4,3,2,1],"text":"左侧再次划分，找到第2大5。"}]},"tips":["方法：快速划分与目标区间缩小。","朴素排序可作保底，但原题大规模会超时。","边界：k=1、k=n、数组有重复或负数。","选题：408第k小思想，区别于之前的二分查找。"]},{"id":"lc141-20261023","date":"2026-10-23","year":"LeetCode · 408方法训练","number":"141","category":"链表 · 快慢指针 · 判环","title":"判断单链表是否存在环","difficulty":"中等","time":"15–20分钟","source":"https://leetcode.com/problems/linked-list-cycle/","question":"给定单链表头结点，判断沿next能否再次访问同一结点。示例3→2→0→-4→2有环，输出1。","constraint":"结点数0至10000，值可重复；必须比较结点地址，不能比较值。朴素解使用最多10000个地址的表。","sample":"3→2→0→-4，尾结点指回2\n输出：1","brute":{"tag":"朴素保底","title":"保存访问过的地址","idea":"逐结点访问，在地址数组中线性查找是否已出现。","complexity":"O(n²)时间，O(n)空间","risk":"不满足O(1)空间，容量不足时返回-1而非错误判定。","code":"#include <stdio.h>\n#define CAP 10000\ntypedef struct Node{int val;struct Node*next;}Node;\nint has_cycle_seen(Node*head){\n    Node*seen[CAP];int n=0;\n    while(head){\n        for(int i=0;i<n;i++)if(seen[i]==head)return 1; // 同一地址再次出现\n        if(n==CAP)return -1;                 // 超出示例容量，不能误判\n        seen[n++]=head;\n        head=head->next;\n    }\n    return 0;\n}\nint main(void){\n    Node a[4]={{3,NULL},{2,NULL},{0,NULL},{-4,NULL}};\n    a[0].next=&a[1];a[1].next=&a[2];a[2].next=&a[3];a[3].next=&a[1];\n    printf(\"%d\\n\",has_cycle_seen(&a[0]));\n    return 0;\n}","explain":["先检查地址是否出现，再记录。","无环最终到NULL，有环最终重复地址。","结点值相同不代表同一结点。"]},"optimal":{"tag":"考场最优","title":"Floyd快慢指针","idea":"slow每轮走一步，fast走两步；有环必相遇，无环fast到NULL。","complexity":"O(n)时间，O(1)空间","risk":"先判断fast和fast->next，避免空指针访问。","code":"#include <stdio.h>\ntypedef struct Node{int val;struct Node*next;}Node;\nint has_cycle(Node*head){\n    Node*slow=head,*fast=head;\n    while(fast && fast->next){\n        slow=slow->next;               // 慢指针一步\n        fast=fast->next->next;         // 快指针两步\n        if(slow==fast)return 1;        // 比较地址而非结点值\n    }\n    return 0;\n}\nint main(void){\n    Node a[4]={{3,NULL},{2,NULL},{0,NULL},{-4,NULL}};\n    a[0].next=&a[1];a[1].next=&a[2];a[2].next=&a[3];a[3].next=&a[1];\n    printf(\"%d\\n\",has_cycle(&a[0]));\n    return 0;\n}","explain":["无环时fast先到NULL。","进入环后相对速度为1，有限环长内必相遇。","空链表、单结点自环与无环均可处理。"]},"variation":{"question":"变式（力扣142）：找入环点，示例输出2。","idea":"相遇后一个指针从head出发，另一个从相遇点出发，同速走到入口。","code":"#include <stdio.h>\ntypedef struct Node{int val;struct Node*next;}Node;\nNode*entry(Node*head){\n    Node*slow=head,*fast=head;\n    while(fast && fast->next){\n        slow=slow->next;fast=fast->next->next;\n        if(slow==fast){\n            Node*p=head;\n            while(p!=slow){p=p->next;slow=slow->next;} // 同速走到入口\n            return p;\n        }\n    }\n    return NULL;\n}\nint main(void){\n    Node a[4]={{3,NULL},{2,NULL},{0,NULL},{-4,NULL}};\n    a[0].next=&a[1];a[1].next=&a[2];a[2].next=&a[3];a[3].next=&a[1];\n    Node*p=entry(&a[0]);printf(\"%d\\n\",p?p->val:-1);\n    return 0;\n}"},"animation":{"layout":"array","brute":[{"array":[3,2,0,-4],"text":"先记录结点3的地址。"},{"array":[3,2,0,-4],"text":"依次记录2、0、-4。"},{"array":[3,2,0,-4],"text":"尾指针回到2，地址重复，判定有环。"}],"optimal":[{"array":[3,2,0,-4],"text":"slow与fast从3开始。"},{"array":[3,2,0,-4],"text":"第1轮slow在2、fast在0；第2轮slow在0、fast在2。"},{"array":[3,2,0,-4],"text":"第3轮两者都在-4，相遇。"}]},"tips":["快慢指针也用于找中点，但本题判环关注相遇。","证明：环上相对速度为1。","反例：1→1→NULL，值相同但无环。","拓展：寻找入环结点。"]},{"id":"lc48-20261024","date":"2026-10-24","year":"LeetCode · 408方法训练","number":"48","category":"矩阵 · 下标映射 · 原地操作","title":"n×n矩阵原地顺时针旋转90度","difficulty":"中等","time":"15–20分钟","source":"https://leetcode.com/problems/rotate-image/","question":"将n×n矩阵顺时针旋转90度，原地修改。输入1至9的3×3矩阵，输出7 4 1 / 8 5 2 / 9 6 3。","constraint":"n≥1；先用辅助矩阵推导下标映射，再实现O(1)额外空间的原地解。","sample":"1 2 3\n4 5 6\n7 8 9\n输出：\n7 4 1\n8 5 2\n9 6 3","brute":{"tag":"朴素保底","title":"辅助矩阵坐标映射","idea":"把(i,j)写入(j,n-1-i)，再拷回原矩阵。","complexity":"O(n²)时间，O(n²)空间","risk":"原题要求原地旋转，本法只能用于推导，不能满足空间限制。","code":"#include <stdio.h>\nvoid rotate_copy(int n,int a[n][n]){\n    int b[n][n];\n    for(int i=0;i<n;i++)for(int j=0;j<n;j++)\n        b[j][n-1-i]=a[i][j];         // (i,j) -> (j,n-1-i)\n    for(int i=0;i<n;i++)for(int j=0;j<n;j++)\n        a[i][j]=b[i][j];             // 把新矩阵复制回原矩阵\n}\nint main(void){\n    int a[3][3]={{1,2,3},{4,5,6},{7,8,9}};\n    rotate_copy(3,a);\n    for(int i=0;i<3;i++){for(int j=0;j<3;j++)printf(\"%d%c\",a[i][j],j==2?'\\n':' ');}\n    return 0;\n}","explain":["左下角7的坐标(2,0)变成(0,0)。","二维遍历共n²个元素。","直接在原数组覆盖会破坏未读数据。"]},"optimal":{"tag":"考场最优","title":"主对角线转置，再逐行逆置","idea":"先交换a[i][j]和a[j][i]，再交换每行左右对称位置。","complexity":"O(n²)时间，O(1)空间","risk":"转置只处理i<j，行逆置只交换前半段。","code":"#include <stdio.h>\nvoid rotate_cw(int n,int a[n][n]){\n    for(int i=0;i<n;i++)for(int j=i+1;j<n;j++){\n        int t=a[i][j];a[i][j]=a[j][i];a[j][i]=t; // 主对角线转置\n    }\n    for(int i=0;i<n;i++)for(int j=0;j<n/2;j++){\n        int t=a[i][j];a[i][j]=a[i][n-1-j];a[i][n-1-j]=t; // 每行逆置\n    }\n}\nint main(void){\n    int a[3][3]={{1,2,3},{4,5,6},{7,8,9}};\n    rotate_cw(3,a);\n    for(int i=0;i<3;i++){for(int j=0;j<3;j++)printf(\"%d%c\",a[i][j],j==2?'\\n':' ');}\n    return 0;\n}","explain":["转置(i,j)→(j,i)，再行逆置→(j,n-1-i)。","每次交换只用临时变量，额外空间O(1)。","n=1时两步均不操作；奇数阶中间列不用交换。"]},"variation":{"question":"变式：逆时针旋转90度，输出3 6 9 / 2 5 8 / 1 4 7。","idea":"主对角线转置，再逐列上下逆置，坐标变换(i,j)→(n-1-j,i)。","code":"#include <stdio.h>\nvoid rotate_ccw(int n,int a[n][n]){\n    for(int i=0;i<n;i++)for(int j=i+1;j<n;j++){\n        int t=a[i][j];a[i][j]=a[j][i];a[j][i]=t; // 转置\n    }\n    for(int j=0;j<n;j++)for(int i=0;i<n/2;i++){\n        int t=a[i][j];a[i][j]=a[n-1-i][j];a[n-1-i][j]=t; // 每列逆置\n    }\n}\nint main(void){\n    int a[3][3]={{1,2,3},{4,5,6},{7,8,9}};\n    rotate_ccw(3,a);\n    for(int i=0;i<3;i++){for(int j=0;j<3;j++)printf(\"%d%c\",a[i][j],j==2?'\\n':' ');}\n    return 0;\n}"},"animation":{"layout":"array","brute":[{"array":[1,2,3,4,5,6,7,8,9],"text":"原矩阵。"},{"array":[7,4,1,8,5,2,9,6,3],"text":"用辅助矩阵映射并复制回原数组。"}],"optimal":[{"array":[1,2,3,4,5,6,7,8,9],"text":"原矩阵。"},{"array":[1,4,7,2,5,8,3,6,9],"text":"主对角线转置。"},{"array":[7,4,1,8,5,2,9,6,3],"text":"每行逆置完成顺时针旋转。"}]},"tips":["坐标映射(i,j)→(j,n-1-i)比背代码更稳。","朴素法不符合原地限制。","反例：若左上角变成3，则旋转方向反了。","矩阵下标与空间限制是408补盲方向。"]}]
+[
+  {
+    "id": "lc88-20261012",
+    "date": "2026-10-12",
+    "number": "88",
+    "category": "顺序表 · 双指针",
+    "title": "合并两个有序数组",
+    "source": "https://leetcode.com/problems/merge-sorted-array/",
+    "question": "A中前m个数已按升序排列，数组A后方预留n个空位；B中n个数也有序。将B合并到A中，使A整体升序，不能把空位0当成有效数据。示例 A=[1,3,5,0,0,0], m=3, B=[2,4,6], n=3。",
+    "constraint": "数组A容量为m+n；有效长度只算前m个元素。允许朴素法开临时数组，优化法要求O(1)额外空间。",
+    "sample": "A: [1,3,5,0,0,0]，B: [2,4,6]\n结果: [1,2,3,4,5,6]",
+    "brute": {
+      "title": "用辅助数组从头归并",
+      "tag": "容易手写",
+      "idea": "各设一个下标分别扫描A和B，谁小就放入temp，最后把temp复制回A。",
+      "complexity": "O(m+n)时间，O(m+n)空间",
+      "risk": "正确且直观；如果题目特别要求原地、额外空间O(1)，则不能满足。",
+      "code": "#include <stdio.h>\n#define MAXN 1000\n\n// 朴素归并：额外申请一块临时数组，避免覆盖尚未比较的元素\nvoid merge(int A[], int m, int B[], int n) {\n    int temp[MAXN];                // 辅助空间：最多存放m+n个数\n    int i = 0, j = 0, k = 0;      // i遍历A，j遍历B，k填写temp\n    if (m+n > MAXN) return;       // 保护测试程序的固定容量\n    while (i < m && j < n) {\n        if (A[i] <= B[j]) temp[k++] = A[i++];\n        else temp[k++] = B[j++];  // 选当前较小的数，两个相同值也能正确处理\n    }\n    while (i < m) temp[k++] = A[i++];  // A中剩余的元素\n    while (j < n) temp[k++] = B[j++];  // B中剩余的元素\n    for (i = 0; i < m+n; i++) A[i] = temp[i]; // 结果复制回A\n}\nint main(void) {\n    int A[6] = {1,3,5,0,0,0}, B[3] = {2,4,6};\n    merge(A,3,B,3);\n    for (int i=0;i<6;i++) printf(\"%d%c\",A[i],i==5?'\\n':' ');\n    return 0;\n}",
+      "explain": [
+        "i、j分别指向两段有效数据的当前最小值。",
+        "temp[k++]先写入再推进下标，不会覆盖源数组。",
+        "某数组到达末尾后，另一段直接全部复制即可。"
+      ]
+    },
+    "optimal": {
+      "title": "从后向前原地归并",
+      "tag": "进阶写法",
+      "idea": "把A末尾的空位当作输出位置。两个数组的最大值放到A最末尾，谁大谁后移指针，这样覆盖不会破坏未处理数据。",
+      "complexity": "O(m+n)时间，O(1)额外空间",
+      "risk": "满足最小额外空间要求，考场优先掌握。",
+      "code": "#include <stdio.h>\n\n// 从右到左：永远把两段未处理数据中的最大值写到A末尾\nvoid merge(int A[], int m, int B[], int n) {\n    int i = m-1;             // A最后一个有效元素\n    int j = n-1;             // B最后一个元素\n    int k = m+n-1;           // A最后一个容量位置\n    while (j >= 0) {         // B全部放进A就完成；A剩下的不需动\n        if (i >= 0 && A[i] > B[j])\n            A[k--] = A[i--]; // A较大，把A的值放到最终末尾\n        else\n            A[k--] = B[j--]; // B较大或A已耗尽\n    }\n}\nint main(void) {\n    int A[6] = {1,3,5,0,0,0}, B[3] = {2,4,6};\n    merge(A,3,B,3);\n    for (int i=0;i<6;i++) printf(\"%d%c\",A[i],i==5?'\\n':' ');\n    return 0;\n}",
+      "explain": [
+        "i=m−1只指向A的有效元素，不能把预留空位当成数据。",
+        "k从最右端开始写，使尚未处理的A前段始终安全。",
+        "只需while(j>=0)，因为B耗尽后A剩余元素已经在正确位置。"
+      ]
+    },
+    "tips": [
+      "注意A后面n个0是预留空间，不是待合并数据。",
+      "原地方法必须从右往左，避免覆盖A的有效元素。",
+      "空B无需移动；空A则直接复制B。"
+    ],
+    "variation": {
+      "question": "变式：分别给出降序A=[9,7,5,0,0]和B=[8,6]，把两段数据按降序合并到A。",
+      "idea": "结果 [9,8,7,6,5]。仿照从后归并，把两段中较小的元素放在A的最后一格。",
+      "code": "#include <stdio.h>\nvoid mergeDesc(int A[],int m,int B[],int n){\n    int i=m-1,j=n-1,k=m+n-1; // 降序时较小元素应该放到右侧\n    while(j>=0){\n        if(i>=0 && A[i]<B[j]) A[k--]=A[i--];\n        else A[k--]=B[j--];\n    }\n}\nint main(void){\n    int A[5]={9,7,5,0,0},B[2]={8,6};\n    mergeDesc(A,3,B,2);\n    for(int i=0;i<5;i++) printf(\"%d%c\",A[i],i==4?'\\n':' ');\n    return 0;\n}"
+    },
+    "animation": {
+      "layout": "array",
+      "brute": [
+        {
+          "array": [
+            1,
+            3,
+            5,
+            0,
+            0,
+            0
+          ],
+          "text": "初始：两个指针分别指向A和B的最小元素，准备写入temp。"
+        },
+        {
+          "array": [
+            1,
+            2,
+            3,
+            0,
+            0,
+            0
+          ],
+          "text": "temp开始得到1、2、3；这里显示临时数组目前的前3个数。"
+        },
+        {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "text": "把4、5、6加入temp，最后整体复制回A。"
+        }
+      ],
+      "optimal": [
+        {
+          "array": [
+            1,
+            3,
+            5,
+            0,
+            0,
+            0
+          ],
+          "text": "起点：i指向5，j指向6，k指向A[5]。"
+        },
+        {
+          "array": [
+            1,
+            3,
+            5,
+            0,
+            0,
+            6
+          ],
+          "text": "6较大，写入A[5]，j左移。"
+        },
+        {
+          "array": [
+            1,
+            3,
+            5,
+            0,
+            5,
+            6
+          ],
+          "text": "5较大，写入A[4]，i左移。"
+        },
+        {
+          "array": [
+            1,
+            3,
+            5,
+            4,
+            5,
+            6
+          ],
+          "text": "4较大，写入A[3]，j左移。"
+        },
+        {
+          "array": [
+            1,
+            3,
+            3,
+            4,
+            5,
+            6
+          ],
+          "text": "3较大，写入A[2]，i左移。"
+        },
+        {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "text": "2从B写入A[1]，B耗尽，结束。"
+        }
+      ]
+    },
+    "year": "LeetCode",
+    "difficulty": "中等",
+    "time": "15–20 分钟"
+  },
+  {
+    "id": "lc876-20261013",
+    "date": "2026-10-13",
+    "number": "876",
+    "category": "单链表 · 快慢指针",
+    "title": "寻找单链表的中间结点",
+    "source": "https://leetcode.com/problems/middle-of-the-linked-list/",
+    "question": "给定无头结点的单链表，求中间结点。长度为偶数时返回靠后的那个中间结点。例如1→2→3→4→5→6，返回结点4。",
+    "constraint": "不能随机访问链表结点；只能沿next移动。要求返回原链表中的结点指针。",
+    "sample": "1→2→3→4→5→6→NULL\n返回结点：4",
+    "brute": {
+      "title": "先数长度，再走到中间",
+      "tag": "容易手写",
+      "idea": "先扫描一次求n，再从第一个结点走n/2步。",
+      "complexity": "O(n)时间，O(1)空间（两遍）",
+      "risk": "已经是最优的渐近复杂度，考场非常值得优先写。",
+      "code": "#include <stdio.h>\ntypedef struct Node { int data; struct Node *next; } Node;\n// 第一次求长度，第二次从头走n/2步\nNode* middle(Node *head) {\n    int n=0;\n    for(Node *p=head;p!=NULL;p=p->next) n++; // 统计结点个数\n    Node *p=head;\n    for(int i=0;i<n/2;i++) p=p->next;         // 偶数时取靠后中点\n    return p;                                 // 空链表时也是NULL\n}\nint main(void){\n    Node f={6,NULL},e={5,&f},d={4,&e};\n    Node c={3,&d},b={2,&c},a={1,&b};\n    Node *p=middle(&a);\n    if(p) printf(\"%d\\n\",p->data);\n    return 0;\n}",
+      "explain": [
+        "第一次只统计数量，完全不需要数组。",
+        "从第一个结点移动n/2步：6个结点时移动3步恰好指向4。",
+        "head==NULL时n=0，返回NULL，不会解引用空指针。"
+      ]
+    },
+    "optimal": {
+      "title": "快指针走两步、慢指针走一步",
+      "tag": "进阶写法",
+      "idea": "fast每轮走2步，slow每轮走1步。当fast到链尾时slow恰好到中间位置。",
+      "complexity": "O(n)时间，O(1)空间（一遍）",
+      "risk": "没有降低数量级，但减少一次完整遍历；适合练习快慢指针。",
+      "code": "#include <stdio.h>\ntypedef struct Node { int data; struct Node *next; } Node;\nNode* middle(Node *head) {\n    Node *slow=head,*fast=head; // 两者同时从首结点出发\n    while(fast!=NULL && fast->next!=NULL) {\n        slow=slow->next;          // 慢指针每轮一步\n        fast=fast->next->next;    // 快指针每轮两步\n    }\n    return slow; // 偶数长度时指向靠后的中间结点\n}\nint main(void){\n    Node f={6,NULL},e={5,&f},d={4,&e};\n    Node c={3,&d},b={2,&c},a={1,&b};\n    Node *p=middle(&a);\n    if(p) printf(\"%d\\n\",p->data);\n    return 0;\n}",
+      "explain": [
+        "while同时检查fast和fast->next，才能安全访问fast->next->next。",
+        "每次慢指针只走一格，快指针走两格。",
+        "遇到偶数结点时fast为NULL，slow恰好停在第二中点。"
+      ]
+    },
+    "tips": [
+      "返回的是Node*地址，不能只返回data。",
+      "链表为空时应返回NULL。",
+      "快指针向后访问两步前必须检查fast->next是否为NULL。"
+    ],
+    "variation": {
+      "question": "变式：用快慢指针判断单链表是否存在环。",
+      "idea": "快慢指针分别走两步和一步；若存在环会在环中相遇，否则fast先到NULL。",
+      "code": "#include <stdio.h>\ntypedef struct Node{int data;struct Node*next;}Node;\nint hasCycle(Node*head){\n    Node*slow=head,*fast=head;\n    while(fast && fast->next){\n        slow=slow->next;            // 一次一步\n        fast=fast->next->next;      // 一次两步\n        if(slow==fast)return 1;    // 指针地址相等说明在环内相遇\n    }\n    return 0;\n}\nint main(void){\n    Node a={1,NULL},b={2,NULL},c={3,NULL};\n    a.next=&b;b.next=&c;c.next=&b; // 令c重新指向b，制造环\n    printf(\"%d\\n\",hasCycle(&a));\n    return 0;\n}"
+    },
+    "animation": {
+      "layout": "chains",
+      "rows": [
+        {
+          "label": "链表快指针 fast",
+          "values": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "sharedFrom": 100,
+          "pointerKey": "p"
+        },
+        {
+          "label": "链表慢指针 slow",
+          "values": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "sharedFrom": 100,
+          "pointerKey": "q"
+        }
+      ],
+      "brute": [
+        {
+          "p": 0,
+          "q": 0,
+          "text": "第一遍扫描得到长度n=6。"
+        },
+        {
+          "p": 1,
+          "q": 0,
+          "text": "第二遍走一步，p指向2。"
+        },
+        {
+          "p": 2,
+          "q": 0,
+          "text": "第二遍走两步，p指向3。"
+        },
+        {
+          "p": 3,
+          "q": 0,
+          "text": "第三步走到结点4，返回该结点。"
+        }
+      ],
+      "optimal": [
+        {
+          "p": 0,
+          "q": 0,
+          "text": "快慢指针都在结点1。"
+        },
+        {
+          "p": 2,
+          "q": 1,
+          "text": "第1轮：fast到3，slow到2。"
+        },
+        {
+          "p": 4,
+          "q": 2,
+          "text": "第2轮：fast到5，slow到3。"
+        },
+        {
+          "p": 5,
+          "q": 3,
+          "text": "第3轮：fast走过结点6后指向NULL；slow到4，结束。动画将fast标在最后一个已经过结点6。"
+        }
+      ]
+    },
+    "year": "LeetCode",
+    "difficulty": "中等",
+    "time": "15–20 分钟"
+  },
+  {
+    "id": "lc104-20261014",
+    "date": "2026-10-14",
+    "number": "104",
+    "category": "二叉树 · 递归与层序",
+    "title": "求二叉树最大深度",
+    "source": "https://leetcode.com/problems/maximum-depth-of-binary-tree/",
+    "question": "给定二叉链表存储的二叉树，求从根结点到最深叶结点的结点数（空树深度为0）。例如根1，子结点2和3，2的左孩子为4，最大深度为3。",
+    "constraint": "使用408范围内的二叉树、递归或队列，不采用动态规划库。",
+    "sample": "    1\n   / \\\n  2   3\n /\n4\n结果：3",
+    "brute": {
+      "title": "递归求左右子树高度",
+      "tag": "容易手写",
+      "idea": "空树深度为0。非空树的深度等于左右子树深度较大值+1。",
+      "complexity": "O(n)时间，O(h)递归栈",
+      "risk": "已达到线性时间，代码短且考场性价比很高，是本题首选。",
+      "code": "#include <stdio.h>\ntypedef struct Node{\n    int data;\n    struct Node *left,*right; // 二叉树的左右孩子\n}Node;\nint depth(Node *root){\n    if(root==NULL)return 0;  // 空树高度为0，递归出口\n    int a=depth(root->left); // 求左子树高度\n    int b=depth(root->right);// 求右子树高度\n    return (a>b?a:b)+1;      // 取更高子树并加上根所在一层\n}\nint main(void){\n    Node d={4,NULL,NULL},b={2,&d,NULL},c={3,NULL,NULL};\n    Node a={1,&b,&c};\n    printf(\"%d\\n\",depth(&a));\n    return 0;\n}",
+      "explain": [
+        "root==NULL是递归出口，否则会一直访问空指针。",
+        "左右子树的最大深度是两个独立子问题。",
+        "根本身占一层，所以结果是max(left,right)+1。"
+      ]
+    },
+    "optimal": {
+      "title": "使用队列按层遍历",
+      "tag": "进阶写法",
+      "idea": "二叉树逐层入队；每处理完整一层，深度加1。它与递归同为O(n)时间，不必因为迭代就认为更优。",
+      "complexity": "O(n)时间，O(w)队列空间（w为最大层宽）",
+      "risk": "适合考层序遍历，但本题递归法通常更简单，优化不意味着数量级更优。",
+      "code": "#include <stdio.h>\n#define MAXN 100\ntypedef struct Node{\n    int data;\n    struct Node *left,*right;\n}Node;\nint depth(Node *root){\n    if(!root)return 0;\n    Node *Q[MAXN];               // 顺序队列存储当前层及下一层结点\n    int front=0,rear=0,h=0;\n    Q[rear++]=root;              // 根结点先入队\n    while(front<rear){\n        int cnt=rear-front;      // 本轮开始时这一层的结点数\n        for(int i=0;i<cnt;i++){\n            Node *p=Q[front++];  // 逐个取出本层结点\n            if(p->left)Q[rear++]=p->left;\n            if(p->right)Q[rear++]=p->right;\n        }\n        h++;                      // 本层处理完，树高加一\n    }\n    return h;                    // 假定整棵树结点总数不超过MAXN\n}\nint main(void){\n    Node d={4,NULL,NULL},b={2,&d,NULL},c={3,NULL,NULL};\n    Node a={1,&b,&c};\n    printf(\"%d\\n\",depth(&a));\n    return 0;\n}",
+      "explain": [
+        "front和rear分别表示队头下标和队尾后一个位置。",
+        "cnt在这一层开始时就固定，避免把新入队的下一层结点混入本轮。",
+        "每完整处理一层再加1，直到队列为空。"
+      ]
+    },
+    "tips": [
+      "空二叉树高度必须是0。",
+      "递归解法栈空间O(h)，不是无条件O(1)。",
+      "层序遍历队列容量应足够；考试题通常可假定n不超过给定MAXN。"
+    ],
+    "variation": {
+      "question": "变式：用递归求二叉树叶结点数量。",
+      "idea": "空树没有叶结点；左右孩子均为空的结点贡献1；其他结点的叶子数等于左右子树叶子数之和。",
+      "code": "#include <stdio.h>\ntypedef struct Node{int data;struct Node*left,*right;}Node;\nint leafCount(Node*r){\n    if(!r)return 0;                      // 空树\n    if(!r->left && !r->right)return 1;   // 叶结点只有自己\n    return leafCount(r->left)+leafCount(r->right);\n}\nint main(void){\n    Node d={4,NULL,NULL},b={2,&d,NULL},c={3,NULL,NULL};\n    Node a={1,&b,&c};\n    printf(\"%d\\n\",leafCount(&a)); // 叶结点3、4，共2个\n    return 0;\n}"
+    },
+    "animation": {
+      "layout": "other",
+      "brute": [
+        {
+          "diagram": "    1\n   / \\\n  2   3\n /\n4",
+          "text": "递归先从根1进入左子树2。"
+        },
+        {
+          "diagram": "    1\n   / \\\n [2]  3\n /\n[4]",
+          "text": "结点4两侧都是空，深度1；因此结点2深度2。"
+        },
+        {
+          "diagram": "   [1]\n   / \\\n  2   3\n /\n4",
+          "text": "结点3深度1，根1取max(2,1)+1=3。"
+        }
+      ],
+      "optimal": [
+        {
+          "diagram": "当前队列：[1]\n深度 = 0",
+          "text": "根结点1入队。"
+        },
+        {
+          "diagram": "处理本层：[1]\n新增队列：[2,3]\n深度 = 1",
+          "text": "处理第一层，下一层2和3入队。"
+        },
+        {
+          "diagram": "处理本层：[2,3]\n新增队列：[4]\n深度 = 2",
+          "text": "处理第二层，4入队。"
+        },
+        {
+          "diagram": "处理本层：[4]\n下一层队列：空\n深度 = 3",
+          "text": "处理完第三层，队列为空，返回深度3。"
+        }
+      ]
+    },
+    "year": "LeetCode",
+    "difficulty": "中等",
+    "time": "15–20 分钟"
+  },
+  {
+    "year": "LeetCode",
+    "difficulty": "中等",
+    "time": "15–20 分钟",
+    "id": "lc704-20261015",
+    "date": "2026-10-15",
+    "number": "704",
+    "category": "查找 · 有序顺序表",
+    "title": "在有序数组中寻找目标值",
+    "source": "https://leetcode.com/problems/binary-search/",
+    "question": "给定n个升序且互不相同的整数和目标值target，找到target返回其下标（从0开始），没有则返回-1。例如[1,3,5,7,9,11]中寻找7，返回3。",
+    "constraint": "数组已经升序，不能提前假设目标一定存在；写出易手写的线性查找及二分查找。",
+    "sample": "数组: [1,3,5,7,9,11]\ntarget = 7\n返回: 3",
+    "brute": {
+      "tag": "朴素保底",
+      "title": "从头到尾顺序查找",
+      "idea": "依次检查每个数组元素，等于target就返回下标；全部遍历仍没找到则返回-1。",
+      "complexity": "O(n)时间，O(1)空间",
+      "risk": "完全正确，极易手写。但数组已排序且明确要求尽可能高效时，不如折半查找。",
+      "code": "#include <stdio.h>\n// 顺序查找：每个元素最多比较一次\nint search(int a[],int n,int target){\n    for(int i=0;i<n;i++){\n        if(a[i]==target)return i; // 找到立即返回\n    }\n    return -1;                    // 遍历结束说明不存在\n}\nint main(void){\n    int a[]={1,3,5,7,9,11};\n    printf(\"%d\\n\",search(a,6,7)); // 结果3\n    return 0;\n}",
+      "explain": [
+        "循环从下标0遍历到n−1。",
+        "找到就返回下标，不能返回元素值。",
+        "必须写未找到时的return -1。"
+      ]
+    },
+    "optimal": {
+      "tag": "考场比较",
+      "title": "折半查找（二分查找）",
+      "idea": "左右边界l、r维护可能存在目标的闭区间。比较中点，小了丢掉左半段，大了丢掉右半段。",
+      "complexity": "O(log n)时间，O(1)空间",
+      "risk": "408重点算法，写清楚区间边界就很可靠，考场推荐。",
+      "code": "#include <stdio.h>\n// 采用闭区间[l,r]，循环条件是l<=r\nint search(int a[],int n,int target){\n    int l=0,r=n-1;\n    while(l<=r){\n        int mid=l+(r-l)/2;        // 求中点，避免l+r过大\n        if(a[mid]==target)return mid;\n        if(a[mid]<target)l=mid+1;// 左半部分都太小，直接丢弃\n        else r=mid-1;            // 右半部分都太大，直接丢弃\n    }\n    return -1;                    // 区间变空说明目标不存在\n}\nint main(void){\n    int a[]={1,3,5,7,9,11};\n    printf(\"%d\\n\",search(a,6,7));\n    return 0;\n}",
+      "explain": [
+        "闭区间初始化为[0,n−1]，所以使用l<=r。",
+        "mid确定后若不相等，就排除mid本身，用mid+1或mid−1。",
+        "每轮候选区间约缩小一半，所以O(log n)。"
+      ]
+    },
+    "tips": [
+      "数组必须有序才能用二分查找。",
+      "注意是a[mid]与target比较，不是mid和target比较。",
+      "闭区间采用l<=r以及mid±1；不要混用半开区间的写法。"
+    ],
+    "variation": {
+      "question": "变式：有重复值的升序数组[1,2,2,2,4]，找数字2第一次出现的下标。",
+      "idea": "维护左闭右开区间[l,r)，每次若a[mid]>=2便收缩右端；循环结束后检查a[l]是否为2，答案为1。",
+      "code": "#include <stdio.h>\nint firstAtLeast(int a[],int n,int x){\n    int l=0,r=n;                // 搜索区间[l,r)\n    while(l<r){\n        int mid=l+(r-l)/2;\n        if(a[mid]>=x)r=mid;    // 保留mid，可能是第一个位置\n        else l=mid+1;          // 中点太小，必不可能是答案\n    }\n    return l<n && a[l]==x?l:-1; // 必须检查元素确实等于x\n}\nint main(void){\n    int a[]={1,2,2,2,4};\n    printf(\"%d\\n\",firstAtLeast(a,5,2));\n    return 0;\n}"
+    },
+    "animation": {
+      "layout": "array",
+      "brute": [
+        {
+          "array": [
+            1,
+            3,
+            5,
+            7,
+            9,
+            11
+          ],
+          "text": "开始从a[0]顺序检查target=7。"
+        },
+        {
+          "array": [
+            1,
+            3,
+            5,
+            7,
+            9,
+            11
+          ],
+          "text": "下标0、1、2分别为1、3、5，都不是7。"
+        },
+        {
+          "array": [
+            1,
+            3,
+            5,
+            7,
+            9,
+            11
+          ],
+          "text": "下标3是7，立刻返回3。"
+        }
+      ],
+      "optimal": [
+        {
+          "array": [
+            1,
+            3,
+            5,
+            7,
+            9,
+            11
+          ],
+          "text": "闭区间[0,5]，mid=2，a[2]=5<7，左边都排除。"
+        },
+        {
+          "array": [
+            1,
+            3,
+            5,
+            7,
+            9,
+            11
+          ],
+          "text": "剩余[3,5]，mid=4，a[4]=9>7，右侧都排除。"
+        },
+        {
+          "array": [
+            1,
+            3,
+            5,
+            7,
+            9,
+            11
+          ],
+          "text": "剩余[3,3]，mid=3，a[3]=7，返回3。"
+        }
+      ]
+    }
+  },
+  {
+    "year": "408风格",
+    "difficulty": "中等",
+    "time": "15–20 分钟",
+    "id": "original-insert-20261016",
+    "date": "2026-10-16",
+    "number": "原创",
+    "category": "内部排序 · 插入排序",
+    "title": "从冒泡排序理解直接插入排序",
+    "source": "",
+    "question": "给定整数数组[5,2,4,6,1,3]，设计简单的升序排序函数。先给出最容易想到的冒泡排序，再用408常考的直接插入排序实现，并说明排序过程中哪些元素已经有序。",
+    "constraint": "不得调用库排序函数；要求稳定排序，解释比较次数、移动次数和最好最坏时间复杂度。",
+    "sample": "输入: 5 2 4 6 1 3\n输出: 1 2 3 4 5 6",
+    "brute": {
+      "tag": "朴素保底",
+      "title": "冒泡排序",
+      "idea": "不断比较相邻元素，逆序就交换。每一趟把尚未归位的最大值送到右端。",
+      "complexity": "最坏O(n²)时间，O(1)空间",
+      "risk": "思路直观，容易正确，但对接近有序的数据也会重复比较（可以加提前退出标志）。",
+      "code": "#include <stdio.h>\n// 每一趟将剩余最大值逐渐交换到右端\nvoid sort(int a[],int n){\n    for(int i=0;i<n-1;i++){\n        int changed=0;                 // 本轮是否发生逆序交换\n        for(int j=0;j<n-1-i;j++){\n            if(a[j]>a[j+1]){\n                int t=a[j];a[j]=a[j+1];a[j+1]=t;\n                changed=1;             // 记录有交换\n            }\n        }\n        if(!changed)break;             // 已经有序则提前停止\n    }\n}\nint main(void){\n    int a[]={5,2,4,6,1,3};\n    sort(a,6);\n    for(int i=0;i<6;i++)printf(\"%d%c\",a[i],i==5?'\\n':' ');\n    return 0;\n}",
+      "explain": [
+        "内层只扫到n−1−i，因为后i个数已固定在正确位置。",
+        "严格大于才交换，保证相同关键字的相对次序不变。",
+        "changed为0说明整趟没有逆序，整个数组已经有序。"
+      ]
+    },
+    "optimal": {
+      "tag": "考场比较",
+      "title": "直接插入排序",
+      "idea": "把前面部分视为已排好序。取出下一个元素key，从已排序段右端往左移动比key大的元素，再插入空位。",
+      "complexity": "最坏O(n²)、最好O(n)，O(1)空间",
+      "risk": "近乎有序时移动次数少；408基础排序重点，考场应掌握。",
+      "code": "#include <stdio.h>\n// 保持左边区间a[0..i-1]有序，把a[i]插进去\nvoid sort(int a[],int n){\n    for(int i=1;i<n;i++){\n        int key=a[i];              // 保存待插入元素，防止被覆盖\n        int j=i-1;\n        while(j>=0 && a[j]>key){\n            a[j+1]=a[j];           // 右移比key大的元素\n            j--;\n        }\n        a[j+1]=key;                // 将key写入腾出的正确位置\n    }\n}\nint main(void){\n    int a[]={5,2,4,6,1,3};\n    sort(a,6);\n    for(int i=0;i<6;i++)printf(\"%d%c\",a[i],i==5?'\\n':' ');\n    return 0;\n}",
+      "explain": [
+        "外层从i=1开始，因为单个元素天然有序。",
+        "保存key，再从右往左移动大于它的数，不在循环里反复交换。",
+        "循环终止时j+1恰好是key的插入位置。"
+      ]
+    },
+    "tips": [
+      "插入排序的已排序区间是a[0..i−1]，不是整个数组。",
+      "循环要写j>=0以避免越界读取a[−1]。",
+      "相同关键字不右移，保持排序稳定性。"
+    ],
+    "variation": {
+      "question": "变式：把[1,4,3,5,2]按降序直接插入排序。",
+      "idea": "只需将右移条件由a[j]>key改为a[j]<key，结果[5,4,3,2,1]。",
+      "code": "#include <stdio.h>\nvoid insertionDesc(int a[],int n){\n    for(int i=1;i<n;i++){\n        int key=a[i],j=i-1;\n        while(j>=0 && a[j]<key){ // 逆序：比key小的右移\n            a[j+1]=a[j];j--;\n        }\n        a[j+1]=key;\n    }\n}\nint main(void){\n    int a[]={1,4,3,5,2};\n    insertionDesc(a,5);\n    for(int i=0;i<5;i++)printf(\"%d%c\",a[i],i==4?'\\n':' ');\n    return 0;\n}"
+    },
+    "animation": {
+      "layout": "array",
+      "brute": [
+        {
+          "array": [
+            5,
+            2,
+            4,
+            6,
+            1,
+            3
+          ],
+          "text": "初始；开始冒泡。"
+        },
+        {
+          "array": [
+            2,
+            4,
+            5,
+            1,
+            3,
+            6
+          ],
+          "text": "第一趟，6沉到最右侧。"
+        },
+        {
+          "array": [
+            2,
+            4,
+            1,
+            3,
+            5,
+            6
+          ],
+          "text": "第二趟，5归位。"
+        },
+        {
+          "array": [
+            2,
+            1,
+            3,
+            4,
+            5,
+            6
+          ],
+          "text": "第三趟，4归位。"
+        },
+        {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "text": "第四趟，全部有序。"
+        }
+      ],
+      "optimal": [
+        {
+          "array": [
+            5,
+            2,
+            4,
+            6,
+            1,
+            3
+          ],
+          "text": "起点：左边单元素[5]已经有序。"
+        },
+        {
+          "array": [
+            2,
+            5,
+            4,
+            6,
+            1,
+            3
+          ],
+          "text": "插入key=2后，前两个位置有序。"
+        },
+        {
+          "array": [
+            2,
+            4,
+            5,
+            6,
+            1,
+            3
+          ],
+          "text": "插入key=4后，前3位有序。"
+        },
+        {
+          "array": [
+            2,
+            4,
+            5,
+            6,
+            1,
+            3
+          ],
+          "text": "key=6无需移动，前4位有序。"
+        },
+        {
+          "array": [
+            1,
+            2,
+            4,
+            5,
+            6,
+            3
+          ],
+          "text": "key=1插到最前，前5位有序。"
+        },
+        {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "text": "key=3插到下标2，全数组有序。"
+        }
+      ]
+    }
+  },
+  {
+    "year": "408风格",
+    "difficulty": "中等",
+    "time": "15–20 分钟",
+    "id": "original-graph-bfs-20261017",
+    "date": "2026-10-17",
+    "number": "原创",
+    "category": "图 · DFS/BFS",
+    "title": "判断无向图是否连通",
+    "source": "",
+    "question": "给定一个含n个顶点、用邻接矩阵保存的无向图，从顶点0出发访问能到达的所有顶点，若最后每个顶点都被访问，则图连通。示例边有0-1、0-2、1-3、2-4，五个顶点全部相连。",
+    "constraint": "只使用408范围内的深度优先或广度优先遍历；图不一定连通，不包含自环和重边。",
+    "sample": "n=5\n边：(0,1) (0,2) (1,3) (2,4)\n输出：1（表示连通）",
+    "brute": {
+      "tag": "朴素保底",
+      "title": "递归DFS遍历",
+      "idea": "从0出发遇到未访问的邻接点就递归访问，最后统计visited中是否全部为1。",
+      "complexity": "邻接矩阵O(n²)时间，O(n)辅助空间",
+      "risk": "考纲经典，适合考场写。对于邻接矩阵，BFS在渐近时间上并不更优。",
+      "code": "#include <stdio.h>\n#define N 5\nvoid dfs(int u,int g[N][N],int vis[]){\n    vis[u]=1;                             // 标记当前顶点已访问\n    for(int v=0;v<N;v++){\n        if(g[u][v] && !vis[v])dfs(v,g,vis); // 发现邻接且未访问就递归\n    }\n}\nint connected(int g[N][N]){\n    int vis[N]={0};\n    dfs(0,g,vis);                         // 只从顶点0开始搜索\n    for(int i=0;i<N;i++)if(!vis[i])return 0; // 存在未访问点即不连通\n    return 1;\n}\nint main(void){\n    int g[N][N]={0};\n    int e[][2]={{0,1},{0,2},{1,3},{2,4}};\n    for(int i=0;i<4;i++){int u=e[i][0],v=e[i][1];g[u][v]=g[v][u]=1;}\n    printf(\"%d\\n\",connected(g));\n    return 0;\n}",
+      "explain": [
+        "visited必须先标记，再继续递归，否则环路会导致反复访问。",
+        "邻接矩阵每次访问顶点u时需扫描它所在的一整行。",
+        "连通无向图从0出发应能到达所有顶点。"
+      ]
+    },
+    "optimal": {
+      "tag": "考场比较",
+      "title": "队列BFS逐层遍历",
+      "idea": "从顶点0入队，弹出一个顶点就检查其所有邻接点，把没访问过的加入队列。最终统计访问总数。",
+      "complexity": "邻接矩阵O(n²)时间，O(n)辅助空间",
+      "risk": "与DFS复杂度相同，是必须掌握的另一种遍历，不必强行认为它更省时间。",
+      "code": "#include <stdio.h>\n#define N 5\nint connected(int g[N][N]){\n    int q[N],front=0,rear=0,vis[N]={0},count=0;\n    q[rear++]=0;vis[0]=1;                // 入队时立刻标记，避免重复入队\n    while(front<rear){\n        int u=q[front++];count++;       // 出队并计数\n        for(int v=0;v<N;v++){\n            if(g[u][v] && !vis[v]){\n                vis[v]=1;\n                q[rear++]=v;            // 只有未访问的邻接点才入队\n            }\n        }\n    }\n    return count==N;                    // n个顶点都能到达则连通\n}\nint main(void){\n    int g[N][N]={0};\n    int e[][2]={{0,1},{0,2},{1,3},{2,4}};\n    for(int i=0;i<4;i++){int u=e[i][0],v=e[i][1];g[u][v]=g[v][u]=1;}\n    printf(\"%d\\n\",connected(g));\n    return 0;\n}",
+      "explain": [
+        "BFS用先进先出的队列维护待访问的顶点。",
+        "入队时标记visited，保证每个顶点最多入队一次。",
+        "若count小于N，则至少有一个顶点与0不连通。"
+      ]
+    },
+    "tips": [
+      "邻接矩阵DFS和BFS的时间复杂度通常都是O(V²)，不是O(V+E)。",
+      "无向图录入边时g[u][v]与g[v][u]都应置1。",
+      "入队之前检查vis，防止重复入队造成队列溢出。"
+    ],
+    "variation": {
+      "question": "变式：用邻接矩阵BFS，求从顶点0到顶点4的最少边数。边仍是0-1、0-2、1-3、2-4。",
+      "idea": "BFS按层访问，0→2→4共两条边，答案2。每发现一个新顶点就赋dist[v]=dist[u]+1。",
+      "code": "#include <stdio.h>\n#define N 5\nint shortest(int g[N][N],int s,int target){\n    int q[N],front=0,rear=0,dist[N];\n    for(int i=0;i<N;i++)dist[i]=-1;       // -1表示还未访问\n    q[rear++]=s;dist[s]=0;\n    while(front<rear){\n        int u=q[front++];\n        if(u==target)return dist[u];     // BFS首次到达就是最短路径边数\n        for(int v=0;v<N;v++){\n            if(g[u][v] && dist[v]==-1){\n                dist[v]=dist[u]+1;\n                q[rear++]=v;\n            }\n        }\n    }\n    return -1;\n}\nint main(void){\n    int g[N][N]={0},e[][2]={{0,1},{0,2},{1,3},{2,4}};\n    for(int i=0;i<4;i++){int u=e[i][0],v=e[i][1];g[u][v]=g[v][u]=1;}\n    printf(\"%d\\n\",shortest(g,0,4));\n    return 0;\n}"
+    },
+    "animation": {
+      "layout": "array",
+      "brute": [
+        {
+          "array": [
+            1,
+            0,
+            0,
+            0,
+            0
+          ],
+          "text": "DFS：首先访问顶点0，visited[0]=1。"
+        },
+        {
+          "array": [
+            1,
+            1,
+            0,
+            0,
+            0
+          ],
+          "text": "访问邻接点1。"
+        },
+        {
+          "array": [
+            1,
+            1,
+            0,
+            1,
+            0
+          ],
+          "text": "从1继续深入3。"
+        },
+        {
+          "array": [
+            1,
+            1,
+            1,
+            1,
+            0
+          ],
+          "text": "回溯到0，访问2。"
+        },
+        {
+          "array": [
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "text": "从2访问4，全部已访问，图连通。"
+        }
+      ],
+      "optimal": [
+        {
+          "array": [
+            1,
+            0,
+            0,
+            0,
+            0
+          ],
+          "text": "BFS：顶点0入队并标记。"
+        },
+        {
+          "array": [
+            1,
+            1,
+            1,
+            0,
+            0
+          ],
+          "text": "弹出0，把1和2入队。"
+        },
+        {
+          "array": [
+            1,
+            1,
+            1,
+            1,
+            0
+          ],
+          "text": "弹出1，把3入队。"
+        },
+        {
+          "array": [
+            1,
+            1,
+            1,
+            1,
+            1
+          ],
+          "text": "弹出2，把4入队；之后队列处理完，全部已访问。"
+        }
+      ]
+    }
+  },
+  {
+    "year": "LeetCode",
+    "difficulty": "中等",
+    "time": "15–20 分钟",
+    "id": "lc232-20261018",
+    "date": "2026-10-18",
+    "number": "232",
+    "category": "栈 · 队列转换",
+    "title": "用两个栈模拟先进先出的队列",
+    "source": "https://leetcode.com/problems/implement-queue-using-stacks/",
+    "question": "实现队列的入队push与出队pop，保证先进入的元素先离开。先写最朴素的数组队列（出队时整体左移），再使用两个顺序栈实现队列。测试依次入队1、2、出队、查看队首。",
+    "constraint": "不得调用C++容器；只用数组、简单下标和循环。容量上限100；若为空可返回-1作为演示错误值。",
+    "sample": "push(1), push(2), pop() -> 1, peek() -> 2",
+    "brute": {
+      "tag": "朴素保底",
+      "title": "数组队列：出队时逐元素前移",
+      "idea": "a[0]永远保持队首，入队直接放到末尾；出队先取a[0]，再把其他元素左移一格。",
+      "complexity": "入队O(1)，出队O(n)，额外存储O(n)",
+      "risk": "最容易实现、正确性高；但若题目限定只能使用两个栈，则不符合结构约束。",
+      "code": "#include <stdio.h>\n#define CAP 100\ntypedef struct{int a[CAP];int len;}Queue;\nvoid push(Queue*q,int x){\n    if(q->len<CAP)q->a[q->len++]=x;  // 队尾追加元素\n}\nint pop(Queue*q){\n    if(q->len==0)return -1;         // 空队列保护\n    int x=q->a[0];                  // 先保存队首\n    for(int i=1;i<q->len;i++)\n        q->a[i-1]=q->a[i];          // 后面的元素全部左移\n    q->len--;                      // 当前有效长度减1\n    return x;\n}\nint peek(Queue*q){\n    return q->len? q->a[0]:-1;     // 队首是a[0]\n}\nint main(void){\n    Queue q={{0},0};\n    push(&q,1);push(&q,2);\n    int first=pop(&q);          // 先完成出队，再查询新的队首\n    int second=peek(&q);\n    printf(\"%d %d\\n\",first,second);\n    return 0;\n}",
+      "explain": [
+        "len表示当前有效元素个数，入队时用a[len++]存储。",
+        "出队必须先保存a[0]，不然它会被左移操作覆盖。",
+        "所有元素左移一格以后，len减1代表尾部空位。"
+      ]
+    },
+    "optimal": {
+      "tag": "考场比较",
+      "title": "输入栈 + 输出栈（懒惰转移）",
+      "idea": "新元素全部压入in栈。需要取队首而out栈为空时，把in中的元素逐个弹出压入out，这样原本最早入队的元素来到out栈顶。",
+      "complexity": "每次入队O(1)，出队摊还O(1)，空间O(n)",
+      "risk": "原题限定‘只用两个栈’时应写这种方法；记住只有out为空才倒入元素。",
+      "code": "#include <stdio.h>\n#define CAP 100\ntypedef struct{\n    int in[CAP],out[CAP];\n    int ni,no;                          // 两个栈当前元素数\n}Queue;\nvoid push(Queue*q,int x){\n    if(q->ni+q->no<CAP)q->in[q->ni++]=x; // 新元素先压入in\n}\nvoid refill(Queue*q){\n    if(q->no==0){                     // out不空时不能重新倒入\n        while(q->ni>0)\n            q->out[q->no++]=q->in[--q->ni]; // 倒序后旧元素在栈顶\n    }\n}\nint pop(Queue*q){\n    refill(q);\n    return q->no? q->out[--q->no]:-1; // 弹出out栈顶\n}\nint peek(Queue*q){\n    refill(q);\n    return q->no? q->out[q->no-1]:-1;\n}\nint main(void){\n    Queue q={{0},{0},0,0};\n    push(&q,1);push(&q,2);\n    int a=pop(&q);int b=peek(&q);\n    printf(\"%d %d\\n\",a,b);\n    return 0;\n}",
+      "explain": [
+        "in栈负责接收新元素，out栈负责把最早入队者送到栈顶。",
+        "只有out为空才把in全部倒入，否则顺序会错误。",
+        "每个元素最多进出两个栈各一次，因此单次出队的均摊复杂度O(1)。"
+      ]
+    },
+    "tips": [
+      "两个栈中的元素总数不能超过CAP。",
+      "不能每次pop都直接pop输入栈，否则变成后进先出。",
+      "不要在out尚有元素时把in的元素直接倒入out。"
+    ],
+    "variation": {
+      "question": "变式：用定长数组实现循环队列，能够O(1)入队和出队。",
+      "idea": "采用一个额外空位区分队满与队空；front==rear表示空，(rear+1)%CAP==front表示满。",
+      "code": "#include <stdio.h>\n#define CAP 6\ntypedef struct{int a[CAP],front,rear;}Queue;\nint push(Queue*q,int x){\n    if((q->rear+1)%CAP==q->front)return 0; // 保留一个空位\n    q->a[q->rear]=x;\n    q->rear=(q->rear+1)%CAP;              // 队尾循环移动\n    return 1;\n}\nint pop(Queue*q,int*out){\n    if(q->front==q->rear)return 0;        // 队列为空\n    *out=q->a[q->front];                  // 输出队首\n    q->front=(q->front+1)%CAP;            // 队头循环移动\n    return 1;\n}\nint main(void){\n    Queue q={{0},0,0};int x;\n    push(&q,1);push(&q,2);\n    pop(&q,&x);printf(\"%d\\n\",x);\n    return 0;\n}"
+    },
+    "animation": {
+      "layout": "array",
+      "brute": [
+        {
+          "array": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "text": "队列初始为空（这里0表示示意空位）。"
+        },
+        {
+          "array": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "text": "push(1)：元素放入数组下标0。"
+        },
+        {
+          "array": [
+            1,
+            2,
+            0,
+            0
+          ],
+          "text": "push(2)：元素2追加到下标1。"
+        },
+        {
+          "array": [
+            2,
+            0,
+            0,
+            0
+          ],
+          "text": "pop：返回1，并把2左移到队首。"
+        },
+        {
+          "array": [
+            2,
+            0,
+            0,
+            0
+          ],
+          "text": "peek：查看队首2，不删除。"
+        }
+      ],
+      "optimal": [
+        {
+          "array": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "text": "in和out两个栈都是空的（0为示意空位）。"
+        },
+        {
+          "array": [
+            1,
+            2,
+            0,
+            0
+          ],
+          "text": "push1,push2都压入in，此时in栈顶是2。"
+        },
+        {
+          "array": [
+            2,
+            1,
+            0,
+            0
+          ],
+          "text": "准备pop，out为空，把in中的2、1依次倒入out；out栈顶是1。"
+        },
+        {
+          "array": [
+            2,
+            0,
+            0,
+            0
+          ],
+          "text": "pop从out栈顶弹出1，剩下队首是2。"
+        },
+        {
+          "array": [
+            2,
+            0,
+            0,
+            0
+          ],
+          "text": "peek读取out栈顶2。"
+        }
+      ]
+    }
+  },
+  {
+    "year": "408风格",
+    "difficulty": "基础—中等",
+    "time": "15–20 分钟",
+    "id": "array-two-pointer-20261019",
+    "date": "2026-10-19",
+    "number": "原创",
+    "category": "数组 · 双指针",
+    "title": "有序数组原地去重",
+    "source": "",
+    "question": "给定非递减数组[1,1,2,2,3]，原地保留每种元素一次，输出新长度和前缀。",
+    "constraint": "C语言实现，尽量使用408大纲内的数组、指针、队列和递归；说明是否满足原题的空间与结构限制。",
+    "sample": "输入：5\n1 1 2 2 3\n输出：3\n1 2 3",
+    "brute": {
+      "tag": "朴素保底",
+      "title": "直观解法",
+      "idea": "朴素法逐个比较已收集元素",
+      "complexity": "O(n²)时间，O(n)空间",
+      "risk": "能正确去重，但用了 O(n) 辅助数组；原题要求原地修改时不能只写它。",
+      "code": "#include <stdio.h>\n\nint main(void) {\n    int a[] = {1, 1, 2, 2, 3};\n    int b[5];\n    int n = 5, k = 0;\n\n    for (int i = 0; i < n; i++) {\n        int seen = 0;\n        for (int j = 0; j < k; j++) {\n            if (b[j] == a[i]) {\n                seen = 1;\n                break;\n            }\n        }\n        if (!seen) {\n            b[k++] = a[i];\n        }\n    }\n\n    printf(\"%d\\n\", k);\n    for (int i = 0; i < k; i++) {\n        printf(\"%d%c\", b[i], i + 1 == k ? '\\n' : ' ');\n    }\n    return 0;\n}",
+      "explain": [
+        "朴素法逐个比较已收集元素",
+        "根据代码中循环或递归的访问次数计算时间复杂度。",
+        "检查空输入和边界条件。"
+      ]
+    },
+    "optimal": {
+      "tag": "考场最优",
+      "title": "408标准实现",
+      "idea": "快慢指针：读指针i扫描，写指针k仅在遇到新值时前进",
+      "complexity": "O(n)时间，O(1)额外空间",
+      "risk": "必须利用原数组已排序的条件，保持前 k 个元素始终互不重复。",
+      "code": "#include <stdio.h>\n\n// 有序数组去重；前 k 个位置始终保存已保留的元素。\nint removeDuplicates(int a[], int n) {\n    int k = 0;\n    for (int i = 0; i < n; i++) {\n        if (k == 0 || a[i] != a[k - 1]) {\n            a[k++] = a[i];\n        }\n    }\n    return k;\n}\n\nint main(void) {\n    int a[] = {1, 1, 2, 2, 3};\n    int n = 5;\n    int k = removeDuplicates(a, n);\n\n    printf(\"%d\\n\", k);\n    for (int i = 0; i < k; i++) {\n        printf(\"%d%c\", a[i], i + 1 == k ? '\\n' : ' ');\n    }\n    return 0;\n}",
+      "explain": [
+        "快慢指针：读指针i扫描，写指针k仅在遇到新值时前进",
+        "写清楚指针移动、终止条件和返回值。",
+        "复杂度由每个元素或结点访问次数决定。"
+      ]
+    },
+    "tips": [
+      "朴素法使用新数组，不满足原地去重的空间要求。",
+      "有序是关键：读指针 i 扫描，写指针 k 保存不重复前缀。",
+      "n=0 时循环不执行，直接返回 k=0。"
+    ],
+    "variation": {
+      "question": "变式：说明输入为空时如何处理，并分析空间复杂度是否满足原地要求。",
+      "idea": "先区分额外存储与输入数据本身；递归调用栈也计入辅助空间。",
+      "code": "#include <stdio.h>\n\n// 有序数组去重；前 k 个位置始终保存已保留的元素。\nint removeDuplicates(int a[], int n) {\n    int k = 0;\n    for (int i = 0; i < n; i++) {\n        if (k == 0 || a[i] != a[k - 1]) {\n            a[k++] = a[i];\n        }\n    }\n    return k;\n}\n\nint main(void) {\n    int a[] = {1, 1, 2, 2, 3};\n    int n = 5;\n    int k = removeDuplicates(a, n);\n\n    printf(\"%d\\n\", k);\n    for (int i = 0; i < k; i++) {\n        printf(\"%d%c\", a[i], i + 1 == k ? '\\n' : ' ');\n    }\n    return 0;\n}"
+    },
+    "animation": {
+      "layout": "array",
+      "brute": [
+        {
+          "array": [
+            1,
+            1,
+            2,
+            2,
+            3
+          ],
+          "text": "朴素法：逐项检查并维护结果。"
+        }
+      ],
+      "optimal": [
+        {
+          "array": [
+            1,
+            1,
+            2,
+            2,
+            3
+          ],
+          "text": "快慢指针：读指针i扫描，写指针k仅在遇到新值时前进"
+        },
+        {
+          "array": [
+            1,
+            2,
+            3
+          ],
+          "text": "执行结束后检查输出和边界。"
+        }
+      ]
+    }
+  },
+  {
+    "year": "408风格",
+    "difficulty": "基础—中等",
+    "time": "15–20 分钟",
+    "id": "list-reverse-20261020",
+    "date": "2026-10-20",
+    "number": "原创",
+    "category": "链表 · 指针",
+    "title": "单链表原地逆置",
+    "source": "",
+    "question": "给定单链表1→2→3→4，逆置后依次输出4 3 2 1。",
+    "constraint": "C语言实现，尽量使用408大纲内的数组、指针、队列和递归；说明是否满足原题的空间与结构限制。",
+    "sample": "输入：1 2 3 4\n输出：4 3 2 1",
+    "brute": {
+      "tag": "朴素保底",
+      "title": "直观解法",
+      "idea": "先用数组保存各结点地址，再按逆序重连 next 指针；真正改变链表，但占 O(n) 辅助空间",
+      "complexity": "O(n) 时间，O(n) 额外空间",
+      "risk": "确实完成链表逆置，但需要额外保存 n 个结点地址，不满足 O(1) 空间的原地要求。",
+      "code": "#include <stdio.h>\n\ntypedef struct Node {\n    int data;\n    struct Node *next;\n} Node;\n\n// 朴素解法：额外用数组保存结点地址，再倒序重连。\nNode *reverseWithArray(Node *head, Node *refs[]) {\n    int n = 0;\n    for (Node *p = head; p != NULL; p = p->next) {\n        refs[n++] = p;\n    }\n\n    for (int i = n - 1; i > 0; i--) {\n        refs[i]->next = refs[i - 1];\n    }\n    if (n > 0) {\n        refs[0]->next = NULL;\n        return refs[n - 1];\n    }\n    return NULL;\n}\n\nint main(void) {\n    Node a[4];\n    for (int i = 0; i < 4; i++) {\n        a[i].data = i + 1;\n        a[i].next = (i < 3) ? &a[i + 1] : NULL;\n    }\n\n    Node *refs[4];  // 样例恰好有 4 个结点\n    Node *head = reverseWithArray(&a[0], refs);\n\n    for (Node *p = head; p != NULL; p = p->next) {\n        printf(\"%d%c\", p->data, p->next ? ' ' : '\\n');\n    }\n    return 0;\n}",
+      "explain": [
+        "顺序扫描链表，refs[i] 保存第 i 个结点地址（样例数组容量是4）。",
+        "倒着令每个结点指向它的原前驱，最后将原头结点的 next 置 NULL。",
+        "返回原尾结点作为新表头，额外数组使空间复杂度为 O(n)。"
+      ]
+    },
+    "optimal": {
+      "tag": "考场最优",
+      "title": "408标准实现",
+      "idea": "三指针prev、cur、next逐条改变链表指向",
+      "complexity": "O(n)时间，O(1)额外空间",
+      "risk": "务必先用 next 保存 cur->next，再修改 cur->next；否则剩余链表会丢失。",
+      "code": "#include <stdio.h>\n\ntypedef struct Node {\n    int data;\n    struct Node *next;\n} Node;\n\n// 三指针原地逆置：O(n) 时间，O(1) 额外空间。\nNode *reverse(Node *head) {\n    Node *prev = NULL;\n    Node *cur = head;\n\n    while (cur != NULL) {\n        Node *next = cur->next;  // 先保留后继，避免断链\n        cur->next = prev;        // 当前结点指向前驱\n        prev = cur;              // 前驱前进\n        cur = next;              // 处理原链表下一个结点\n    }\n    return prev;  // 新表头\n}\n\nint main(void) {\n    Node a[4];\n    for (int i = 0; i < 4; i++) {\n        a[i].data = i + 1;\n        a[i].next = (i < 3) ? &a[i + 1] : NULL;\n    }\n\n    Node *head = reverse(&a[0]);\n    for (Node *p = head; p != NULL; p = p->next) {\n        printf(\"%d%c\", p->data, p->next ? ' ' : '\\n');\n    }\n    return 0;\n}",
+      "explain": [
+        "prev 表示逆置后链表的头，cur 表示待处理结点。",
+        "先保存 next，再让 cur->next 指向 prev；随后移动 prev 和 cur。",
+        "空链表直接返回 NULL，单结点链表原样返回；全程仅用三个指针。"
+      ]
+    },
+    "tips": [
+      "将数组倒序输出不等于真正逆置链表；必须修改 next 指向。",
+      "修改 cur->next 之前必须先保存 next，否则后续结点丢失。",
+      "reverse 返回的是新表头 prev，不是原来的 head。"
+    ],
+    "variation": {
+      "question": "变式：说明输入为空时如何处理，并分析空间复杂度是否满足原地要求。",
+      "idea": "先区分额外存储与输入数据本身；递归调用栈也计入辅助空间。",
+      "code": "#include <stdio.h>\n\ntypedef struct Node {\n    int data;\n    struct Node *next;\n} Node;\n\n// 三指针原地逆置：O(n) 时间，O(1) 额外空间。\nNode *reverse(Node *head) {\n    Node *prev = NULL;\n    Node *cur = head;\n\n    while (cur != NULL) {\n        Node *next = cur->next;  // 先保留后继，避免断链\n        cur->next = prev;        // 当前结点指向前驱\n        prev = cur;              // 前驱前进\n        cur = next;              // 处理原链表下一个结点\n    }\n    return prev;  // 新表头\n}\n\nint main(void) {\n    Node a[4];\n    for (int i = 0; i < 4; i++) {\n        a[i].data = i + 1;\n        a[i].next = (i < 3) ? &a[i + 1] : NULL;\n    }\n\n    Node *head = reverse(&a[0]);\n    for (Node *p = head; p != NULL; p = p->next) {\n        printf(\"%d%c\", p->data, p->next ? ' ' : '\\n');\n    }\n    return 0;\n}"
+    },
+    "animation": {
+      "layout": "diagram",
+      "brute": [
+        {
+          "diagram": "1 → 2 → 3 → 4 → NULL",
+          "text": "依次访问结点，用额外数组 refs 保存它们的地址。"
+        },
+        {
+          "diagram": "refs = [1, 2, 3, 4]",
+          "text": "顺序存储四个结点地址，共占 O(n) 额外空间。"
+        },
+        {
+          "diagram": "4 → 3 → 2 → 1 → NULL",
+          "text": "按 refs 的逆序重连 next，原链表被真正逆置。"
+        }
+      ],
+      "optimal": [
+        {
+          "diagram": "prev = NULL\ncur  = 1 → 2 → 3 → 4 → NULL",
+          "text": "初始 prev=NULL，cur 指向原头结点1。"
+        },
+        {
+          "diagram": "prev = 1 → NULL\ncur  = 2 → 3 → 4 → NULL",
+          "text": "保留 next=2，修改1的 next=NULL，再移动两个指针。"
+        },
+        {
+          "diagram": "prev = 2 → 1 → NULL\ncur  = 3 → 4 → NULL",
+          "text": "处理结点2，令2指向1。"
+        },
+        {
+          "diagram": "prev = 3 → 2 → 1 → NULL\ncur  = 4 → NULL",
+          "text": "处理结点3，令3指向2。"
+        },
+        {
+          "diagram": "prev = 4 → 3 → 2 → 1 → NULL\ncur  = NULL",
+          "text": "处理结点4，cur 为空时结束，返回 prev。"
+        }
+      ]
+    }
+  },
+  {
+    "year": "408风格",
+    "difficulty": "基础—中等",
+    "time": "15–20 分钟",
+    "id": "tree-leaves-20261021",
+    "date": "2026-10-21",
+    "number": "原创",
+    "category": "二叉树 · 递归",
+    "title": "统计二叉树的叶子结点数",
+    "source": "",
+    "question": "给定二叉树：1的左右孩子为2、3，2的左孩子为4。统计叶子结点数量，答案为2（结点3、4）。",
+    "constraint": "C语言实现，尽量使用408大纲内的数组、指针、队列和递归；说明是否满足原题的空间与结构限制。",
+    "sample": "输入：树边：1-2,1-3,2-4\n输出：2",
+    "brute": {
+      "tag": "朴素保底",
+      "title": "直观解法",
+      "idea": "用队列做层序遍历，每取出一个结点，就检查左右孩子是否都为空",
+      "complexity": "O(n)时间，O(n)队列空间",
+      "risk": "队列容量应覆盖结点总数；样例中 4 个结点，所以分配 4 个指针位置。",
+      "code": "#include <stdio.h>\n\ntypedef struct TreeNode {\n    int data;\n    struct TreeNode *left;\n    struct TreeNode *right;\n} TreeNode;\n\n// 层序遍历：队列容量须不小于二叉树结点总数。\nint countLeavesBFS(TreeNode *root, TreeNode *queue[]) {\n    if (root == NULL) {\n        return 0;\n    }\n\n    int front = 0, rear = 0, cnt = 0;\n    queue[rear++] = root;\n\n    while (front < rear) {\n        TreeNode *p = queue[front++];\n\n        if (p->left == NULL && p->right == NULL) {\n            cnt++;\n        }\n        if (p->left != NULL) {\n            queue[rear++] = p->left;\n        }\n        if (p->right != NULL) {\n            queue[rear++] = p->right;\n        }\n    }\n    return cnt;\n}\n\nint main(void) {\n    TreeNode n4 = {4, NULL, NULL};\n    TreeNode n2 = {2, &n4, NULL};\n    TreeNode n3 = {3, NULL, NULL};\n    TreeNode n1 = {1, &n2, &n3};\n\n    TreeNode *queue[4];  // 样例树共有 4 个结点\n    printf(\"%d\\n\", countLeavesBFS(&n1, queue));\n    return 0;\n}",
+      "explain": [
+        "根结点先入队，然后按层从左到右出队。",
+        "只有 p->left 和 p->right 同时为 NULL 时才计数。",
+        "每个结点最多入队一次，时间 O(n)，队列空间最坏 O(n)。"
+      ]
+    },
+    "optimal": {
+      "tag": "考场最优",
+      "title": "先序递归（你的写法）",
+      "idea": "先判断当前结点是不是叶子，再递归左右子树；把两次递归的返回值累加到 cnt",
+      "complexity": "O(n)时间，O(h)递归栈空间",
+      "risk": "空指针应返回 0；每次函数调用的 cnt 都是局部变量，左右子树的结果必须用 += 接收。",
+      "code": "#include <stdio.h>\n\ntypedef struct TreeNode {\n    int data;\n    struct TreeNode *left;\n    struct TreeNode *right;\n} TreeNode;\n\n// 先序处理：先检查当前结点，再递归左右子树。\nint CTC(TreeNode *T) {\n    if (T == NULL) {\n        return 0;  // 空树没有叶子\n    }\n\n    int cnt = 0;\n    if (T->left == NULL && T->right == NULL) {\n        cnt++;      // 当前结点是叶子\n    }\n\n    cnt += CTC(T->left);   // 接收左子树的叶子数\n    cnt += CTC(T->right);  // 接收右子树的叶子数\n    return cnt;\n}\n\nint main(void) {\n    TreeNode n4 = {4, NULL, NULL};\n    TreeNode n2 = {2, &n4, NULL};\n    TreeNode n3 = {3, NULL, NULL};\n    TreeNode n1 = {1, &n2, &n3};\n\n    printf(\"%d\\n\", CTC(&n1));  // 输出 2\n    return 0;\n}",
+      "explain": [
+        "先序顺序：当前结点 → 左子树 → 右子树。若左右孩子都为空，当前 cnt 加 1。",
+        "CTC(NULL) 返回 0，而不是 1；空树中没有叶子结点。",
+        "递归调用不会自动共享局部 cnt，必须写 cnt += CTC(T->left) 和 cnt += CTC(T->right)。"
+      ]
+    },
+    "tips": [
+      "空树返回 0，不是 1：NULL 本身不算叶子结点。",
+      "局部变量 cnt 在每一层独立创建，递归结果必须累加回当前层。",
+      "判断叶子要用 &&：左右孩子必须同时为空；只有一个孩子不是叶子。"
+    ],
+    "variation": {
+      "question": "递归进阶：能否不使用 cnt，直接返回左右子树叶子数之和？空树、单结点树、样例树分别输出多少？",
+      "idea": "空树返回0，左右孩子都为空返回1，否则返回左右子树叶子数之和。这与先序计数版等价。",
+      "code": "#include <stdio.h>\n\ntypedef struct TreeNode {\n    int data;\n    struct TreeNode *left;\n    struct TreeNode *right;\n} TreeNode;\n\n// 同样是先序递归的简化写法。\nint countLeaves(TreeNode *T) {\n    if (T == NULL) {\n        return 0;\n    }\n    if (T->left == NULL && T->right == NULL) {\n        return 1;\n    }\n    return countLeaves(T->left) + countLeaves(T->right);\n}\n\nint main(void) {\n    TreeNode n4 = {4, NULL, NULL};\n    TreeNode n2 = {2, &n4, NULL};\n    TreeNode n3 = {3, NULL, NULL};\n    TreeNode n1 = {1, &n2, &n3};\n\n    printf(\"%d\\n\", countLeaves(NULL));  // 空树：0\n    printf(\"%d\\n\", countLeaves(&n4));   // 单结点：1\n    printf(\"%d\\n\", countLeaves(&n1));   // 样例树：2\n    return 0;\n}"
+    },
+    "animation": {
+      "layout": "diagram",
+      "brute": [
+        {
+          "diagram": "    1\n   / \\\n  2   3\n /\n4\n\n队列 [1]，叶子数=0",
+          "text": "结点1入队，开始层序遍历。"
+        },
+        {
+          "diagram": "    1\n   / \\\n  2   3\n /\n4\n\n出队 1；队列 [2,3]；叶子数=0",
+          "text": "结点1有两个孩子，不是叶子；将2、3入队。"
+        },
+        {
+          "diagram": "    1\n   / \\\n  2   3\n /\n4\n\n出队 2；队列 [3,4]；叶子数=0",
+          "text": "结点2有左孩子4，不是叶子，结点4入队。"
+        },
+        {
+          "diagram": "    1\n   / \\\n  2   3\n /\n4\n\n出队 3；队列 [4]；叶子数=1",
+          "text": "结点3左右孩子都为空，计数加1。"
+        },
+        {
+          "diagram": "    1\n   / \\\n  2   3\n /\n4\n\n出队 4；队列 []；叶子数=2",
+          "text": "结点4也是叶子，最终返回2。"
+        }
+      ],
+      "optimal": [
+        {
+          "diagram": "    1\n   / \\\n  2   3\n /\n4\n\n访问 1：cnt=0",
+          "text": "先序第1步，结点1有孩子，当前层 cnt=0，然后递归左子树。"
+        },
+        {
+          "diagram": "    1\n   / \\\n  2   3\n /\n4\n\n访问 2：cnt=0",
+          "text": "结点2不是叶子，继续递归到左孩子4。"
+        },
+        {
+          "diagram": "    1\n   / \\\n  2   3\n /\n4\n\n访问 4：返回 1",
+          "text": "结点4左右孩子均为空，所以此层返回1。"
+        },
+        {
+          "diagram": "    1\n   / \\\n  2   3\n /\n4\n\n回到 2：cnt=1；右空返回0",
+          "text": "CTC(4)=1，加到结点2的 cnt 中；右子树为空，结点2返回1。"
+        },
+        {
+          "diagram": "    1\n   / \\\n  2   3\n /\n4\n\n访问 3：返回 1",
+          "text": "回到结点1，再递归右子树，结点3是叶子，返回1。"
+        },
+        {
+          "diagram": "    1\n   / \\\n  2   3\n /\n4\n\n回到 1：cnt=1+1=2",
+          "text": "左子树返回1，右子树返回1，最外层累加得到2。"
+        }
+      ]
+    }
+  },
+  {
+    "id": "lc215-20261022",
+    "date": "2026-10-22",
+    "year": "LeetCode · 408方法训练",
+    "number": "215",
+    "category": "数组 · 快速划分 · 第k大",
+    "title": "无序数组中寻找第k大元素",
+    "difficulty": "中等",
+    "time": "15–20分钟",
+    "source": "https://leetcode.com/problems/kth-largest-element-in-an-array/",
+    "question": "给定整数数组a和k，求降序排列后的第k个元素，重复值分别计数。例如[3,2,1,5,6,4]，k=2，答案5。",
+    "constraint": "1≤k≤n，元素可重复；用408范围内的C语言实现，禁止排序库。与2016年408第k小的划分思想相关，并非原题复刻。",
+    "sample": "a=[3,2,1,5,6,4],k=2\n输出：5",
+    "brute": {
+      "tag": "朴素保底",
+      "title": "选择排序",
+      "idea": "每趟把剩余最大值换到前面，最后返回a[k-1]。",
+      "complexity": "时间O(n²)，空间O(1)",
+      "risk": "能做但原题n很大时可能超时。",
+      "code": "#include <stdio.h>\nint kth_sort(int a[],int n,int k){\n    for(int i=0;i<n;i++){\n        int p=i;\n        for(int j=i+1;j<n;j++)if(a[j]>a[p])p=j; // 找剩余最大值\n        int t=a[i];a[i]=a[p];a[p]=t;              // 最大值放前面\n    }\n    return a[k-1];                               // 第k大对应下标k-1\n}\nint main(void){\n    int a[]={3,2,1,5,6,4};\n    printf(\"%d\\n\",kth_sort(a,6,2));\n    return 0;\n}",
+      "explain": [
+        "第1趟选6，第2趟选5，返回第2位。",
+        "比较次数为(n-1)+…+1，故O(n²)。",
+        "[5,5,3]的第2大仍是5，不能去重。"
+      ]
+    },
+    "optimal": {
+      "tag": "考场最优",
+      "title": "快速选择",
+      "idea": "以末元素为枢轴，把≥枢轴的数放左边；只在含目标下标k-1的一侧继续。",
+      "complexity": "平均O(n)，最坏O(n²)，空间O(1)",
+      "risk": "固定枢轴可能退化，不能把平均复杂度当最坏。",
+      "code": "#include <stdio.h>\nint kth_select(int a[],int n,int k){\n    int left=0,right=n-1,target=k-1;\n    while(left<=right){\n        int pivot=a[right],i=left;\n        for(int j=left;j<right;j++){\n            if(a[j]>=pivot){                 // 大的数移到左侧\n                int t=a[i];a[i]=a[j];a[j]=t;\n                i++;\n            }\n        }\n        int t=a[i];a[i]=a[right];a[right]=t; // 枢轴落在最终排名i\n        if(i==target)return a[i];\n        if(i>target)right=i-1;             // 只保留左侧\n        else left=i+1;                    // 只保留右侧\n    }\n    return 0;                              // 题目保证k合法\n}\nint main(void){\n    int a[]={3,2,1,5,6,4};\n    printf(\"%d\\n\",kth_select(a,6,2));\n    return 0;\n}",
+      "explain": [
+        "划分后枢轴的下标i已确定，不必再参与排序。",
+        "若i>k-1，只需左区间；否则只需右区间。",
+        "平均处理n+n/2+…=O(n)，极端可能O(n²)。"
+      ]
+    },
+    "variation": {
+      "question": "变式：求同一数组的第2小元素，输出2。",
+      "idea": "把划分条件改为≤枢轴，目标仍是k-1。",
+      "code": "#include <stdio.h>\nint kth_smallest(int a[],int n,int k){\n    int left=0,right=n-1,target=k-1;\n    while(left<=right){\n        int pivot=a[right],i=left;\n        for(int j=left;j<right;j++)if(a[j]<=pivot){\n            int t=a[i];a[i]=a[j];a[j]=t;i++; // 小数放左侧\n        }\n        int t=a[i];a[i]=a[right];a[right]=t;\n        if(i==target)return a[i];\n        if(i>target)right=i-1;else left=i+1;\n    }\n    return 0;\n}\nint main(void){int a[]={3,2,1,5,6,4};printf(\"%d\\n\",kth_smallest(a,6,2));return 0;}"
+    },
+    "animation": {
+      "layout": "array",
+      "brute": [
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "text": "初始数组。"
+        },
+        {
+          "array": [
+            6,
+            2,
+            1,
+            5,
+            3,
+            4
+          ],
+          "text": "选择排序第一趟，6换到前面。"
+        },
+        {
+          "array": [
+            6,
+            5,
+            1,
+            2,
+            3,
+            4
+          ],
+          "text": "第二趟5就位。"
+        }
+      ],
+      "optimal": [
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "text": "以4为枢轴，目标下标1。"
+        },
+        {
+          "array": [
+            5,
+            6,
+            4,
+            3,
+            2,
+            1
+          ],
+          "text": "枢轴4落在下标2，缩小到左区间。"
+        },
+        {
+          "array": [
+            6,
+            5,
+            4,
+            3,
+            2,
+            1
+          ],
+          "text": "左侧再次划分，找到第2大5。"
+        }
+      ]
+    },
+    "tips": [
+      "方法：快速划分与目标区间缩小。",
+      "朴素排序可作保底，但原题大规模会超时。",
+      "边界：k=1、k=n、数组有重复或负数。",
+      "选题：408第k小思想，区别于之前的二分查找。"
+    ]
+  },
+  {
+    "id": "lc141-20261023",
+    "date": "2026-10-23",
+    "year": "LeetCode · 408方法训练",
+    "number": "141",
+    "category": "链表 · 快慢指针 · 判环",
+    "title": "判断单链表是否存在环",
+    "difficulty": "中等",
+    "time": "15–20分钟",
+    "source": "https://leetcode.com/problems/linked-list-cycle/",
+    "question": "给定单链表头结点，判断沿next能否再次访问同一结点。示例3→2→0→-4→2有环，输出1。",
+    "constraint": "结点数0至10000，值可重复；必须比较结点地址，不能比较值。朴素解使用最多10000个地址的表。",
+    "sample": "3→2→0→-4，尾结点指回2\n输出：1",
+    "brute": {
+      "tag": "朴素保底",
+      "title": "保存访问过的地址",
+      "idea": "逐结点访问，在地址数组中线性查找是否已出现。",
+      "complexity": "O(n²)时间，O(n)空间",
+      "risk": "不满足O(1)空间，容量不足时返回-1而非错误判定。",
+      "code": "#include <stdio.h>\n#define CAP 10000\ntypedef struct Node{int val;struct Node*next;}Node;\nint has_cycle_seen(Node*head){\n    Node*seen[CAP];int n=0;\n    while(head){\n        for(int i=0;i<n;i++)if(seen[i]==head)return 1; // 同一地址再次出现\n        if(n==CAP)return -1;                 // 超出示例容量，不能误判\n        seen[n++]=head;\n        head=head->next;\n    }\n    return 0;\n}\nint main(void){\n    Node a[4]={{3,NULL},{2,NULL},{0,NULL},{-4,NULL}};\n    a[0].next=&a[1];a[1].next=&a[2];a[2].next=&a[3];a[3].next=&a[1];\n    printf(\"%d\\n\",has_cycle_seen(&a[0]));\n    return 0;\n}",
+      "explain": [
+        "先检查地址是否出现，再记录。",
+        "无环最终到NULL，有环最终重复地址。",
+        "结点值相同不代表同一结点。"
+      ]
+    },
+    "optimal": {
+      "tag": "考场最优",
+      "title": "Floyd快慢指针",
+      "idea": "slow每轮走一步，fast走两步；有环必相遇，无环fast到NULL。",
+      "complexity": "O(n)时间，O(1)空间",
+      "risk": "先判断fast和fast->next，避免空指针访问。",
+      "code": "#include <stdio.h>\ntypedef struct Node{int val;struct Node*next;}Node;\nint has_cycle(Node*head){\n    Node*slow=head,*fast=head;\n    while(fast && fast->next){\n        slow=slow->next;               // 慢指针一步\n        fast=fast->next->next;         // 快指针两步\n        if(slow==fast)return 1;        // 比较地址而非结点值\n    }\n    return 0;\n}\nint main(void){\n    Node a[4]={{3,NULL},{2,NULL},{0,NULL},{-4,NULL}};\n    a[0].next=&a[1];a[1].next=&a[2];a[2].next=&a[3];a[3].next=&a[1];\n    printf(\"%d\\n\",has_cycle(&a[0]));\n    return 0;\n}",
+      "explain": [
+        "无环时fast先到NULL。",
+        "进入环后相对速度为1，有限环长内必相遇。",
+        "空链表、单结点自环与无环均可处理。"
+      ]
+    },
+    "variation": {
+      "question": "变式（力扣142）：找入环点，示例输出2。",
+      "idea": "相遇后一个指针从head出发，另一个从相遇点出发，同速走到入口。",
+      "code": "#include <stdio.h>\ntypedef struct Node{int val;struct Node*next;}Node;\nNode*entry(Node*head){\n    Node*slow=head,*fast=head;\n    while(fast && fast->next){\n        slow=slow->next;fast=fast->next->next;\n        if(slow==fast){\n            Node*p=head;\n            while(p!=slow){p=p->next;slow=slow->next;} // 同速走到入口\n            return p;\n        }\n    }\n    return NULL;\n}\nint main(void){\n    Node a[4]={{3,NULL},{2,NULL},{0,NULL},{-4,NULL}};\n    a[0].next=&a[1];a[1].next=&a[2];a[2].next=&a[3];a[3].next=&a[1];\n    Node*p=entry(&a[0]);printf(\"%d\\n\",p?p->val:-1);\n    return 0;\n}"
+    },
+    "animation": {
+      "layout": "array",
+      "brute": [
+        {
+          "array": [
+            3,
+            2,
+            0,
+            -4
+          ],
+          "text": "先记录结点3的地址。"
+        },
+        {
+          "array": [
+            3,
+            2,
+            0,
+            -4
+          ],
+          "text": "依次记录2、0、-4。"
+        },
+        {
+          "array": [
+            3,
+            2,
+            0,
+            -4
+          ],
+          "text": "尾指针回到2，地址重复，判定有环。"
+        }
+      ],
+      "optimal": [
+        {
+          "array": [
+            3,
+            2,
+            0,
+            -4
+          ],
+          "text": "slow与fast从3开始。"
+        },
+        {
+          "array": [
+            3,
+            2,
+            0,
+            -4
+          ],
+          "text": "第1轮slow在2、fast在0；第2轮slow在0、fast在2。"
+        },
+        {
+          "array": [
+            3,
+            2,
+            0,
+            -4
+          ],
+          "text": "第3轮两者都在-4，相遇。"
+        }
+      ]
+    },
+    "tips": [
+      "快慢指针也用于找中点，但本题判环关注相遇。",
+      "证明：环上相对速度为1。",
+      "反例：1→1→NULL，值相同但无环。",
+      "拓展：寻找入环结点。"
+    ]
+  },
+  {
+    "id": "lc48-20261024",
+    "date": "2026-10-24",
+    "year": "LeetCode · 408方法训练",
+    "number": "48",
+    "category": "矩阵 · 下标映射 · 原地操作",
+    "title": "n×n矩阵原地顺时针旋转90度",
+    "difficulty": "中等",
+    "time": "15–20分钟",
+    "source": "https://leetcode.com/problems/rotate-image/",
+    "question": "将n×n矩阵顺时针旋转90度，原地修改。输入1至9的3×3矩阵，输出7 4 1 / 8 5 2 / 9 6 3。",
+    "constraint": "n≥1；先用辅助矩阵推导下标映射，再实现O(1)额外空间的原地解。",
+    "sample": "1 2 3\n4 5 6\n7 8 9\n输出：\n7 4 1\n8 5 2\n9 6 3",
+    "brute": {
+      "tag": "朴素保底",
+      "title": "辅助矩阵坐标映射",
+      "idea": "把(i,j)写入(j,n-1-i)，再拷回原矩阵。",
+      "complexity": "O(n²)时间，O(n²)空间",
+      "risk": "原题要求原地旋转，本法只能用于推导，不能满足空间限制。",
+      "code": "#include <stdio.h>\nvoid rotate_copy(int n,int a[n][n]){\n    int b[n][n];\n    for(int i=0;i<n;i++)for(int j=0;j<n;j++)\n        b[j][n-1-i]=a[i][j];         // (i,j) -> (j,n-1-i)\n    for(int i=0;i<n;i++)for(int j=0;j<n;j++)\n        a[i][j]=b[i][j];             // 把新矩阵复制回原矩阵\n}\nint main(void){\n    int a[3][3]={{1,2,3},{4,5,6},{7,8,9}};\n    rotate_copy(3,a);\n    for(int i=0;i<3;i++){for(int j=0;j<3;j++)printf(\"%d%c\",a[i][j],j==2?'\\n':' ');}\n    return 0;\n}",
+      "explain": [
+        "左下角7的坐标(2,0)变成(0,0)。",
+        "二维遍历共n²个元素。",
+        "直接在原数组覆盖会破坏未读数据。"
+      ]
+    },
+    "optimal": {
+      "tag": "考场最优",
+      "title": "主对角线转置，再逐行逆置",
+      "idea": "先交换a[i][j]和a[j][i]，再交换每行左右对称位置。",
+      "complexity": "O(n²)时间，O(1)空间",
+      "risk": "转置只处理i<j，行逆置只交换前半段。",
+      "code": "#include <stdio.h>\nvoid rotate_cw(int n,int a[n][n]){\n    for(int i=0;i<n;i++)for(int j=i+1;j<n;j++){\n        int t=a[i][j];a[i][j]=a[j][i];a[j][i]=t; // 主对角线转置\n    }\n    for(int i=0;i<n;i++)for(int j=0;j<n/2;j++){\n        int t=a[i][j];a[i][j]=a[i][n-1-j];a[i][n-1-j]=t; // 每行逆置\n    }\n}\nint main(void){\n    int a[3][3]={{1,2,3},{4,5,6},{7,8,9}};\n    rotate_cw(3,a);\n    for(int i=0;i<3;i++){for(int j=0;j<3;j++)printf(\"%d%c\",a[i][j],j==2?'\\n':' ');}\n    return 0;\n}",
+      "explain": [
+        "转置(i,j)→(j,i)，再行逆置→(j,n-1-i)。",
+        "每次交换只用临时变量，额外空间O(1)。",
+        "n=1时两步均不操作；奇数阶中间列不用交换。"
+      ]
+    },
+    "variation": {
+      "question": "变式：逆时针旋转90度，输出3 6 9 / 2 5 8 / 1 4 7。",
+      "idea": "主对角线转置，再逐列上下逆置，坐标变换(i,j)→(n-1-j,i)。",
+      "code": "#include <stdio.h>\nvoid rotate_ccw(int n,int a[n][n]){\n    for(int i=0;i<n;i++)for(int j=i+1;j<n;j++){\n        int t=a[i][j];a[i][j]=a[j][i];a[j][i]=t; // 转置\n    }\n    for(int j=0;j<n;j++)for(int i=0;i<n/2;i++){\n        int t=a[i][j];a[i][j]=a[n-1-i][j];a[n-1-i][j]=t; // 每列逆置\n    }\n}\nint main(void){\n    int a[3][3]={{1,2,3},{4,5,6},{7,8,9}};\n    rotate_ccw(3,a);\n    for(int i=0;i<3;i++){for(int j=0;j<3;j++)printf(\"%d%c\",a[i][j],j==2?'\\n':' ');}\n    return 0;\n}"
+    },
+    "animation": {
+      "layout": "array",
+      "brute": [
+        {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9
+          ],
+          "text": "原矩阵。"
+        },
+        {
+          "array": [
+            7,
+            4,
+            1,
+            8,
+            5,
+            2,
+            9,
+            6,
+            3
+          ],
+          "text": "用辅助矩阵映射并复制回原数组。"
+        }
+      ],
+      "optimal": [
+        {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9
+          ],
+          "text": "原矩阵。"
+        },
+        {
+          "array": [
+            1,
+            4,
+            7,
+            2,
+            5,
+            8,
+            3,
+            6,
+            9
+          ],
+          "text": "主对角线转置。"
+        },
+        {
+          "array": [
+            7,
+            4,
+            1,
+            8,
+            5,
+            2,
+            9,
+            6,
+            3
+          ],
+          "text": "每行逆置完成顺时针旋转。"
+        }
+      ]
+    },
+    "tips": [
+      "坐标映射(i,j)→(j,n-1-i)比背代码更稳。",
+      "朴素法不符合原地限制。",
+      "反例：若左上角变成3，则旋转方向反了。",
+      "矩阵下标与空间限制是408补盲方向。"
+    ]
+  }
+]
