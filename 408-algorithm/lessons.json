@@ -1743,5 +1743,129 @@
         }
       ]
     }
+  },
+  {
+    "id": "lc215-20261022",
+    "date": "2026-10-22",
+    "year": "LeetCode · 408方法训练",
+    "number": "215",
+    "category": "数组 · 快速划分 · 第k大",
+    "title": "无序数组中寻找第k大元素",
+    "difficulty": "中等",
+    "time": "15–20分钟",
+    "source": "https://leetcode.com/problems/kth-largest-element-in-an-array/",
+    "question": "给定整数数组a和k，求降序排列后的第k个元素，重复值分别计数。例如[3,2,1,5,6,4]，k=2，答案5。",
+    "constraint": "1≤k≤n，元素可重复；用408范围内的C语言实现，禁止排序库。与2016年408第k小的划分思想相关，并非原题复刻。",
+    "sample": "a=[3,2,1,5,6,4],k=2\n输出：5",
+    "brute": {
+      "tag": "朴素保底",
+      "title": "选择排序",
+      "idea": "每趟把剩余最大值换到前面，最后返回a[k-1]。",
+      "complexity": "时间O(n²)，空间O(1)",
+      "risk": "能做但原题n很大时可能超时。",
+      "code": "#include <stdio.h>\nint kth_sort(int a[],int n,int k){\n    for(int i=0;i<n;i++){\n        int p=i;\n        for(int j=i+1;j<n;j++)if(a[j]>a[p])p=j; // 找剩余最大值\n        int t=a[i];a[i]=a[p];a[p]=t;              // 最大值放前面\n    }\n    return a[k-1];                               // 第k大对应下标k-1\n}\nint main(void){\n    int a[]={3,2,1,5,6,4};\n    printf(\"%d\\n\",kth_sort(a,6,2));\n    return 0;\n}",
+      "explain": [
+        "第1趟选6，第2趟选5，返回第2位。",
+        "比较次数为(n-1)+…+1，故O(n²)。",
+        "[5,5,3]的第2大仍是5，不能去重。"
+      ]
+    },
+    "optimal": {
+      "tag": "考场最优",
+      "title": "快速选择",
+      "idea": "以末元素为枢轴，把≥枢轴的数放左边；只在含目标下标k-1的一侧继续。",
+      "complexity": "平均O(n)，最坏O(n²)，空间O(1)",
+      "risk": "固定枢轴可能退化，不能把平均复杂度当最坏。",
+      "code": "#include <stdio.h>\nint kth_select(int a[],int n,int k){\n    int left=0,right=n-1,target=k-1;\n    while(left<=right){\n        int pivot=a[right],i=left;\n        for(int j=left;j<right;j++){\n            if(a[j]>=pivot){                 // 大的数移到左侧\n                int t=a[i];a[i]=a[j];a[j]=t;\n                i++;\n            }\n        }\n        int t=a[i];a[i]=a[right];a[right]=t; // 枢轴落在最终排名i\n        if(i==target)return a[i];\n        if(i>target)right=i-1;             // 只保留左侧\n        else left=i+1;                    // 只保留右侧\n    }\n    return 0;                              // 题目保证k合法\n}\nint main(void){\n    int a[]={3,2,1,5,6,4};\n    printf(\"%d\\n\",kth_select(a,6,2));\n    return 0;\n}",
+      "explain": [
+        "划分后枢轴的下标i已确定，不必再参与排序。",
+        "若i>k-1，只需左区间；否则只需右区间。",
+        "平均处理n+n/2+…=O(n)，极端可能O(n²)。"
+      ]
+    },
+    "variation": {
+      "question": "变式：求同一数组的第2小元素，输出2。",
+      "idea": "把划分条件改为≤枢轴，目标仍是k-1。",
+      "code": "#include <stdio.h>\nint kth_smallest(int a[],int n,int k){\n    int left=0,right=n-1,target=k-1;\n    while(left<=right){\n        int pivot=a[right],i=left;\n        for(int j=left;j<right;j++)if(a[j]<=pivot){\n            int t=a[i];a[i]=a[j];a[j]=t;i++; // 小数放左侧\n        }\n        int t=a[i];a[i]=a[right];a[right]=t;\n        if(i==target)return a[i];\n        if(i>target)right=i-1;else left=i+1;\n    }\n    return 0;\n}\nint main(void){int a[]={3,2,1,5,6,4};printf(\"%d\\n\",kth_smallest(a,6,2));return 0;}"
+    },
+    "animation": {
+      "layout": "array",
+      "brute": [
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "text": "初始数组。"
+        },
+        {
+          "array": [
+            6,
+            2,
+            1,
+            5,
+            3,
+            4
+          ],
+          "text": "选择排序第一趟，6换到前面。"
+        },
+        {
+          "array": [
+            6,
+            5,
+            1,
+            2,
+            3,
+            4
+          ],
+          "text": "第二趟5就位。"
+        }
+      ],
+      "optimal": [
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "text": "以4为枢轴，目标下标1。"
+        },
+        {
+          "array": [
+            5,
+            6,
+            4,
+            3,
+            2,
+            1
+          ],
+          "text": "枢轴4落在下标2，缩小到左区间。"
+        },
+        {
+          "array": [
+            6,
+            5,
+            4,
+            3,
+            2,
+            1
+          ],
+          "text": "左侧再次划分，找到第2大5。"
+        }
+      ]
+    },
+    "tips": [
+      "方法：快速划分与目标区间缩小。",
+      "朴素排序可作保底，但原题大规模会超时。",
+      "边界：k=1、k=n、数组有重复或负数。",
+      "选题：408第k小思想，区别于之前的二分查找。"
+    ]
   }
 ]
