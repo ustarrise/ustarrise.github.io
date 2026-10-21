@@ -1487,8 +1487,8 @@
       "title": "直观解法",
       "idea": "朴素法逐个比较已收集元素",
       "complexity": "O(n²)时间，O(n)空间",
-      "risk": "先保证结果正确；注意朴素解法可能不满足原地或数据结构限制。",
-      "code": "#include <stdio.h>\nint main(void){int a[]={1,1,2,2,3},n=5,b[5],k=0;for(int i=0;i<n;i++){int seen=0;for(int j=0;j<k;j++)if(b[j]==a[i])seen=1;if(!seen)b[k++]=a[i];}printf(\"%d\\n\",k);for(int i=0;i<k;i++)printf(\"%d%c\",b[i],i+1==k?'\\n':' ');return 0;}",
+      "risk": "能正确去重，但用了 O(n) 辅助数组；原题要求原地修改时不能只写它。",
+      "code": "#include <stdio.h>\n\nint main(void) {\n    int a[] = {1, 1, 2, 2, 3};\n    int b[5];\n    int n = 5, k = 0;\n\n    for (int i = 0; i < n; i++) {\n        int seen = 0;\n        for (int j = 0; j < k; j++) {\n            if (b[j] == a[i]) {\n                seen = 1;\n                break;\n            }\n        }\n        if (!seen) {\n            b[k++] = a[i];\n        }\n    }\n\n    printf(\"%d\\n\", k);\n    for (int i = 0; i < k; i++) {\n        printf(\"%d%c\", b[i], i + 1 == k ? '\\n' : ' ');\n    }\n    return 0;\n}",
       "explain": [
         "朴素法逐个比较已收集元素",
         "根据代码中循环或递归的访问次数计算时间复杂度。",
@@ -1500,8 +1500,8 @@
       "title": "408标准实现",
       "idea": "快慢指针：读指针i扫描，写指针k仅在遇到新值时前进",
       "complexity": "O(n)时间，O(1)额外空间",
-      "risk": "先明确循环不变式或递归返回值的含义。",
-      "code": "#include <stdio.h>\nint main(void){int a[]={1,1,2,2,3},n=5,k=0;for(int i=0;i<n;i++)if(k==0||a[i]!=a[k-1])a[k++]=a[i];printf(\"%d\\n\",k);for(int i=0;i<k;i++)printf(\"%d%c\",a[i],i+1==k?'\\n':' ');return 0;}",
+      "risk": "必须利用原数组已排序的条件，保持前 k 个元素始终互不重复。",
+      "code": "#include <stdio.h>\n\n// 有序数组去重；前 k 个位置始终保存已保留的元素。\nint removeDuplicates(int a[], int n) {\n    int k = 0;\n    for (int i = 0; i < n; i++) {\n        if (k == 0 || a[i] != a[k - 1]) {\n            a[k++] = a[i];\n        }\n    }\n    return k;\n}\n\nint main(void) {\n    int a[] = {1, 1, 2, 2, 3};\n    int n = 5;\n    int k = removeDuplicates(a, n);\n\n    printf(\"%d\\n\", k);\n    for (int i = 0; i < k; i++) {\n        printf(\"%d%c\", a[i], i + 1 == k ? '\\n' : ' ');\n    }\n    return 0;\n}",
       "explain": [
         "快慢指针：读指针i扫描，写指针k仅在遇到新值时前进",
         "写清楚指针移动、终止条件和返回值。",
@@ -1509,14 +1509,14 @@
       ]
     },
     "tips": [
-      "朴素法逐个比较已收集元素",
-      "快慢指针：读指针i扫描，写指针k仅在遇到新值时前进",
-      "先列出反例或边界输入，再决定采用哪种实现。"
+      "朴素法使用新数组，不满足原地去重的空间要求。",
+      "有序是关键：读指针 i 扫描，写指针 k 保存不重复前缀。",
+      "n=0 时循环不执行，直接返回 k=0。"
     ],
     "variation": {
       "question": "变式：说明输入为空时如何处理，并分析空间复杂度是否满足原地要求。",
       "idea": "先区分额外存储与输入数据本身；递归调用栈也计入辅助空间。",
-      "code": "#include <stdio.h>\nint main(void){int a[]={1,1,2,2,3},n=5,k=0;for(int i=0;i<n;i++)if(k==0||a[i]!=a[k-1])a[k++]=a[i];printf(\"%d\\n\",k);for(int i=0;i<k;i++)printf(\"%d%c\",a[i],i+1==k?'\\n':' ');return 0;}"
+      "code": "#include <stdio.h>\n\n// 有序数组去重；前 k 个位置始终保存已保留的元素。\nint removeDuplicates(int a[], int n) {\n    int k = 0;\n    for (int i = 0; i < n; i++) {\n        if (k == 0 || a[i] != a[k - 1]) {\n            a[k++] = a[i];\n        }\n    }\n    return k;\n}\n\nint main(void) {\n    int a[] = {1, 1, 2, 2, 3};\n    int n = 5;\n    int k = removeDuplicates(a, n);\n\n    printf(\"%d\\n\", k);\n    for (int i = 0; i < k; i++) {\n        printf(\"%d%c\", a[i], i + 1 == k ? '\\n' : ' ');\n    }\n    return 0;\n}"
     },
     "animation": {
       "layout": "array",
@@ -1570,14 +1570,14 @@
     "brute": {
       "tag": "朴素保底",
       "title": "直观解法",
-      "idea": "数组倒序输出仅作为结果保底，不满足原地链表逆置的限制",
-      "complexity": "O(n)时间，O(n)额外空间",
-      "risk": "先保证结果正确；注意朴素解法可能不满足原地或数据结构限制。",
-      "code": "#include <stdio.h>\nint main(void){int a[]={1,2,3,4},b[4];for(int i=0;i<4;i++)b[i]=a[3-i];for(int i=0;i<4;i++)printf(\"%d%c\",b[i],i==3?'\\n':' ');return 0;}",
+      "idea": "先用数组保存各结点地址，再按逆序重连 next 指针；真正改变链表，但占 O(n) 辅助空间",
+      "complexity": "O(n) 时间，O(n) 额外空间",
+      "risk": "确实完成链表逆置，但需要额外保存 n 个结点地址，不满足 O(1) 空间的原地要求。",
+      "code": "#include <stdio.h>\n\ntypedef struct Node {\n    int data;\n    struct Node *next;\n} Node;\n\n// 朴素解法：额外用数组保存结点地址，再倒序重连。\nNode *reverseWithArray(Node *head, Node *refs[]) {\n    int n = 0;\n    for (Node *p = head; p != NULL; p = p->next) {\n        refs[n++] = p;\n    }\n\n    for (int i = n - 1; i > 0; i--) {\n        refs[i]->next = refs[i - 1];\n    }\n    if (n > 0) {\n        refs[0]->next = NULL;\n        return refs[n - 1];\n    }\n    return NULL;\n}\n\nint main(void) {\n    Node a[4];\n    for (int i = 0; i < 4; i++) {\n        a[i].data = i + 1;\n        a[i].next = (i < 3) ? &a[i + 1] : NULL;\n    }\n\n    Node *refs[4];  // 样例恰好有 4 个结点\n    Node *head = reverseWithArray(&a[0], refs);\n\n    for (Node *p = head; p != NULL; p = p->next) {\n        printf(\"%d%c\", p->data, p->next ? ' ' : '\\n');\n    }\n    return 0;\n}",
       "explain": [
-        "数组倒序输出仅作为结果保底，不满足原地链表逆置的限制",
-        "根据代码中循环或递归的访问次数计算时间复杂度。",
-        "检查空输入和边界条件。"
+        "顺序扫描链表，refs[i] 保存第 i 个结点地址（样例数组容量是4）。",
+        "倒着令每个结点指向它的原前驱，最后将原头结点的 next 置 NULL。",
+        "返回原尾结点作为新表头，额外数组使空间复杂度为 O(n)。"
       ]
     },
     "optimal": {
@@ -1585,56 +1585,60 @@
       "title": "408标准实现",
       "idea": "三指针prev、cur、next逐条改变链表指向",
       "complexity": "O(n)时间，O(1)额外空间",
-      "risk": "先明确循环不变式或递归返回值的含义。",
-      "code": "#include <stdio.h>\ntypedef struct Node{int x;struct Node*next;}Node;\nint main(void){Node a[4];for(int i=0;i<4;i++){a[i].x=i+1;a[i].next=i<3?&a[i+1]:NULL;}Node*prev=NULL,*cur=&a[0];while(cur){Node*next=cur->next;cur->next=prev;prev=cur;cur=next;}for(Node*p=prev;p;p=p->next)printf(\"%d%c\",p->x,p->next?' ':'\\n');return 0;}",
+      "risk": "务必先用 next 保存 cur->next，再修改 cur->next；否则剩余链表会丢失。",
+      "code": "#include <stdio.h>\n\ntypedef struct Node {\n    int data;\n    struct Node *next;\n} Node;\n\n// 三指针原地逆置：O(n) 时间，O(1) 额外空间。\nNode *reverse(Node *head) {\n    Node *prev = NULL;\n    Node *cur = head;\n\n    while (cur != NULL) {\n        Node *next = cur->next;  // 先保留后继，避免断链\n        cur->next = prev;        // 当前结点指向前驱\n        prev = cur;              // 前驱前进\n        cur = next;              // 处理原链表下一个结点\n    }\n    return prev;  // 新表头\n}\n\nint main(void) {\n    Node a[4];\n    for (int i = 0; i < 4; i++) {\n        a[i].data = i + 1;\n        a[i].next = (i < 3) ? &a[i + 1] : NULL;\n    }\n\n    Node *head = reverse(&a[0]);\n    for (Node *p = head; p != NULL; p = p->next) {\n        printf(\"%d%c\", p->data, p->next ? ' ' : '\\n');\n    }\n    return 0;\n}",
       "explain": [
-        "三指针prev、cur、next逐条改变链表指向",
-        "写清楚指针移动、终止条件和返回值。",
-        "复杂度由每个元素或结点访问次数决定。"
+        "prev 表示逆置后链表的头，cur 表示待处理结点。",
+        "先保存 next，再让 cur->next 指向 prev；随后移动 prev 和 cur。",
+        "空链表直接返回 NULL，单结点链表原样返回；全程仅用三个指针。"
       ]
     },
     "tips": [
-      "数组倒序输出仅作为结果保底，不满足原地链表逆置的限制",
-      "三指针prev、cur、next逐条改变链表指向",
-      "先列出反例或边界输入，再决定采用哪种实现。"
+      "将数组倒序输出不等于真正逆置链表；必须修改 next 指向。",
+      "修改 cur->next 之前必须先保存 next，否则后续结点丢失。",
+      "reverse 返回的是新表头 prev，不是原来的 head。"
     ],
     "variation": {
       "question": "变式：说明输入为空时如何处理，并分析空间复杂度是否满足原地要求。",
       "idea": "先区分额外存储与输入数据本身；递归调用栈也计入辅助空间。",
-      "code": "#include <stdio.h>\ntypedef struct Node{int x;struct Node*next;}Node;\nint main(void){Node a[4];for(int i=0;i<4;i++){a[i].x=i+1;a[i].next=i<3?&a[i+1]:NULL;}Node*prev=NULL,*cur=&a[0];while(cur){Node*next=cur->next;cur->next=prev;prev=cur;cur=next;}for(Node*p=prev;p;p=p->next)printf(\"%d%c\",p->x,p->next?' ':'\\n');return 0;}"
+      "code": "#include <stdio.h>\n\ntypedef struct Node {\n    int data;\n    struct Node *next;\n} Node;\n\n// 三指针原地逆置：O(n) 时间，O(1) 额外空间。\nNode *reverse(Node *head) {\n    Node *prev = NULL;\n    Node *cur = head;\n\n    while (cur != NULL) {\n        Node *next = cur->next;  // 先保留后继，避免断链\n        cur->next = prev;        // 当前结点指向前驱\n        prev = cur;              // 前驱前进\n        cur = next;              // 处理原链表下一个结点\n    }\n    return prev;  // 新表头\n}\n\nint main(void) {\n    Node a[4];\n    for (int i = 0; i < 4; i++) {\n        a[i].data = i + 1;\n        a[i].next = (i < 3) ? &a[i + 1] : NULL;\n    }\n\n    Node *head = reverse(&a[0]);\n    for (Node *p = head; p != NULL; p = p->next) {\n        printf(\"%d%c\", p->data, p->next ? ' ' : '\\n');\n    }\n    return 0;\n}"
     },
     "animation": {
-      "layout": "array",
+      "layout": "diagram",
       "brute": [
         {
-          "array": [
-            1,
-            1,
-            2,
-            2,
-            3
-          ],
-          "text": "朴素法：逐项检查并维护结果。"
+          "diagram": "1 → 2 → 3 → 4 → NULL",
+          "text": "依次访问结点，用额外数组 refs 保存它们的地址。"
+        },
+        {
+          "diagram": "refs = [1, 2, 3, 4]",
+          "text": "顺序存储四个结点地址，共占 O(n) 额外空间。"
+        },
+        {
+          "diagram": "4 → 3 → 2 → 1 → NULL",
+          "text": "按 refs 的逆序重连 next，原链表被真正逆置。"
         }
       ],
       "optimal": [
         {
-          "array": [
-            1,
-            1,
-            2,
-            2,
-            3
-          ],
-          "text": "三指针prev、cur、next逐条改变链表指向"
+          "diagram": "prev = NULL\ncur  = 1 → 2 → 3 → 4 → NULL",
+          "text": "初始 prev=NULL，cur 指向原头结点1。"
         },
         {
-          "array": [
-            1,
-            2,
-            3
-          ],
-          "text": "执行结束后检查输出和边界。"
+          "diagram": "prev = 1 → NULL\ncur  = 2 → 3 → 4 → NULL",
+          "text": "保留 next=2，修改1的 next=NULL，再移动两个指针。"
+        },
+        {
+          "diagram": "prev = 2 → 1 → NULL\ncur  = 3 → 4 → NULL",
+          "text": "处理结点2，令2指向1。"
+        },
+        {
+          "diagram": "prev = 3 → 2 → 1 → NULL\ncur  = 4 → NULL",
+          "text": "处理结点3，令3指向2。"
+        },
+        {
+          "diagram": "prev = 4 → 3 → 2 → 1 → NULL\ncur  = NULL",
+          "text": "处理结点4，cur 为空时结束，返回 prev。"
         }
       ]
     }
@@ -1655,71 +1659,87 @@
     "brute": {
       "tag": "朴素保底",
       "title": "直观解法",
-      "idea": "层序遍历逐个检查左右孩子是否为空",
+      "idea": "用队列做层序遍历，每取出一个结点，就检查左右孩子是否都为空",
       "complexity": "O(n)时间，O(n)队列空间",
-      "risk": "先保证结果正确；注意朴素解法可能不满足原地或数据结构限制。",
-      "code": "#include <stdio.h>\ntypedef struct Node{int l,r;}Node;\nint main(void){Node t[5]={{0,0},{2,3},{4,0},{0,0},{0,0}};int q[5],front=0,rear=0,count=0;q[rear++]=1;while(front<rear){int u=q[front++];if(!t[u].l&&!t[u].r)count++;if(t[u].l)q[rear++]=t[u].l;if(t[u].r)q[rear++]=t[u].r;}printf(\"%d\\n\",count);return 0;}",
+      "risk": "队列容量应覆盖结点总数；样例中 4 个结点，所以分配 4 个指针位置。",
+      "code": "#include <stdio.h>\n\ntypedef struct TreeNode {\n    int data;\n    struct TreeNode *left;\n    struct TreeNode *right;\n} TreeNode;\n\n// 层序遍历：队列容量须不小于二叉树结点总数。\nint countLeavesBFS(TreeNode *root, TreeNode *queue[]) {\n    if (root == NULL) {\n        return 0;\n    }\n\n    int front = 0, rear = 0, cnt = 0;\n    queue[rear++] = root;\n\n    while (front < rear) {\n        TreeNode *p = queue[front++];\n\n        if (p->left == NULL && p->right == NULL) {\n            cnt++;\n        }\n        if (p->left != NULL) {\n            queue[rear++] = p->left;\n        }\n        if (p->right != NULL) {\n            queue[rear++] = p->right;\n        }\n    }\n    return cnt;\n}\n\nint main(void) {\n    TreeNode n4 = {4, NULL, NULL};\n    TreeNode n2 = {2, &n4, NULL};\n    TreeNode n3 = {3, NULL, NULL};\n    TreeNode n1 = {1, &n2, &n3};\n\n    TreeNode *queue[4];  // 样例树共有 4 个结点\n    printf(\"%d\\n\", countLeavesBFS(&n1, queue));\n    return 0;\n}",
       "explain": [
-        "层序遍历逐个检查左右孩子是否为空",
-        "根据代码中循环或递归的访问次数计算时间复杂度。",
-        "检查空输入和边界条件。"
+        "根结点先入队，然后按层从左到右出队。",
+        "只有 p->left 和 p->right 同时为 NULL 时才计数。",
+        "每个结点最多入队一次，时间 O(n)，队列空间最坏 O(n)。"
       ]
     },
     "optimal": {
       "tag": "考场最优",
-      "title": "408标准实现",
-      "idea": "递归树：空树返回0，叶子返回1，非叶子返回左右子树之和",
+      "title": "先序递归（你的写法）",
+      "idea": "先判断当前结点是不是叶子，再递归左右子树；把两次递归的返回值累加到 cnt",
       "complexity": "O(n)时间，O(h)递归栈空间",
-      "risk": "先明确循环不变式或递归返回值的含义。",
-      "code": "#include <stdio.h>\ntypedef struct Node{int l,r;}Node;\nint leaves(Node*t,int u){if(!u)return 0;if(!t[u].l&&!t[u].r)return 1;return leaves(t,t[u].l)+leaves(t,t[u].r);}\nint main(void){Node t[5]={{0,0},{2,3},{4,0},{0,0},{0,0}};printf(\"%d\\n\",leaves(t,1));return 0;}",
+      "risk": "空指针应返回 0；每次函数调用的 cnt 都是局部变量，左右子树的结果必须用 += 接收。",
+      "code": "#include <stdio.h>\n\ntypedef struct TreeNode {\n    int data;\n    struct TreeNode *left;\n    struct TreeNode *right;\n} TreeNode;\n\n// 先序处理：先检查当前结点，再递归左右子树。\nint CTC(TreeNode *T) {\n    if (T == NULL) {\n        return 0;  // 空树没有叶子\n    }\n\n    int cnt = 0;\n    if (T->left == NULL && T->right == NULL) {\n        cnt++;      // 当前结点是叶子\n    }\n\n    cnt += CTC(T->left);   // 接收左子树的叶子数\n    cnt += CTC(T->right);  // 接收右子树的叶子数\n    return cnt;\n}\n\nint main(void) {\n    TreeNode n4 = {4, NULL, NULL};\n    TreeNode n2 = {2, &n4, NULL};\n    TreeNode n3 = {3, NULL, NULL};\n    TreeNode n1 = {1, &n2, &n3};\n\n    printf(\"%d\\n\", CTC(&n1));  // 输出 2\n    return 0;\n}",
       "explain": [
-        "递归树：空树返回0，叶子返回1，非叶子返回左右子树之和",
-        "写清楚指针移动、终止条件和返回值。",
-        "复杂度由每个元素或结点访问次数决定。"
+        "先序顺序：当前结点 → 左子树 → 右子树。若左右孩子都为空，当前 cnt 加 1。",
+        "CTC(NULL) 返回 0，而不是 1；空树中没有叶子结点。",
+        "递归调用不会自动共享局部 cnt，必须写 cnt += CTC(T->left) 和 cnt += CTC(T->right)。"
       ]
     },
     "tips": [
-      "层序遍历逐个检查左右孩子是否为空",
-      "递归树：空树返回0，叶子返回1，非叶子返回左右子树之和",
-      "先列出反例或边界输入，再决定采用哪种实现。"
+      "空树返回 0，不是 1：NULL 本身不算叶子结点。",
+      "局部变量 cnt 在每一层独立创建，递归结果必须累加回当前层。",
+      "判断叶子要用 &&：左右孩子必须同时为空；只有一个孩子不是叶子。"
     ],
     "variation": {
-      "question": "变式：说明输入为空时如何处理，并分析空间复杂度是否满足原地要求。",
-      "idea": "先区分额外存储与输入数据本身；递归调用栈也计入辅助空间。",
-      "code": "#include <stdio.h>\ntypedef struct Node{int l,r;}Node;\nint leaves(Node*t,int u){if(!u)return 0;if(!t[u].l&&!t[u].r)return 1;return leaves(t,t[u].l)+leaves(t,t[u].r);}\nint main(void){Node t[5]={{0,0},{2,3},{4,0},{0,0},{0,0}};printf(\"%d\\n\",leaves(t,1));return 0;}"
+      "question": "递归进阶：能否不使用 cnt，直接返回左右子树叶子数之和？空树、单结点树、样例树分别输出多少？",
+      "idea": "空树返回0，左右孩子都为空返回1，否则返回左右子树叶子数之和。这与先序计数版等价。",
+      "code": "#include <stdio.h>\n\ntypedef struct TreeNode {\n    int data;\n    struct TreeNode *left;\n    struct TreeNode *right;\n} TreeNode;\n\n// 同样是先序递归的简化写法。\nint countLeaves(TreeNode *T) {\n    if (T == NULL) {\n        return 0;\n    }\n    if (T->left == NULL && T->right == NULL) {\n        return 1;\n    }\n    return countLeaves(T->left) + countLeaves(T->right);\n}\n\nint main(void) {\n    TreeNode n4 = {4, NULL, NULL};\n    TreeNode n2 = {2, &n4, NULL};\n    TreeNode n3 = {3, NULL, NULL};\n    TreeNode n1 = {1, &n2, &n3};\n\n    printf(\"%d\\n\", countLeaves(NULL));  // 空树：0\n    printf(\"%d\\n\", countLeaves(&n4));   // 单结点：1\n    printf(\"%d\\n\", countLeaves(&n1));   // 样例树：2\n    return 0;\n}"
     },
     "animation": {
-      "layout": "array",
+      "layout": "diagram",
       "brute": [
         {
-          "array": [
-            1,
-            1,
-            2,
-            2,
-            3
-          ],
-          "text": "朴素法：逐项检查并维护结果。"
+          "diagram": "    1\n   / \\\n  2   3\n /\n4\n\n队列 [1]，叶子数=0",
+          "text": "结点1入队，开始层序遍历。"
+        },
+        {
+          "diagram": "    1\n   / \\\n  2   3\n /\n4\n\n出队 1；队列 [2,3]；叶子数=0",
+          "text": "结点1有两个孩子，不是叶子；将2、3入队。"
+        },
+        {
+          "diagram": "    1\n   / \\\n  2   3\n /\n4\n\n出队 2；队列 [3,4]；叶子数=0",
+          "text": "结点2有左孩子4，不是叶子，结点4入队。"
+        },
+        {
+          "diagram": "    1\n   / \\\n  2   3\n /\n4\n\n出队 3；队列 [4]；叶子数=1",
+          "text": "结点3左右孩子都为空，计数加1。"
+        },
+        {
+          "diagram": "    1\n   / \\\n  2   3\n /\n4\n\n出队 4；队列 []；叶子数=2",
+          "text": "结点4也是叶子，最终返回2。"
         }
       ],
       "optimal": [
         {
-          "array": [
-            1,
-            1,
-            2,
-            2,
-            3
-          ],
-          "text": "递归树：空树返回0，叶子返回1，非叶子返回左右子树之和"
+          "diagram": "    1\n   / \\\n  2   3\n /\n4\n\n访问 1：cnt=0",
+          "text": "先序第1步，结点1有孩子，当前层 cnt=0，然后递归左子树。"
         },
         {
-          "array": [
-            1,
-            2,
-            3
-          ],
-          "text": "执行结束后检查输出和边界。"
+          "diagram": "    1\n   / \\\n  2   3\n /\n4\n\n访问 2：cnt=0",
+          "text": "结点2不是叶子，继续递归到左孩子4。"
+        },
+        {
+          "diagram": "    1\n   / \\\n  2   3\n /\n4\n\n访问 4：返回 1",
+          "text": "结点4左右孩子均为空，所以此层返回1。"
+        },
+        {
+          "diagram": "    1\n   / \\\n  2   3\n /\n4\n\n回到 2：cnt=1；右空返回0",
+          "text": "CTC(4)=1，加到结点2的 cnt 中；右子树为空，结点2返回1。"
+        },
+        {
+          "diagram": "    1\n   / \\\n  2   3\n /\n4\n\n访问 3：返回 1",
+          "text": "回到结点1，再递归右子树，结点3是叶子，返回1。"
+        },
+        {
+          "diagram": "    1\n   / \\\n  2   3\n /\n4\n\n回到 1：cnt=1+1=2",
+          "text": "左子树返回1，右子树返回1，最外层累加得到2。"
         }
       ]
     }
