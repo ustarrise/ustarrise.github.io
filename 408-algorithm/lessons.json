@@ -1867,5 +1867,117 @@
       "边界：k=1、k=n、数组有重复或负数。",
       "选题：408第k小思想，区别于之前的二分查找。"
     ]
+  },
+  {
+    "id": "lc141-20261023",
+    "date": "2026-10-23",
+    "year": "LeetCode · 408方法训练",
+    "number": "141",
+    "category": "链表 · 快慢指针 · 判环",
+    "title": "判断单链表是否存在环",
+    "difficulty": "中等",
+    "time": "15–20分钟",
+    "source": "https://leetcode.com/problems/linked-list-cycle/",
+    "question": "给定单链表头结点，判断沿next能否再次访问同一结点。示例3→2→0→-4→2有环，输出1。",
+    "constraint": "结点数0至10000，值可重复；必须比较结点地址，不能比较值。朴素解使用最多10000个地址的表。",
+    "sample": "3→2→0→-4，尾结点指回2\n输出：1",
+    "brute": {
+      "tag": "朴素保底",
+      "title": "保存访问过的地址",
+      "idea": "逐结点访问，在地址数组中线性查找是否已出现。",
+      "complexity": "O(n²)时间，O(n)空间",
+      "risk": "不满足O(1)空间，容量不足时返回-1而非错误判定。",
+      "code": "#include <stdio.h>\n#define CAP 10000\ntypedef struct Node{int val;struct Node*next;}Node;\nint has_cycle_seen(Node*head){\n    Node*seen[CAP];int n=0;\n    while(head){\n        for(int i=0;i<n;i++)if(seen[i]==head)return 1; // 同一地址再次出现\n        if(n==CAP)return -1;                 // 超出示例容量，不能误判\n        seen[n++]=head;\n        head=head->next;\n    }\n    return 0;\n}\nint main(void){\n    Node a[4]={{3,NULL},{2,NULL},{0,NULL},{-4,NULL}};\n    a[0].next=&a[1];a[1].next=&a[2];a[2].next=&a[3];a[3].next=&a[1];\n    printf(\"%d\\n\",has_cycle_seen(&a[0]));\n    return 0;\n}",
+      "explain": [
+        "先检查地址是否出现，再记录。",
+        "无环最终到NULL，有环最终重复地址。",
+        "结点值相同不代表同一结点。"
+      ]
+    },
+    "optimal": {
+      "tag": "考场最优",
+      "title": "Floyd快慢指针",
+      "idea": "slow每轮走一步，fast走两步；有环必相遇，无环fast到NULL。",
+      "complexity": "O(n)时间，O(1)空间",
+      "risk": "先判断fast和fast->next，避免空指针访问。",
+      "code": "#include <stdio.h>\ntypedef struct Node{int val;struct Node*next;}Node;\nint has_cycle(Node*head){\n    Node*slow=head,*fast=head;\n    while(fast && fast->next){\n        slow=slow->next;               // 慢指针一步\n        fast=fast->next->next;         // 快指针两步\n        if(slow==fast)return 1;        // 比较地址而非结点值\n    }\n    return 0;\n}\nint main(void){\n    Node a[4]={{3,NULL},{2,NULL},{0,NULL},{-4,NULL}};\n    a[0].next=&a[1];a[1].next=&a[2];a[2].next=&a[3];a[3].next=&a[1];\n    printf(\"%d\\n\",has_cycle(&a[0]));\n    return 0;\n}",
+      "explain": [
+        "无环时fast先到NULL。",
+        "进入环后相对速度为1，有限环长内必相遇。",
+        "空链表、单结点自环与无环均可处理。"
+      ]
+    },
+    "variation": {
+      "question": "变式（力扣142）：找入环点，示例输出2。",
+      "idea": "相遇后一个指针从head出发，另一个从相遇点出发，同速走到入口。",
+      "code": "#include <stdio.h>\ntypedef struct Node{int val;struct Node*next;}Node;\nNode*entry(Node*head){\n    Node*slow=head,*fast=head;\n    while(fast && fast->next){\n        slow=slow->next;fast=fast->next->next;\n        if(slow==fast){\n            Node*p=head;\n            while(p!=slow){p=p->next;slow=slow->next;} // 同速走到入口\n            return p;\n        }\n    }\n    return NULL;\n}\nint main(void){\n    Node a[4]={{3,NULL},{2,NULL},{0,NULL},{-4,NULL}};\n    a[0].next=&a[1];a[1].next=&a[2];a[2].next=&a[3];a[3].next=&a[1];\n    Node*p=entry(&a[0]);printf(\"%d\\n\",p?p->val:-1);\n    return 0;\n}"
+    },
+    "animation": {
+      "layout": "array",
+      "brute": [
+        {
+          "array": [
+            3,
+            2,
+            0,
+            -4
+          ],
+          "text": "先记录结点3的地址。"
+        },
+        {
+          "array": [
+            3,
+            2,
+            0,
+            -4
+          ],
+          "text": "依次记录2、0、-4。"
+        },
+        {
+          "array": [
+            3,
+            2,
+            0,
+            -4
+          ],
+          "text": "尾指针回到2，地址重复，判定有环。"
+        }
+      ],
+      "optimal": [
+        {
+          "array": [
+            3,
+            2,
+            0,
+            -4
+          ],
+          "text": "slow与fast从3开始。"
+        },
+        {
+          "array": [
+            3,
+            2,
+            0,
+            -4
+          ],
+          "text": "第1轮slow在2、fast在0；第2轮slow在0、fast在2。"
+        },
+        {
+          "array": [
+            3,
+            2,
+            0,
+            -4
+          ],
+          "text": "第3轮两者都在-4，相遇。"
+        }
+      ]
+    },
+    "tips": [
+      "快慢指针也用于找中点，但本题判环关注相遇。",
+      "证明：环上相对速度为1。",
+      "反例：1→1→NULL，值相同但无环。",
+      "拓展：寻找入环结点。"
+    ]
   }
 ]
