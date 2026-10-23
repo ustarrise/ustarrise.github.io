@@ -1979,5 +1979,133 @@
       "反例：1→1→NULL，值相同但无环。",
       "拓展：寻找入环结点。"
     ]
+  },
+  {
+    "id": "lc48-20261024",
+    "date": "2026-10-24",
+    "year": "LeetCode · 408方法训练",
+    "number": "48",
+    "category": "矩阵 · 下标映射 · 原地操作",
+    "title": "n×n矩阵原地顺时针旋转90度",
+    "difficulty": "中等",
+    "time": "15–20分钟",
+    "source": "https://leetcode.com/problems/rotate-image/",
+    "question": "将n×n矩阵顺时针旋转90度，原地修改。输入1至9的3×3矩阵，输出7 4 1 / 8 5 2 / 9 6 3。",
+    "constraint": "n≥1；先用辅助矩阵推导下标映射，再实现O(1)额外空间的原地解。",
+    "sample": "1 2 3\n4 5 6\n7 8 9\n输出：\n7 4 1\n8 5 2\n9 6 3",
+    "brute": {
+      "tag": "朴素保底",
+      "title": "辅助矩阵坐标映射",
+      "idea": "把(i,j)写入(j,n-1-i)，再拷回原矩阵。",
+      "complexity": "O(n²)时间，O(n²)空间",
+      "risk": "原题要求原地旋转，本法只能用于推导，不能满足空间限制。",
+      "code": "#include <stdio.h>\nvoid rotate_copy(int n,int a[n][n]){\n    int b[n][n];\n    for(int i=0;i<n;i++)for(int j=0;j<n;j++)\n        b[j][n-1-i]=a[i][j];         // (i,j) -> (j,n-1-i)\n    for(int i=0;i<n;i++)for(int j=0;j<n;j++)\n        a[i][j]=b[i][j];             // 把新矩阵复制回原矩阵\n}\nint main(void){\n    int a[3][3]={{1,2,3},{4,5,6},{7,8,9}};\n    rotate_copy(3,a);\n    for(int i=0;i<3;i++){for(int j=0;j<3;j++)printf(\"%d%c\",a[i][j],j==2?'\\n':' ');}\n    return 0;\n}",
+      "explain": [
+        "左下角7的坐标(2,0)变成(0,0)。",
+        "二维遍历共n²个元素。",
+        "直接在原数组覆盖会破坏未读数据。"
+      ]
+    },
+    "optimal": {
+      "tag": "考场最优",
+      "title": "主对角线转置，再逐行逆置",
+      "idea": "先交换a[i][j]和a[j][i]，再交换每行左右对称位置。",
+      "complexity": "O(n²)时间，O(1)空间",
+      "risk": "转置只处理i<j，行逆置只交换前半段。",
+      "code": "#include <stdio.h>\nvoid rotate_cw(int n,int a[n][n]){\n    for(int i=0;i<n;i++)for(int j=i+1;j<n;j++){\n        int t=a[i][j];a[i][j]=a[j][i];a[j][i]=t; // 主对角线转置\n    }\n    for(int i=0;i<n;i++)for(int j=0;j<n/2;j++){\n        int t=a[i][j];a[i][j]=a[i][n-1-j];a[i][n-1-j]=t; // 每行逆置\n    }\n}\nint main(void){\n    int a[3][3]={{1,2,3},{4,5,6},{7,8,9}};\n    rotate_cw(3,a);\n    for(int i=0;i<3;i++){for(int j=0;j<3;j++)printf(\"%d%c\",a[i][j],j==2?'\\n':' ');}\n    return 0;\n}",
+      "explain": [
+        "转置(i,j)→(j,i)，再行逆置→(j,n-1-i)。",
+        "每次交换只用临时变量，额外空间O(1)。",
+        "n=1时两步均不操作；奇数阶中间列不用交换。"
+      ]
+    },
+    "variation": {
+      "question": "变式：逆时针旋转90度，输出3 6 9 / 2 5 8 / 1 4 7。",
+      "idea": "主对角线转置，再逐列上下逆置，坐标变换(i,j)→(n-1-j,i)。",
+      "code": "#include <stdio.h>\nvoid rotate_ccw(int n,int a[n][n]){\n    for(int i=0;i<n;i++)for(int j=i+1;j<n;j++){\n        int t=a[i][j];a[i][j]=a[j][i];a[j][i]=t; // 转置\n    }\n    for(int j=0;j<n;j++)for(int i=0;i<n/2;i++){\n        int t=a[i][j];a[i][j]=a[n-1-i][j];a[n-1-i][j]=t; // 每列逆置\n    }\n}\nint main(void){\n    int a[3][3]={{1,2,3},{4,5,6},{7,8,9}};\n    rotate_ccw(3,a);\n    for(int i=0;i<3;i++){for(int j=0;j<3;j++)printf(\"%d%c\",a[i][j],j==2?'\\n':' ');}\n    return 0;\n}"
+    },
+    "animation": {
+      "layout": "array",
+      "brute": [
+        {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9
+          ],
+          "text": "原矩阵。"
+        },
+        {
+          "array": [
+            7,
+            4,
+            1,
+            8,
+            5,
+            2,
+            9,
+            6,
+            3
+          ],
+          "text": "用辅助矩阵映射并复制回原数组。"
+        }
+      ],
+      "optimal": [
+        {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9
+          ],
+          "text": "原矩阵。"
+        },
+        {
+          "array": [
+            1,
+            4,
+            7,
+            2,
+            5,
+            8,
+            3,
+            6,
+            9
+          ],
+          "text": "主对角线转置。"
+        },
+        {
+          "array": [
+            7,
+            4,
+            1,
+            8,
+            5,
+            2,
+            9,
+            6,
+            3
+          ],
+          "text": "每行逆置完成顺时针旋转。"
+        }
+      ]
+    },
+    "tips": [
+      "坐标映射(i,j)→(j,n-1-i)比背代码更稳。",
+      "朴素法不符合原地限制。",
+      "反例：若左上角变成3，则旋转方向反了。",
+      "矩阵下标与空间限制是408补盲方向。"
+    ]
   }
 ]
