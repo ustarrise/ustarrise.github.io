@@ -88,6 +88,31 @@
 @media(prefers-reduced-motion:reduce){#archive .lessonitem,#archive .recursion-entry{transition:none}}
 </style>
 <link rel="stylesheet" href="./archive-carousel.css?v=20261011">
+
+<style id="algorithm-visualizer-v2">
+/* Shared renderer: every current and future lesson uses the same responsive visual language. */
+.stepbox{background:linear-gradient(160deg,#f9fcff 0%,#eef6f7 100%);border:1px solid #d8e8ea;border-radius:22px;padding:clamp(14px,2.5vw,24px);box-shadow:inset 0 1px 0 #fff,0 12px 28px #1c51650a}
+.stephead{font-weight:750;color:#173348}.stephead span{font-variant-numeric:tabular-nums}
+.av-stage{overflow:hidden;border:1px solid #dbe6ef;background:#fff;border-radius:18px;box-shadow:0 7px 20px #152c4210;margin-top:12px}
+.av-topline{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:12px 16px;background:#14283d;color:#d5e8ef;font-size:10px;letter-spacing:1.2px;font-weight:850}
+.av-live{display:flex;align-items:center;gap:8px}.av-live i{width:7px;height:7px;border-radius:50%;background:#6be0bf;box-shadow:0 0 0 4px #6be0bf20}.av-kind{color:#90a9b9;font-size:9px}
+.av-content{padding:clamp(16px,3vw,30px);min-height:145px;display:flex;align-items:center;justify-content:center;overflow-x:auto;scrollbar-width:thin}
+.av-array,.av-chain{display:flex;gap:9px;align-items:center;justify-content:flex-start;flex-wrap:nowrap;max-width:100%}
+.av-array{flex-wrap:wrap;justify-content:center}.av-cell{--i:0;position:relative;flex:0 0 auto;min-width:52px;min-height:61px;border-radius:13px;background:linear-gradient(180deg,#f9fbfe,#eef4f9);border:1px solid #d9e4ed;box-shadow:0 3px 0 #dbe5ed;display:flex;flex-direction:column;align-items:center;justify-content:center;animation:av-in .3s ease both;animation-delay:calc(var(--i)*28ms);transition:transform .25s,background .25s,border-color .25s}
+.av-value{font:800 19px/1.4 ui-monospace,SFMono-Regular,Consolas,monospace;color:#1c3850}.av-index{font:600 10px/1.4 ui-monospace,monospace;color:#8da1b0}
+.av-cell.is-active{border-color:#159a9b;background:#e1f8f3;box-shadow:0 3px 0 #8bd7cc,0 0 0 3px #22b3a421;transform:translateY(-3px)}
+.av-cell.is-shared{background:#e9f7ee;border-color:#a8dec4}
+.av-matrix{display:grid;grid-template-columns:repeat(var(--cols),minmax(40px,56px));gap:8px;justify-content:center;margin:auto}.av-matrix .av-cell{min-width:0;width:100%}
+.av-chains{display:flex;flex-direction:column;gap:20px;max-width:100%;width:100%}.av-chain-row{min-width:0}.av-row-title{font-size:12px;font-weight:800;color:#527083;margin-bottom:10px;display:flex;align-items:center;gap:7px}.av-row-dot{width:7px;height:7px;border-radius:50%;background:#0d9c95}
+.av-chain{overflow-x:auto;padding:4px 3px 12px;scrollbar-width:thin}.av-chain .av-cell{min-width:47px}.av-arrow{font-size:21px;font-weight:700;color:#86a1b0}.av-null{font:700 11px ui-monospace,monospace;color:#8395a5;border:1px dashed #b9cbd4;border-radius:8px;padding:8px}
+.av-diagram{margin:0;width:100%;white-space:pre-wrap;word-break:break-word;background:#f3f7fa;border-radius:12px;padding:17px;color:#264458;font:13px/1.8 ui-monospace,monospace}
+.av-legend{border-top:1px solid #e8eef2;padding:10px 16px;color:#78909f;font-size:11px}
+.desc{background:#e9f5f4;border-left:3px solid #16a59a;border-radius:0 9px 9px 0;padding:12px 14px;margin-top:14px;color:#244b55;min-height:0}
+.progress{height:7px;background:#dce9ec}.progress span{background:linear-gradient(90deg,#0f8f91,#4fcab2);border-radius:5px}
+@keyframes av-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:600px){.av-content{padding:15px 10px;min-height:130px}.av-cell{min-width:41px;min-height:51px;border-radius:10px}.av-value{font-size:16px}.av-index{font-size:9px}.av-array,.av-chain{gap:5px}.av-matrix{grid-template-columns:repeat(var(--cols),minmax(32px,45px));gap:5px}.av-topline{padding:10px 12px}.av-kind{display:none}.av-chain .av-cell{min-width:39px}}
+@media(prefers-reduced-motion:reduce){.av-cell{animation:none!important;transition:none!important}}
+</style>
 </head>
 <body>
 <header class="top"><div class="bar"><div class="brand"><div class="mark">408</div><span>ALGORITHM LAB</span></div><div class="barlinks"><a href="#lesson">今日精练</a><a href="#visual">算法演示</a><a href="#recursion">递归树专项</a><a href="https://github.com/ustarrise/ustarrise.github.io" target="_blank" rel="noopener">GitHub ↗</a></div></div><div class="hero"><div class="eyebrow">DAILY PRACTICE · 408 数据结构</div><h1>一道题，练透一类算法。</h1><p>先写最容易想到的暴力解，再用考纲内的简单方法优化。手动推演、动画演示、完整 C 语言代码和中文注释，全部放在一个地方。</p><div class="hero-stats"><span>考纲内 · 不炫技</span><span>暴力法先讲</span><span>逐步动画</span><span>适合手机阅读</span></div></div></header>
@@ -348,20 +373,18 @@ var xs=current.animation[mode];
 return Array.isArray(xs)&&xs.length?xs:[{diagram:current.sample,text:"观察题目给出的样例。"}];
 }
 function renderFrame(f){
-if(f.array){
-$("viz").innerHTML='<div style="font-size:12px;color:#61778b;margin-bottom:6px">数组元素 · 下方数字是下标</div><div class="arrnums">'+f.array.map(function(v,i){return '<div class="node '+(i===0?"shared":"")+'"><div class="letter">'+esc(v)+'</div><div class="under">['+i+']</div></div>'}).join("")+'</div>';
-}else if(current.animation && current.animation.layout==="chains" && current.animation.rows){
-$("viz").innerHTML='<div class="twochains">'+current.animation.rows.map(function(row){
-var pos=f[row.pointerKey];var values=row.values||[];
-return '<div><div style="font-size:12px;color:#64788d;margin-bottom:4px">'+esc(row.label)+'</div><div class="chainline">'+values.map(function(v,i){
-return (i?'<span class="arr">→</span>':'')+'<div class="node '+(i>=row.sharedFrom?"shared ":"")+(i===pos?"pointer "+(row.pointerKey==="q"?"other":""):"")+'"><div class="letter">'+esc(v)+'</div><div class="under">'+(i===pos?esc(row.pointerKey):"结点")+'</div></div>'
-}).join("")+'<span class="arr">→ NULL</span></div></div>'
-}).join("")+'</div><div style="font-size:11px;color:#67867f">浅绿色表示两条链表物理共享的结点；带指针标签的是当前检查位置。</div>';
-}else if(Array.isArray(f.rows)){
-$("viz").innerHTML='<div class="twochains">'+f.rows.map(function(row){
-return '<div style="font-size:12px;color:#64788d">'+esc(row.label||"状态")+'</div><div class="arrnums">'+(row.values||[]).map(function(v,i){return '<div class="node '+(i===row.active?"pointer":"")+'"><div class="letter">'+esc(v)+'</div><div class="under">'+i+'</div></div>'}).join("")+'</div>';
-}).join("")+'</div>';
-}else{$("viz").innerHTML='<pre class="sample" style="background:#182b3e;margin:0">'+esc(f.diagram||current.sample)+'</pre>';}
+var viz=$("viz"), a=current.animation||{}, layout=a.layout||"array";
+function tile(v,i,active,kind){return '<div class="av-cell '+(active?"is-active ":"")+(kind||"")+'" style="--i:'+i+'"><span class="av-value">'+esc(v)+'</span><span class="av-index">'+i+'</span></div>';}
+function arrayView(values,active){return '<div class="av-array">'+values.map(function(v,i){return tile(v,i,active===i,"");}).join("")+'</div>';}
+function matrixView(values){var n=Math.sqrt(values.length);if(n!==Math.floor(n)||n<2||n>12)return arrayView(values,-1);return '<div class="av-matrix" style="--cols:'+n+'">'+values.map(function(v,i){return tile(v,i,i===f.active,"");}).join("")+'</div>';}
+function chainView(row,idx){var values=row.values||[],pos=f[row.pointerKey];return '<section class="av-chain-row"><div class="av-row-title"><span class="av-row-dot"></span>'+esc(row.label||"链表 "+(idx+1))+'</div><div class="av-chain">'+values.map(function(v,i){return (i?'<span class="av-arrow" aria-hidden="true">→</span>':'')+tile(v,i,i===pos,i>=row.sharedFrom?"is-shared":"");}).join("")+'<span class="av-arrow" aria-hidden="true">→</span><span class="av-null">NULL</span></div></section>';}
+var content="",legend="";
+if(layout==="chains"&&Array.isArray(a.rows)){content='<div class="av-chains">'+a.rows.map(chainView).join("")+'</div>';legend="蓝色高亮当前指针 · 绿色表示共享结点";}
+else if(Array.isArray(f.rows)){content='<div class="av-chains">'+f.rows.map(function(row,i){return '<section class="av-chain-row"><div class="av-row-title">'+esc(row.label||"状态 "+(i+1))+'</div>'+arrayView(row.values||[],row.active)+'</section>';}).join("")+'</div>';legend="高亮表示当前操作位置";}
+else if(Array.isArray(f.array)){var matrix=/矩阵|旋转|转置/.test(current.title+" "+current.category)&&Math.sqrt(f.array.length)%1===0;content=matrix?matrixView(f.array):arrayView(f.array,f.active);legend=matrix?"按矩阵行列展示 · 下方为线性下标":"下方为数组下标 · 高亮表示当前操作";}
+else{content='<pre class="av-diagram">'+esc(f.diagram||current.sample)+'</pre>';legend="按步骤观察状态变化";}
+viz.className="av-stage";
+viz.innerHTML='<div class="av-topline"><span class="av-live"><i></i> ALGORITHM VISUALIZER</span><span class="av-kind">'+esc(layout==="chains"?"LINKED STRUCTURE":layout==="array"?"STATE TRANSITION":"STEP VIEW")+'</span></div><div class="av-content" key="'+step+'">'+content+'</div><div class="av-legend">'+esc(legend)+'</div>';
 $("desc").textContent=f.text||"观察当前步骤。";
 }
 function setStep(x){var fs=frames();step=Math.max(0,Math.min(fs.length-1,x));var f=fs[step];$("stepNum").textContent=String(step+1).padStart(2,"0")+" / "+String(fs.length).padStart(2,"0");$("stepName").textContent=current[mode].title+(f.done?" · 查找完成":"");$("progress").style.width=((step+1)/fs.length*100)+"%";$("prev").disabled=step===0;$("next").textContent=step===fs.length-1?"↻ 重新开始":"下一步 →";renderFrame(f)}
