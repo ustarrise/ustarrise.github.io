@@ -388,7 +388,10 @@ return Array.isArray(xs)&&xs.length?xs:[{diagram:current.sample,text:"观察题�
 function renderFrame(f){
 var viz=$("viz"), a=current.animation||{}, layout=a.layout||"array";
 function pointerNames(i){var names=[];Object.keys(f.pointers||{}).forEach(function(name){if(f.pointers[name]===i)names.push(name);});return names;}
-function tile(v,i,active,kind){var names=pointerNames(i);return '<div class="av-cell '+(active?"is-active ":"")+(kind||"")+'" style="--i:'+i+'"><span class="av-value">'+esc(v)+'</span><span class="av-index">'+i+'</span></div>';}
+function tile(v,i,active,kind){
+var names=pointerNames(i);
+return '<div class="av-cell '+(active?"is-active ":"")+(kind||"")+'" style="--i:'+i+'"><span class="av-value">'+esc(v)+'</span><span class="av-index">['+i+']</span>'+(names.length?'<span class="av-pointer-tags">'+names.map(function(name){return '<b>'+esc(name)+'</b>';}).join("")+'</span>':'')+'</div>';
+}
 function arrayView(values,active){return '<div class="av-array">'+values.map(function(v,i){return tile(v,i,active===i||(Array.isArray(f.active)&&f.active.indexOf(i)>=0)||pointerNames(i).length>0,"");}).join("")+'</div>';}
 function matrixView(values){var n=Math.sqrt(values.length);if(n!==Math.floor(n)||n<2||n>12)return arrayView(values,-1);return '<div class="av-matrix" style="--cols:'+n+'">'+values.map(function(v,i){return tile(v,i,i===f.active||(Array.isArray(f.active)&&f.active.indexOf(i)>=0)||pointerNames(i).length>0,"");}).join("")+'</div>';}
 function chainView(row,idx){var values=row.values||[],pos=f[row.pointerKey];return '<section class="av-chain-row"><div class="av-row-title"><span class="av-row-dot"></span>'+esc(row.label||"链表 "+(idx+1))+'</div><div class="av-chain">'+values.map(function(v,i){return (i?'<span class="av-arrow" aria-hidden="true">→</span>':'')+tile(v,i,i===pos||pointerNames(i).length>0,i>=row.sharedFrom?"is-shared":"");}).join("")+'<span class="av-arrow" aria-hidden="true">→</span><span class="av-null">NULL</span></div></section>';}
