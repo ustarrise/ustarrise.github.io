@@ -126,7 +126,15 @@
 .av-chain{padding-top:20px}
 @media(max-width:600px){.av-matrix{row-gap:26px;column-gap:5px}.av-pointer-tags b{font-size:9px;padding:2px 4px}}
 </style>
-</head>
+<style id="pointer-labels-visible">
+.av-cell{position:relative;overflow:visible!important}
+.av-pointer-tags{position:absolute!important;left:50%!important;bottom:calc(100% + 8px)!important;transform:translateX(-50%);display:flex!important;align-items:center;justify-content:center;gap:4px;z-index:20!important;white-space:nowrap;pointer-events:none}
+.av-pointer-label{display:inline-block!important;padding:4px 8px!important;border-radius:7px;background:#006fba!important;color:white!important;font:800 12px/1.2 ui-monospace,Consolas,monospace!important;box-shadow:0 3px 9px #183d5633}
+.av-pointer-fast{background:#b45d17!important}
+.av-pointer-cur,.av-pointer-i{background:#0b7d84!important}
+.av-array,.av-chain,.av-matrix{overflow:visible}
+.av-content{padding-top:40px!important}
+</style></head>
 <body>
 <header class="top"><div class="bar"><div class="brand"><div class="mark">408</div><span>ALGORITHM LAB</span></div><div class="barlinks"><a href="#lesson">今日精练</a><a href="#visual">算法演示</a><a href="#recursion">递归树专项</a><a href="https://github.com/ustarrise/ustarrise.github.io" target="_blank" rel="noopener">GitHub ↗</a></div></div><div class="hero"><div class="eyebrow">DAILY PRACTICE · 408 数据结构</div><h1>一道题，练透一类算法。</h1><p>先写最容易想到的暴力解，再用考纲内的简单方法优化。手动推演、动画演示、完整 C 语言代码和中文注释，全部放在一个地方。</p><div class="hero-stats"><span>考纲内 · 不炫技</span><span>暴力法先讲</span><span>逐步动画</span><span>适合手机阅读</span></div></div></header>
 <div class="shell">
@@ -390,7 +398,8 @@ var viz=$("viz"), a=current.animation||{}, layout=a.layout||"array";
 function pointerNames(i){var names=[];Object.keys(f.pointers||{}).forEach(function(name){if(f.pointers[name]===i)names.push(name);});return names;}
 function tile(v,i,active,kind){
 var names=pointerNames(i);
-return '<div class="av-cell '+(active?"is-active ":"")+(kind||"")+'" style="--i:'+i+'"><span class="av-value">'+esc(v)+'</span><span class="av-index">['+i+']</span>'+(names.length?'<span class="av-pointer-tags">'+names.map(function(name){return '<b>'+esc(name)+'</b>';}).join("")+'</span>':'')+'</div>';
+var labels=names.length?'<div class="av-pointer-tags">'+names.map(function(name){return '<span class="av-pointer-label av-pointer-'+esc(name)+'">'+esc(name)+'</span>';}).join("")+'</div>':'';
+return '<div class="av-cell '+(active?"is-active ":"")+(kind||"")+'" style="--i:'+i+'">'+labels+'<span class="av-value">'+esc(v)+'</span><span class="av-index">['+i+']</span></div>';
 }
 function arrayView(values,active){return '<div class="av-array">'+values.map(function(v,i){return tile(v,i,active===i||(Array.isArray(f.active)&&f.active.indexOf(i)>=0)||pointerNames(i).length>0,"");}).join("")+'</div>';}
 function matrixView(values){var n=Math.sqrt(values.length);if(n!==Math.floor(n)||n<2||n>12)return arrayView(values,-1);return '<div class="av-matrix" style="--cols:'+n+'">'+values.map(function(v,i){return tile(v,i,i===f.active||(Array.isArray(f.active)&&f.active.indexOf(i)>=0)||pointerNames(i).length>0,"");}).join("")+'</div>';}
