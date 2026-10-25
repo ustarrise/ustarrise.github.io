@@ -185,6 +185,76 @@
 <div class="miniinfo">每日一题，练到熟练。你的历史题目一直保留。</div>
 </aside>
 <main class="stack" id="lesson">
+<section class="panel" id="exam-templates">
+<div class="section-kicker">408 EXAM · 极简背诵模板</div>
+<h2>考场手写：DFS / BFS / 快速排序</h2>
+<p>统一使用邻接矩阵、数组队列和最常见的双指针快排。代码短、变量少，适合考场默写。下面的函数可直接复用到对应题型。</p>
+<h3>① DFS：邻接矩阵递归遍历</h3>
+<p>口诀：<strong>标记当前点 → 枚举邻接点 → 没访问就递归</strong>。O(n²) 时间，递归栈 O(n)。</p>
+<div class="codewrap"><button class="copy" type="button" onclick="navigator.clipboard.writeText(document.getElementById('exam-dfs').textContent)">复制代码</button><pre><code id="exam-dfs">#define N 100
+int g[N][N], vis[N], n;
+
+// 从顶点 u 出发进行深度优先遍历
+void dfs(int u) {
+    vis[u] = 1; // 先标记
+    for (int v = 0; v &lt; n; v++) {
+        if (g[u][v] &amp;&amp; !vis[v])
+            dfs(v); // 再递归
+    }
+}
+
+// 若要求遍历整个非连通图：
+// for (int i = 0; i &lt; n; i++)
+//     if (!vis[i]) dfs(i);</code></pre></div>
+<h3>② BFS：数组队列遍历</h3>
+<p>口诀：<strong>起点入队并标记 → 出队 → 邻点入队并标记</strong>。邻接矩阵 O(n²) 时间，队列 O(n)。</p>
+<div class="codewrap"><button class="copy" type="button" onclick="navigator.clipboard.writeText(document.getElementById('exam-bfs').textContent)">复制代码</button><pre><code id="exam-bfs">#define N 100
+int g[N][N], vis[N], n;
+
+// 从顶点 s 出发进行广度优先遍历
+void bfs(int s) {
+    int q[N], front = 0, rear = 0;
+    q[rear++] = s;
+    vis[s] = 1; // 入队时标记
+
+    while (front &lt; rear) {
+        int u = q[front++];
+        for (int v = 0; v &lt; n; v++) {
+            if (g[u][v] &amp;&amp; !vis[v]) {
+                vis[v] = 1;
+                q[rear++] = v;
+            }
+        }
+    }
+}
+
+// 非连通图：遍历每个尚未访问的顶点</code></pre></div>
+<h3>③ 快排：挖坑法，首元素作枢轴</h3>
+<p>口诀：<strong>存枢轴 → 右找小 → 左找大 → 枢轴归位 → 递归两边</strong>。平均 O(n log n)，最坏 O(n²)。</p>
+<div class="codewrap"><button class="copy" type="button" onclick="navigator.clipboard.writeText(document.getElementById('exam-quick').textContent)">复制代码</button><pre><code id="exam-quick">// 对 a[l..r] 升序快速排序
+void quickSort(int a[], int l, int r) {
+    if (l &gt;= r) return;
+
+    int i = l, j = r;
+    int pivot = a[l]; // 保存枢轴
+
+    while (i &lt; j) {
+        while (i &lt; j &amp;&amp; a[j] &gt;= pivot) j--;
+        a[i] = a[j]; // 右边的小数填左坑
+
+        while (i &lt; j &amp;&amp; a[i] &lt;= pivot) i++;
+        a[j] = a[i]; // 左边的大数填右坑
+    }
+
+    a[i] = pivot; // 枢轴归位
+    quickSort(a, l, i - 1);
+    quickSort(a, i + 1, r);
+}
+
+// 调用：quickSort(a, 0, n - 1);</code></pre></div>
+<p><strong>易错提醒：</strong>BFS 一定在入队时标记；快排左右扫描的比较条件要含等号，否则重复元素可能造成死循环；快排最坏递归栈深度 O(n)。</p>
+</section>
+
 <section class="panel"><div class="breadcrumb" id="crumb">算法精练 / 正在加载</div><div class="section-kicker">TODAY'S CHALLENGE</div><h1 class="title" id="title">正在加载题目…</h1><div class="chips" id="chips"></div><h2 style="margin-top:27px">题目描述</h2><p class="statement" id="question"></p><div class="focus" id="constraint"></div><div class="section-kicker" style="margin:22px 0 8px">EXAMPLE</div><pre class="sample" id="sample"></pre><div class="prompt"><span>✦</span><div><b>先独立思考 15 分钟</b><p>能不能先想出最直观的方法？如果你能写出正确的暴力解，已经走出了第一步。</p></div></div><div class="actions"><button class="primary" id="reveal">查看答案与动画 ↓</button><a id="source" target="_blank" rel="noopener" class="secondary" style="text-decoration:none">查看真题出处 ↗</a></div></section>
 <div class="answer-wrap" id="answers">
 <section class="panel" id="visual"><div class="section-kicker">VISUALIZE</div><h2>让指针与数组动起来</h2><p style="color:var(--mute)">切换解法，按步骤观察变量、结点和数组如何变化。每一步都有中文说明。</p><div class="toggle" id="modes"><button data-mode="brute" class="active">01 暴力 / 朴素</button><button data-mode="optimal">02 优化 / 高效</button></div><div class="stepbox" style="margin-top:16px"><div class="stephead"><b id="stepName">逐步执行</b><span id="stepNum">01 / 01</span></div><div id="viz"></div><div class="desc" id="desc"></div><div class="progress"><span id="progress"></span></div><div class="controls"><button class="smallbtn" id="prev">← 上一步</button><button class="smallbtn" id="auto">▶ 自动播放</button><button class="primary" id="next">下一步 →</button></div></div></section>
