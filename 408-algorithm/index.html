@@ -18,6 +18,11 @@
 .sideBySide{display:grid;grid-template-columns:1fr 1fr;gap:12px}.sideBySide>div{border:1px solid #e1e8ef;border-radius:13px;padding:14px}.sideBySide b{font-size:13px}.sideBySide p{font-size:12px;margin:5px 0}.ul{margin:0;padding-left:20px;font-size:13px;color:#4b6073;line-height:2}.foot{max-width:1190px;margin:auto;padding:0 24px 50px;text-align:center;font-size:12px;color:#8995a7}.spin{display:inline-block;animation:spin 2s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
 @media(max-width:850px){.shell{display:block;margin-top:-23px}.sidebar{position:static;margin-bottom:15px;display:flex;align-items:center;overflow:auto;gap:7px;padding:12px}.sidebar small,.sidebar .miniinfo{display:none}.lessonitem{min-width:173px;margin:0}.hero{padding-bottom:49px}.bar{padding:16px 18px}.shell{padding:0 12px}.panel{padding:20px;border-radius:18px}.sideBySide{grid-template-columns:1fr}.barlinks{font-size:11px}.chainline{gap:3px}.node{min-width:34px;padding:5px 3px}.node .letter{font-size:16px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
+
+#exam-templates[hidden]{display:none!important}
+#lesson.is-exam-mode > .panel:not(#exam-templates),#lesson.is-exam-mode > .answer-wrap{display:none!important}
+#exam-templates .recursion-back{border:1px solid #cee8de;background:#eff9f5;border-radius:11px;padding:9px 13px;margin-bottom:18px;color:#0e7368;font-size:12px;font-weight:800}
+#exam-templates h3{margin-top:27px}
 </style>
 <link rel="stylesheet" href="./recursion.css">
 <link rel="stylesheet" href="./aoe.css?v=20261011c">
@@ -174,6 +179,8 @@
    <span class="recursion-summary"><span class="recursion-eyebrow">操作系统 · 概念图解</span><strong>内存映射文件 mmap</strong><span class="recursion-hint">虚拟地址 → 文件偏移 → 磁盘块</span></span>
    <span class="recursion-arrow" aria-hidden="true">↗</span>
   </a>
+<a class="recursion-entry topic-card" id="examEntry" href="#exam-templates" aria-controls="exam-templates" aria-expanded="false"><span class="recursion-illustration" aria-hidden="true">🧠</span><span class="recursion-summary"><span class="recursion-eyebrow">408 · 考场背诵</span><strong>DFS / BFS / 快排 / 树与链表</strong><span class="recursion-hint">极简 C 模板 · 可复制</span></span><span class="recursion-arrow" aria-hidden="true">↗</span></a>
+
  </div>
 </div>
 <div class="topic-pagination">
@@ -185,75 +192,7 @@
 <div class="miniinfo">每日一题，练到熟练。你的历史题目一直保留。</div>
 </aside>
 <main class="stack" id="lesson">
-<section class="panel" id="exam-templates">
-<div class="section-kicker">408 EXAM · 极简背诵模板</div>
-<h2>考场手写：DFS / BFS / 快速排序</h2>
-<p>统一使用邻接矩阵、数组队列和最常见的双指针快排。代码短、变量少，适合考场默写。下面的函数可直接复用到对应题型。</p>
-<h3>① DFS：邻接矩阵递归遍历</h3>
-<p>口诀：<strong>标记当前点 → 枚举邻接点 → 没访问就递归</strong>。O(n²) 时间，递归栈 O(n)。</p>
-<div class="codewrap"><button class="copy" type="button" onclick="navigator.clipboard.writeText(document.getElementById('exam-dfs').textContent)">复制代码</button><pre><code id="exam-dfs">#define N 100
-int g[N][N], vis[N], n;
 
-// 从顶点 u 出发进行深度优先遍历
-void dfs(int u) {
-    vis[u] = 1; // 先标记
-    for (int v = 0; v &lt; n; v++) {
-        if (g[u][v] &amp;&amp; !vis[v])
-            dfs(v); // 再递归
-    }
-}
-
-// 若要求遍历整个非连通图：
-// for (int i = 0; i &lt; n; i++)
-//     if (!vis[i]) dfs(i);</code></pre></div>
-<h3>② BFS：数组队列遍历</h3>
-<p>口诀：<strong>起点入队并标记 → 出队 → 邻点入队并标记</strong>。邻接矩阵 O(n²) 时间，队列 O(n)。</p>
-<div class="codewrap"><button class="copy" type="button" onclick="navigator.clipboard.writeText(document.getElementById('exam-bfs').textContent)">复制代码</button><pre><code id="exam-bfs">#define N 100
-int g[N][N], vis[N], n;
-
-// 从顶点 s 出发进行广度优先遍历
-void bfs(int s) {
-    int q[N], front = 0, rear = 0;
-    q[rear++] = s;
-    vis[s] = 1; // 入队时标记
-
-    while (front &lt; rear) {
-        int u = q[front++];
-        for (int v = 0; v &lt; n; v++) {
-            if (g[u][v] &amp;&amp; !vis[v]) {
-                vis[v] = 1;
-                q[rear++] = v;
-            }
-        }
-    }
-}
-
-// 非连通图：遍历每个尚未访问的顶点</code></pre></div>
-<h3>③ 快排：挖坑法，首元素作枢轴</h3>
-<p>口诀：<strong>存枢轴 → 右找小 → 左找大 → 枢轴归位 → 递归两边</strong>。平均 O(n log n)，最坏 O(n²)。</p>
-<div class="codewrap"><button class="copy" type="button" onclick="navigator.clipboard.writeText(document.getElementById('exam-quick').textContent)">复制代码</button><pre><code id="exam-quick">// 对 a[l..r] 升序快速排序
-void quickSort(int a[], int l, int r) {
-    if (l &gt;= r) return;
-
-    int i = l, j = r;
-    int pivot = a[l]; // 保存枢轴
-
-    while (i &lt; j) {
-        while (i &lt; j &amp;&amp; a[j] &gt;= pivot) j--;
-        a[i] = a[j]; // 右边的小数填左坑
-
-        while (i &lt; j &amp;&amp; a[i] &lt;= pivot) i++;
-        a[j] = a[i]; // 左边的大数填右坑
-    }
-
-    a[i] = pivot; // 枢轴归位
-    quickSort(a, l, i - 1);
-    quickSort(a, i + 1, r);
-}
-
-// 调用：quickSort(a, 0, n - 1);</code></pre></div>
-<p><strong>易错提醒：</strong>BFS 一定在入队时标记；快排左右扫描的比较条件要含等号，否则重复元素可能造成死循环；快排最坏递归栈深度 O(n)。</p>
-</section>
 
 <section class="panel"><div class="breadcrumb" id="crumb">算法精练 / 正在加载</div><div class="section-kicker">TODAY'S CHALLENGE</div><h1 class="title" id="title">正在加载题目…</h1><div class="chips" id="chips"></div><h2 style="margin-top:27px">题目描述</h2><p class="statement" id="question"></p><div class="focus" id="constraint"></div><div class="section-kicker" style="margin:22px 0 8px">EXAMPLE</div><pre class="sample" id="sample"></pre><div class="prompt"><span>✦</span><div><b>先独立思考 15 分钟</b><p>能不能先想出最直观的方法？如果你能写出正确的暴力解，已经走出了第一步。</p></div></div><div class="actions"><button class="primary" id="reveal">查看答案与动画 ↓</button><a id="source" target="_blank" rel="noopener" class="secondary" style="text-decoration:none">查看真题出处 ↗</a></div></section>
 <div class="answer-wrap" id="answers">
@@ -429,6 +368,174 @@ void quickSort(int a[], int l, int r) {
 页在内存时直接靠页表访问物理页框。</code></div>
  </div>
 </section>
+<section class="panel" id="exam-templates" hidden>
+<button class="recursion-back" id="examBack" type="button">← 返回每日算法精练</button><div class="section-kicker">408 EXAM · 极简背诵模板</div>
+<h2>考场背诵模板：图、排序、树与链表</h2>
+<p>统一使用邻接矩阵、数组队列和最常见的双指针快排。代码短、变量少，适合考场默写。下面的函数可直接复用到对应题型。</p>
+<h3>① DFS：邻接矩阵递归遍历</h3>
+<p>口诀：<strong>标记当前点 → 枚举邻接点 → 没访问就递归</strong>。O(n²) 时间，递归栈 O(n)。</p>
+<div class="codewrap"><button class="copy" type="button" onclick="navigator.clipboard.writeText(document.getElementById('exam-dfs').textContent)">复制代码</button><pre><code id="exam-dfs">#define N 100
+int g[N][N], vis[N], n;
+
+// 从顶点 u 出发进行深度优先遍历
+void dfs(int u) {
+    vis[u] = 1; // 先标记
+    for (int v = 0; v &lt; n; v++) {
+        if (g[u][v] &amp;&amp; !vis[v])
+            dfs(v); // 再递归
+    }
+}
+
+// 若要求遍历整个非连通图：
+// for (int i = 0; i &lt; n; i++)
+//     if (!vis[i]) dfs(i);</code></pre></div>
+<h3>② BFS：数组队列遍历</h3>
+<p>口诀：<strong>起点入队并标记 → 出队 → 邻点入队并标记</strong>。邻接矩阵 O(n²) 时间，队列 O(n)。</p>
+<div class="codewrap"><button class="copy" type="button" onclick="navigator.clipboard.writeText(document.getElementById('exam-bfs').textContent)">复制代码</button><pre><code id="exam-bfs">#define N 100
+int g[N][N], vis[N], n;
+
+// 从顶点 s 出发进行广度优先遍历
+void bfs(int s) {
+    int q[N], front = 0, rear = 0;
+    q[rear++] = s;
+    vis[s] = 1; // 入队时标记
+
+    while (front &lt; rear) {
+        int u = q[front++];
+        for (int v = 0; v &lt; n; v++) {
+            if (g[u][v] &amp;&amp; !vis[v]) {
+                vis[v] = 1;
+                q[rear++] = v;
+            }
+        }
+    }
+}
+
+// 非连通图：遍历每个尚未访问的顶点</code></pre></div>
+<h3>③ 快排：挖坑法，首元素作枢轴</h3>
+<p>口诀：<strong>存枢轴 → 右找小 → 左找大 → 枢轴归位 → 递归两边</strong>。平均 O(n log n)，最坏 O(n²)。</p>
+<div class="codewrap"><button class="copy" type="button" onclick="navigator.clipboard.writeText(document.getElementById('exam-quick').textContent)">复制代码</button><pre><code id="exam-quick">// 对 a[l..r] 升序快速排序
+void quickSort(int a[], int l, int r) {
+    if (l &gt;= r) return;
+
+    int i = l, j = r;
+    int pivot = a[l]; // 保存枢轴
+
+    while (i &lt; j) {
+        while (i &lt; j &amp;&amp; a[j] &gt;= pivot) j--;
+        a[i] = a[j]; // 右边的小数填左坑
+
+        while (i &lt; j &amp;&amp; a[i] &lt;= pivot) i++;
+        a[j] = a[i]; // 左边的大数填右坑
+    }
+
+    a[i] = pivot; // 枢轴归位
+    quickSort(a, l, i - 1);
+    quickSort(a, i + 1, r);
+}
+
+// 调用：quickSort(a, 0, n - 1);</code></pre></div>
+<p><strong>易错提醒：</strong>BFS 一定在入队时标记；快排左右扫描的比较条件要含等号，否则重复元素可能造成死循环；快排最坏递归栈深度 O(n)。</p>
+<h3>④ 二叉树：先序 / 中序 / 后序</h3><p>口诀：先序<strong>根左右</strong>，中序<strong>左根右</strong>，后序<strong>左右根</strong>。三个模板只需要移动访问语句。</p><div class="codewrap"><pre><code>// 二叉树结点
+typedef struct Node {
+    int data;
+    struct Node *left, *right;
+} Node;
+
+void preorder(Node *root) {
+    if (root == NULL) return;
+    visit(root);              // 根
+    preorder(root->left);     // 左
+    preorder(root->right);    // 右
+}
+
+void inorder(Node *root) {
+    if (root == NULL) return;
+    inorder(root->left);      // 左
+    visit(root);              // 根
+    inorder(root->right);     // 右
+}
+
+void postorder(Node *root) {
+    if (root == NULL) return;
+    postorder(root->left);    // 左
+    postorder(root->right);   // 右
+    visit(root);              // 根
+}
+// visit(root) 代表题目要求的处理操作。</code></pre></div>
+<h3>⑤ 二叉树：高度与结点计数</h3><p>口诀：<strong>空树为0；高度取左右最大加1；结点数取左右之和加1</strong>。</p><div class="codewrap"><pre><code>int height(Node *root) {
+    if (root == NULL) return 0;
+    int l = height(root->left);
+    int r = height(root->right);
+    return (l > r ? l : r) + 1;
+}
+
+int count(Node *root) {
+    if (root == NULL) return 0;
+    return count(root->left)
+         + count(root->right) + 1;
+}</code></pre></div>
+<h3>⑥ 二叉树：层序遍历（数组队列）</h3><p>口诀：<strong>根入队 → 出队访问 → 左右孩子入队</strong>。数组容量必须足够容纳全部结点。</p><div class="codewrap"><pre><code>#define MAXN 1000
+void levelOrder(Node *root) {
+    if (root == NULL) return;
+    Node *q[MAXN];
+    int front = 0, rear = 0;
+    q[rear++] = root;
+
+    while (front < rear) {
+        Node *p = q[front++];
+        visit(p);
+        if (p->left)  q[rear++] = p->left;
+        if (p->right) q[rear++] = p->right;
+    }
+}</code></pre></div>
+<h3>⑦ 单链表：头插法与尾插法</h3><p>以下均采用<strong>带头结点</strong>的单链表。头插是逆序，尾插是保序。</p><div class="codewrap"><pre><code>typedef struct LNode {
+    int data;
+    struct LNode *next;
+} LNode;
+
+// 头插：把新结点 p 插在头结点后面
+void headInsert(LNode *head, LNode *p) {
+    p->next = head->next;
+    head->next = p;
+}
+
+// 尾插：tail 指向当前尾结点
+void tailInsert(LNode **tail, LNode *p) {
+    p->next = NULL;
+    (*tail)->next = p;
+    *tail = p;
+}
+// 初始化：head->next = NULL;
+// 尾插初始化：LNode *tail = head;</code></pre></div>
+<h3>⑧ 单链表：原地逆置（头插法）</h3><p>口诀：<strong>断开原链 → 摘下当前结点 → 插到头结点之后</strong>。时间 O(n)，额外空间 O(1)。</p><div class="codewrap"><pre><code>void reverse(LNode *head) {
+    LNode *p = head->next;
+    head->next = NULL;
+
+    while (p != NULL) {
+        LNode *q = p->next; // 先保存后继
+        p->next = head->next;
+        head->next = p;     // 头插
+        p = q;              // 继续原链
+    }
+}</code></pre></div>
+<h3>⑨ 单链表：快慢指针找中点</h3><p>无头结点的有效链表从 first 开始。<strong>慢走一步、快走两步</strong>；偶数长度返回第二个中间结点。</p><div class="codewrap"><pre><code>LNode *middle(LNode *first) {
+    LNode *slow = first, *fast = first;
+    while (fast != NULL && fast->next != NULL) {
+        slow = slow->next;
+        fast = fast->next->next;
+    }
+    return slow;
+}</code></pre></div>
+<h3>⑩ 单链表：快慢指针判环</h3><p>两指针相遇说明有环；快指针走到 NULL 说明无环。</p><div class="codewrap"><pre><code>int hasCycle(LNode *first) {
+    LNode *slow = first, *fast = first;
+    while (fast != NULL && fast->next != NULL) {
+        slow = slow->next;
+        fast = fast->next->next;
+        if (slow == fast) return 1;
+    }
+    return 0;
+}</code></pre></div><p><strong>背诵优先级：</strong>树的三种递归遍历、层序遍历、链表头插与逆置、快慢指针判环最值得熟练默写。上面是独立函数模板，使用时需补齐头文件、visit 操作及数据结构初始化。</p></section>
 </main></div>
 <footer class="foot">408 Algorithm Lab · 为考场手写而设计 · 一题一剑，终有锋芒。</footer>
 <script>
@@ -673,7 +780,7 @@ function closeAOE(scroll){
  if(scroll){if(current)history.pushState(null,"","#"+current.id);$("lesson").scrollIntoView({behavior:"smooth",block:"start"});}
 }
 function openAOE(index,updateUrl){
- stop();closeRecursion(false);closeMmap(false);$("aoe").hidden=false;
+ closeExam(false);stop();closeRecursion(false);closeMmap(false);$("aoe").hidden=false;
  $("lesson").classList.add("is-aoe-mode");$("aoeEntry").classList.add("is-active");$("aoeEntry").setAttribute("aria-expanded","true");
  setTopicPage(1);syncArchiveSelection();
  if(window.AOE_LAB)window.AOE_LAB.activate(index);
@@ -687,13 +794,32 @@ function closeMmap(scroll){
  if(scroll){if(current)history.pushState(null,"","#"+current.id);$("lesson").scrollIntoView({behavior:"smooth",block:"start"});}
 }
 function openMmap(updateUrl){
- stop();closeRecursion(false);closeAOE(false);
+ closeExam(false);stop();closeRecursion(false);closeAOE(false);
  $("mmap").hidden=false;$("lesson").classList.add("is-mmap-mode");
  $("mmapEntry").classList.add("is-active");$("mmapEntry").setAttribute("aria-expanded","true");
  setTopicPage(2);syncArchiveSelection();
  if(updateUrl!==false)history.pushState(null,"","#mmap");
  requestAnimationFrame(function(){$("mmap").scrollIntoView({behavior:"smooth",block:"start"})});
 }
+function closeExam(scroll) {
+ $("exam-templates").hidden=true;
+ $("lesson").classList.remove("is-exam-mode");
+ $("examEntry").classList.remove("is-active");
+ $("examEntry").setAttribute("aria-expanded","false");
+ if(scroll){if(current)history.pushState(null,"","#"+current.id);$("lesson").scrollIntoView({behavior:"smooth",block:"start"});}
+}
+function openExam(updateUrl) {
+ stop();closeRecursion(false);closeAOE(false);closeMmap(false);
+ $("exam-templates").hidden=false;
+ $("lesson").classList.add("is-exam-mode");
+ $("examEntry").classList.add("is-active");
+ $("examEntry").setAttribute("aria-expanded","true");
+ if(updateUrl!==false)history.pushState(null,"","#exam-templates");
+ requestAnimationFrame(function(){$("exam-templates").scrollIntoView({behavior:"smooth",block:"start"})});
+}
+$("examEntry").addEventListener("click",function(e){e.preventDefault();openExam(true)});
+$("examBack").addEventListener("click",function(){closeExam(true)});
+
 $("mmapEntry").addEventListener("click",function(e){
  if(Date.now()-lastTopicSwipe<350){e.preventDefault();return}
  e.preventDefault();openMmap(true);
@@ -719,6 +845,7 @@ window.addEventListener("hashchange",function(){
  if(hash==="recursion"||hash==="recursion-new"){openRecursion(hash==="recursion-new",false);return}
  if(hash==="aoe"||/^aoe-[1-8]$/.test(hash)){openAOE(hash==="aoe"?0:Number(hash.slice(-1))-1,false);return}
  if(hash==="mmap"){openMmap(false);return}
+ if(hash==="exam-templates"){openExam(false);return}
  if(lessons.some(function(x){return x.id===hash})){loadLesson(hash);return}
  if(hash==="lesson"){closeRecursion(false);closeAOE(false);closeMmap(false);}
 });
@@ -739,11 +866,13 @@ fetch("./lessons.json",{cache:"no-store"}).then(function(r){if(!r.ok)throw new E
  var isRecursion=targetHash==="recursion"||targetHash==="recursion-new";
  var isAOE=targetHash==="aoe"||/^aoe-[1-8]$/.test(targetHash);
  var isMmap=targetHash==="mmap";
+ var isExam=targetHash==="exam-templates";
  var chosen=initialIndex>=0?lessons[initialIndex].id:(lessons[Math.min(lessons.length-1,archivePage*ARCHIVE_PAGE_SIZE)]||lessons[0]).id;
- loadLesson(isRecursion||isAOE||isMmap?lessons[0].id:chosen,true);
+ loadLesson(isRecursion||isAOE||isMmap||isExam?lessons[0].id:chosen,true);
  if(isRecursion)openRecursion(targetHash==="recursion-new",false);
  if(isAOE)openAOE(targetHash==="aoe"?0:Number(targetHash.slice(-1))-1,false);
- if(isMmap)openMmap(false);}).catch(function(e){$("title").textContent="题目加载失败";$("question").textContent="无法读取 lessons.json。请通过 GitHub Pages 的在线网址访问本站，或稍后刷新。错误："+e.message;$("reveal").disabled=true});
+ if(isMmap)openMmap(false);
+ if(isExam)openExam(false);}).catch(function(e){$("title").textContent="题目加载失败";$("question").textContent="无法读取 lessons.json。请通过 GitHub Pages 的在线网址访问本站，或稍后刷新。错误："+e.message;$("reveal").disabled=true});
 })();
 </script>
 <script src="./recursion-extra.js?v=20261010b"></script>
