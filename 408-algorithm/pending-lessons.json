@@ -1871,7 +1871,7 @@
       "idea": "先以直接遍历或递归建立正确性。",
       "complexity": "O(n)时间",
       "risk": "注意边界条件和重复元素。",
-      "code": "#include <stdio.h>\ntypedef struct N{int v,l,r;}N;\nN t[]={{3,1,2},{5,3,4},{1,-1,-1},{6,-1,-1},{2,-1,-1}};\nint path(int x,int goal,int a[],int *n){if(x<0)return 0;a[(*n)++]=x;if(x==goal)return 1;if(path(t[x].l,goal,a,n)||path(t[x].r,goal,a,n))return 1;--*n;return 0;}\nint main(void){int a[5],b[5],n=0,m=0,ans=-1;path(0,3,a,&n);path(0,4,b,&m);for(int i=0;i<n&&i<m&&a[i]==b[i];i++)ans=a[i];printf(\"%d\\n\",t[ans].v);return 0;}",
+      "code": "#include <stdio.h>\ntypedef struct N{\n    int v,l,r;\n}\nN;\nN t[]={\n    {\n        3,1,2\n    }\n    ,{\n        5,3,4\n    }\n    ,{\n        1,-1,-1\n    }\n    ,{\n        6,-1,-1\n    }\n    ,{\n        2,-1,-1\n    }\n};\nint path(int x,int goal,int a[],int *n){\n    if(x<0)return 0;\n    a[(*n)++]=x;\n    if(x==goal)return 1;\n    if(path(t[x].l,goal,a,n)||path(t[x].r,goal,a,n))return 1;\n    --*n;\n    return 0;\n}\nint main(void){\n    int a[5],b[5],n=0,m=0,ans=-1;\n    path(0,3,a,&n);\n    path(0,4,b,&m);\n    for(int i=0;\n    i<n&&i<m&&a[i]==b[i];\n    i++)ans=a[i];\n    printf(\"%d\\n\",t[ans].v);\n    return 0;\n}\n",
       "explain": [
         "建立初始状态",
         "按基础规则遍历",
@@ -1884,7 +1884,7 @@
       "idea": "利用递归返回值、散列表、堆、入度队列、栈或一次扫描维护状态。",
       "complexity": "O(n)时间",
       "risk": "注意数据结构的容量与状态更新顺序。",
-      "code": "#include <stdio.h>\ntypedef struct N{int v,l,r;}N;\nN t[]={{3,1,2},{5,3,4},{1,-1,-1},{6,-1,-1},{2,-1,-1}};\nint lca(int x,int a,int b){if(x<0||x==a||x==b)return x;int l=lca(t[x].l,a,b),r=lca(t[x].r,a,b);if(l>=0&&r>=0)return x;return l>=0?l:r;}\nint main(void){printf(\"%d\\n\",t[lca(0,3,4)].v);return 0;}",
+      "code": "#include <stdio.h>\ntypedef struct N{\n    int v,l,r;\n}\nN;\nN t[]={\n    {\n        3,1,2\n    }\n    ,{\n        5,3,4\n    }\n    ,{\n        1,-1,-1\n    }\n    ,{\n        6,-1,-1\n    }\n    ,{\n        2,-1,-1\n    }\n};\nint lca(int x,int a,int b){\n    if(x<0||x==a||x==b)return x;\n    int l=lca(t[x].l,a,b),r=lca(t[x].r,a,b);\n    if(l>=0&&r>=0)return x;\n    return l>=0?l:r;\n}\nint main(void){\n    printf(\"%d\\n\",t[lca(0,3,4)].v);\n    return 0;\n}\n",
       "explain": [
         "明确不变量",
         "维护辅助状态",
@@ -1894,7 +1894,7 @@
     "variation": {
       "question": "巩固题：更换边界样例，解释算法是否仍正确。",
       "idea": "保留算法不变量，检查空输入、重复值和最小规模。",
-      "code": "#include <stdio.h>\ntypedef struct N{int v,l,r;}N;\nN t[]={{3,1,2},{5,3,4},{1,-1,-1},{6,-1,-1},{2,-1,-1}};\nint lca(int x,int a,int b){if(x<0||x==a||x==b)return x;int l=lca(t[x].l,a,b),r=lca(t[x].r,a,b);if(l>=0&&r>=0)return x;return l>=0?l:r;}\nint main(void){printf(\"%d\\n\",t[lca(0,3,4)].v);return 0;}"
+      "code": "#include <stdio.h>\ntypedef struct N{\n    int v,l,r;\n}\nN;\nN t[]={\n    {\n        3,1,2\n    }\n    ,{\n        5,3,4\n    }\n    ,{\n        1,-1,-1\n    }\n    ,{\n        6,-1,-1\n    }\n    ,{\n        2,-1,-1\n    }\n};\nint lca(int x,int a,int b){\n    if(x<0||x==a||x==b)return x;\n    int l=lca(t[x].l,a,b),r=lca(t[x].r,a,b);\n    if(l>=0&&r>=0)return x;\n    return l>=0?l:r;\n}\nint main(void){\n    printf(\"%d\\n\",t[lca(0,3,4)].v);\n    return 0;\n}\n"
     },
     "animation": {
       "layout": "array",
@@ -2064,7 +2064,7 @@
       "idea": "先以直接遍历或递归建立正确性。",
       "complexity": "O(n²)时间",
       "risk": "注意边界条件和重复元素。",
-      "code": "#include <stdio.h>\nint main(void){int a[]={1,2,3,1},found=0;for(int i=0;i<4;i++)for(int j=i+1;j<4;j++)if(a[i]==a[j])found=1;printf(\"%d\\n\",found);return 0;}",
+      "code": "#include <stdio.h>\nint main(void){\n    int a[]={\n        1,2,3,1\n    }\n    ,found=0;\n    for(int i=0;\n    i<4;\n    i++)for(int j=i+1;\n    j<4;\n    j++)if(a[i]==a[j])found=1;\n    printf(\"%d\\n\",found);\n    return 0;\n}\n",
       "explain": [
         "建立初始状态",
         "按基础规则遍历",
@@ -2077,7 +2077,7 @@
       "idea": "利用递归返回值、散列表、堆、入度队列、栈或一次扫描维护状态。",
       "complexity": "平均O(n)时间",
       "risk": "注意数据结构的容量与状态更新顺序。",
-      "code": "#include <stdio.h>\nint main(void){int a[]={1,2,3,1},h[17]={0},used[17]={0},found=0;for(int i=0;i<4;i++){unsigned k=((unsigned)a[i]*2654435761u)%17;while(used[k]&&h[k]!=a[i])k=(k+1)%17;if(used[k]){found=1;break;}used[k]=1;h[k]=a[i];}printf(\"%d\\n\",found);return 0;}",
+      "code": "#include <stdio.h>\nint main(void){\n    int a[]={\n        1,2,3,1\n    }\n    ,h[17]={\n        0\n    }\n    ,used[17]={\n        0\n    }\n    ,found=0;\n    for(int i=0;\n    i<4;\n    i++){\n        unsigned k=((unsigned)a[i]*2654435761u)%17;\n        while(used[k]&&h[k]!=a[i])k=(k+1)%17;\n        if(used[k]){\n            found=1;\n            break;\n        }\n        used[k]=1;\n        h[k]=a[i];\n    }\n    printf(\"%d\\n\",found);\n    return 0;\n}\n",
       "explain": [
         "明确不变量",
         "维护辅助状态",
@@ -2087,7 +2087,7 @@
     "variation": {
       "question": "巩固题：更换边界样例，解释算法是否仍正确。",
       "idea": "保留算法不变量，检查空输入、重复值和最小规模。",
-      "code": "#include <stdio.h>\nint main(void){int a[]={1,2,3,1},h[17]={0},used[17]={0},found=0;for(int i=0;i<4;i++){unsigned k=((unsigned)a[i]*2654435761u)%17;while(used[k]&&h[k]!=a[i])k=(k+1)%17;if(used[k]){found=1;break;}used[k]=1;h[k]=a[i];}printf(\"%d\\n\",found);return 0;}"
+      "code": "#include <stdio.h>\nint main(void){\n    int a[]={\n        1,2,3,1\n    }\n    ,h[17]={\n        0\n    }\n    ,used[17]={\n        0\n    }\n    ,found=0;\n    for(int i=0;\n    i<4;\n    i++){\n        unsigned k=((unsigned)a[i]*2654435761u)%17;\n        while(used[k]&&h[k]!=a[i])k=(k+1)%17;\n        if(used[k]){\n            found=1;\n            break;\n        }\n        used[k]=1;\n        h[k]=a[i];\n    }\n    printf(\"%d\\n\",found);\n    return 0;\n}\n"
     },
     "animation": {
       "layout": "array",
@@ -2257,7 +2257,7 @@
       "idea": "先以直接遍历或递归建立正确性。",
       "complexity": "O(nk)时间",
       "risk": "注意边界条件和重复元素。",
-      "code": "#include <stdio.h>\nint main(void){int a[]={3,2,1,5,6,4};for(int i=0;i<2;i++){int p=i;for(int j=i+1;j<6;j++)if(a[j]>a[p])p=j;int x=a[i];a[i]=a[p];a[p]=x;}printf(\"%d\\n\",a[1]);return 0;}",
+      "code": "#include <stdio.h>\nint main(void){\n    int a[]={\n        3,2,1,5,6,4\n    };\n    for(int i=0;\n    i<2;\n    i++){\n        int p=i;\n        for(int j=i+1;\n        j<6;\n        j++)if(a[j]>a[p])p=j;\n        int x=a[i];\n        a[i]=a[p];\n        a[p]=x;\n    }\n    printf(\"%d\\n\",a[1]);\n    return 0;\n}\n",
       "explain": [
         "建立初始状态",
         "按基础规则遍历",
@@ -2270,7 +2270,7 @@
       "idea": "利用递归返回值、散列表、堆、入度队列、栈或一次扫描维护状态。",
       "complexity": "O(n log k)时间",
       "risk": "注意数据结构的容量与状态更新顺序。",
-      "code": "#include <stdio.h>\nint main(void){int a[]={3,2,1,5,6,4},h[2],size=0;for(int z=0;z<6;z++){int x=a[z];if(size<2){int i=size++;while(i&&h[(i-1)/2]>x){h[i]=h[(i-1)/2];i=(i-1)/2;}h[i]=x;}else if(x>h[0]){int i=0;while(2*i+1<size){int c=2*i+1;if(c+1<size&&h[c+1]<h[c])c++;if(h[c]>=x)break;h[i]=h[c];i=c;}h[i]=x;}}printf(\"%d\\n\",h[0]);return 0;}",
+      "code": "#include <stdio.h>\nint main(void){\n    int a[]={\n        3,2,1,5,6,4\n    }\n    ,h[2],size=0;\n    for(int z=0;\n    z<6;\n    z++){\n        int x=a[z];\n        if(size<2){\n            int i=size++;\n            while(i&&h[(i-1)/2]>x){\n                h[i]=h[(i-1)/2];\n                i=(i-1)/2;\n            }\n            h[i]=x;\n        }\n        else if(x>h[0]){\n            int i=0;\n            while(2*i+1<size){\n                int c=2*i+1;\n                if(c+1<size&&h[c+1]<h[c])c++;\n                if(h[c]>=x)break;\n                h[i]=h[c];\n                i=c;\n            }\n            h[i]=x;\n        }\n    }\n    printf(\"%d\\n\",h[0]);\n    return 0;\n}\n",
       "explain": [
         "明确不变量",
         "维护辅助状态",
@@ -2280,7 +2280,7 @@
     "variation": {
       "question": "巩固题：更换边界样例，解释算法是否仍正确。",
       "idea": "保留算法不变量，检查空输入、重复值和最小规模。",
-      "code": "#include <stdio.h>\nint main(void){int a[]={3,2,1,5,6,4},h[2],size=0;for(int z=0;z<6;z++){int x=a[z];if(size<2){int i=size++;while(i&&h[(i-1)/2]>x){h[i]=h[(i-1)/2];i=(i-1)/2;}h[i]=x;}else if(x>h[0]){int i=0;while(2*i+1<size){int c=2*i+1;if(c+1<size&&h[c+1]<h[c])c++;if(h[c]>=x)break;h[i]=h[c];i=c;}h[i]=x;}}printf(\"%d\\n\",h[0]);return 0;}"
+      "code": "#include <stdio.h>\nint main(void){\n    int a[]={\n        3,2,1,5,6,4\n    }\n    ,h[2],size=0;\n    for(int z=0;\n    z<6;\n    z++){\n        int x=a[z];\n        if(size<2){\n            int i=size++;\n            while(i&&h[(i-1)/2]>x){\n                h[i]=h[(i-1)/2];\n                i=(i-1)/2;\n            }\n            h[i]=x;\n        }\n        else if(x>h[0]){\n            int i=0;\n            while(2*i+1<size){\n                int c=2*i+1;\n                if(c+1<size&&h[c+1]<h[c])c++;\n                if(h[c]>=x)break;\n                h[i]=h[c];\n                i=c;\n            }\n            h[i]=x;\n        }\n    }\n    printf(\"%d\\n\",h[0]);\n    return 0;\n}\n"
     },
     "animation": {
       "layout": "array",
@@ -2450,7 +2450,7 @@
       "idea": "先以直接遍历或递归建立正确性。",
       "complexity": "O(V+E)时间",
       "risk": "注意边界条件和重复元素。",
-      "code": "#include <stdio.h>\nint e[4][4]={{0,1,0,0},{0,0,1,0},{0,0,0,1},{0,0,0,0}},v[4];\nint dfs(int x){v[x]=1;for(int j=0;j<4;j++)if(e[x][j]){if(v[j]==1)return 0;if(v[j]==0&&!dfs(j))return 0;}v[x]=2;return 1;}\nint main(void){int ok=1;for(int i=0;i<4;i++)if(!v[i]&&!dfs(i))ok=0;printf(\"%d\\n\",ok);return 0;}",
+      "code": "#include <stdio.h>\nint e[4][4]={\n    {\n        0,1,0,0\n    }\n    ,{\n        0,0,1,0\n    }\n    ,{\n        0,0,0,1\n    }\n    ,{\n        0,0,0,0\n    }\n}\n,v[4];\nint dfs(int x){\n    v[x]=1;\n    for(int j=0;\n    j<4;\n    j++)if(e[x][j]){\n        if(v[j]==1)return 0;\n        if(v[j]==0&&!dfs(j))return 0;\n    }\n    v[x]=2;\n    return 1;\n}\nint main(void){\n    int ok=1;\n    for(int i=0;\n    i<4;\n    i++)if(!v[i]&&!dfs(i))ok=0;\n    printf(\"%d\\n\",ok);\n    return 0;\n}\n",
       "explain": [
         "建立初始状态",
         "按基础规则遍历",
@@ -2463,7 +2463,7 @@
       "idea": "利用递归返回值、散列表、堆、入度队列、栈或一次扫描维护状态。",
       "complexity": "O(V+E)时间",
       "risk": "注意数据结构的容量与状态更新顺序。",
-      "code": "#include <stdio.h>\nint main(void){int e[4][4]={{0,1,0,0},{0,0,1,0},{0,0,0,1},{0,0,0,0}},in[4]={0},q[4],h=0,t=0,n=0;for(int i=0;i<4;i++)for(int j=0;j<4;j++)in[j]+=e[i][j];for(int i=0;i<4;i++)if(!in[i])q[t++]=i;while(h<t){int x=q[h++];n++;for(int j=0;j<4;j++)if(e[x][j]&&--in[j]==0)q[t++]=j;}printf(\"%d\\n\",n==4);return 0;}",
+      "code": "#include <stdio.h>\nint main(void){\n    int e[4][4]={\n        {\n            0,1,0,0\n        }\n        ,{\n            0,0,1,0\n        }\n        ,{\n            0,0,0,1\n        }\n        ,{\n            0,0,0,0\n        }\n    }\n    ,in[4]={\n        0\n    }\n    ,q[4],h=0,t=0,n=0;\n    for(int i=0;\n    i<4;\n    i++)for(int j=0;\n    j<4;\n    j++)in[j]+=e[i][j];\n    for(int i=0;\n    i<4;\n    i++)if(!in[i])q[t++]=i;\n    while(h<t){\n        int x=q[h++];\n        n++;\n        for(int j=0;\n        j<4;\n        j++)if(e[x][j]&&--in[j]==0)q[t++]=j;\n    }\n    printf(\"%d\\n\",n==4);\n    return 0;\n}\n",
       "explain": [
         "明确不变量",
         "维护辅助状态",
@@ -2473,7 +2473,7 @@
     "variation": {
       "question": "巩固题：更换边界样例，解释算法是否仍正确。",
       "idea": "保留算法不变量，检查空输入、重复值和最小规模。",
-      "code": "#include <stdio.h>\nint main(void){int e[4][4]={{0,1,0,0},{0,0,1,0},{0,0,0,1},{0,0,0,0}},in[4]={0},q[4],h=0,t=0,n=0;for(int i=0;i<4;i++)for(int j=0;j<4;j++)in[j]+=e[i][j];for(int i=0;i<4;i++)if(!in[i])q[t++]=i;while(h<t){int x=q[h++];n++;for(int j=0;j<4;j++)if(e[x][j]&&--in[j]==0)q[t++]=j;}printf(\"%d\\n\",n==4);return 0;}"
+      "code": "#include <stdio.h>\nint main(void){\n    int e[4][4]={\n        {\n            0,1,0,0\n        }\n        ,{\n            0,0,1,0\n        }\n        ,{\n            0,0,0,1\n        }\n        ,{\n            0,0,0,0\n        }\n    }\n    ,in[4]={\n        0\n    }\n    ,q[4],h=0,t=0,n=0;\n    for(int i=0;\n    i<4;\n    i++)for(int j=0;\n    j<4;\n    j++)in[j]+=e[i][j];\n    for(int i=0;\n    i<4;\n    i++)if(!in[i])q[t++]=i;\n    while(h<t){\n        int x=q[h++];\n        n++;\n        for(int j=0;\n        j<4;\n        j++)if(e[x][j]&&--in[j]==0)q[t++]=j;\n    }\n    printf(\"%d\\n\",n==4);\n    return 0;\n}\n"
     },
     "animation": {
       "layout": "array",
@@ -2643,7 +2643,7 @@
       "idea": "先以直接遍历或递归建立正确性。",
       "complexity": "O(n²)时间",
       "risk": "注意边界条件和重复元素。",
-      "code": "#include <stdio.h>\n#include <string.h>\nint main(void){char s[100]=\"{[()]}\",t[100];strcpy(t,s);int change=1;while(change){change=0;char b[100];int k=0;for(int i=0;t[i];){if((t[i]=='('&&t[i+1]==')')||(t[i]=='['&&t[i+1]==']')||(t[i]=='{'&&t[i+1]=='}')){i+=2;change=1;}else b[k++]=t[i++];}b[k]=0;strcpy(t,b);}printf(\"%d\\n\",t[0]==0);return 0;}",
+      "code": "#include <stdio.h>\n#include <string.h>\nint main(void){\n    char s[100]=\"{[()]}\",t[100];\n    strcpy(t,s);\n    int change=1;\n    while(change){\n        change=0;\n        char b[100];\n        int k=0;\n        for(int i=0;\n        t[i];\n        ){\n            if((t[i]=='('&&t[i+1]==')')||(t[i]=='['&&t[i+1]==']')||(t[i]=='{\n                '&&t[i+1]=='\n            }\n            ')){\n                i+=2;\n                change=1;\n            }\n            else b[k++]=t[i++];\n        }\n        b[k]=0;\n        strcpy(t,b);\n    }\n    printf(\"%d\\n\",t[0]==0);\n    return 0;\n}\n",
       "explain": [
         "建立初始状态",
         "按基础规则遍历",
@@ -2656,7 +2656,7 @@
       "idea": "利用递归返回值、散列表、堆、入度队列、栈或一次扫描维护状态。",
       "complexity": "O(n)时间",
       "risk": "注意数据结构的容量与状态更新顺序。",
-      "code": "#include <stdio.h>\nint main(void){char s[]=\"{[()]}\",st[100];int top=0,ok=1;for(int i=0;s[i];i++){char c=s[i];if(c=='('||c=='['||c=='{')st[top++]=c;else if(!top){ok=0;break;}else{char x=st[--top];if(!((x=='('&&c==')')||(x=='['&&c==']')||(x=='{'&&c=='}'))){ok=0;break;}}}printf(\"%d\\n\",ok&&top==0);return 0;}",
+      "code": "#include <stdio.h>\nint main(void){\n    char s[]=\"{[()]}\",st[100];\n    int top=0,ok=1;\n    for(int i=0;\n    s[i];\n    i++){\n        char c=s[i];\n        if(c=='('||c=='['||c=='{\n            ')st[top++]=c;\n            else if(!top){\n                ok=0;\n                break;\n            }\n            else{\n                char x=st[--top];\n                if(!((x=='('&&c==')')||(x=='['&&c==']')||(x=='{\n                    '&&c=='\n                }\n                '))){\n                    ok=0;\n                    break;\n                }\n            }\n        }\n        printf(\"%d\\n\",ok&&top==0);\n        return 0;\n    }\n",
       "explain": [
         "明确不变量",
         "维护辅助状态",
@@ -2666,7 +2666,7 @@
     "variation": {
       "question": "巩固题：更换边界样例，解释算法是否仍正确。",
       "idea": "保留算法不变量，检查空输入、重复值和最小规模。",
-      "code": "#include <stdio.h>\nint main(void){char s[]=\"{[()]}\",st[100];int top=0,ok=1;for(int i=0;s[i];i++){char c=s[i];if(c=='('||c=='['||c=='{')st[top++]=c;else if(!top){ok=0;break;}else{char x=st[--top];if(!((x=='('&&c==')')||(x=='['&&c==']')||(x=='{'&&c=='}'))){ok=0;break;}}}printf(\"%d\\n\",ok&&top==0);return 0;}"
+      "code": "#include <stdio.h>\nint main(void){\n    char s[]=\"{[()]}\",st[100];\n    int top=0,ok=1;\n    for(int i=0;\n    s[i];\n    i++){\n        char c=s[i];\n        if(c=='('||c=='['||c=='{\n            ')st[top++]=c;\n            else if(!top){\n                ok=0;\n                break;\n            }\n            else{\n                char x=st[--top];\n                if(!((x=='('&&c==')')||(x=='['&&c==']')||(x=='{\n                    '&&c=='\n                }\n                '))){\n                    ok=0;\n                    break;\n                }\n            }\n        }\n        printf(\"%d\\n\",ok&&top==0);\n        return 0;\n    }\n"
     },
     "animation": {
       "layout": "array",
@@ -2836,7 +2836,7 @@
       "idea": "先以直接遍历或递归建立正确性。",
       "complexity": "O(n²)时间",
       "risk": "注意边界条件和重复元素。",
-      "code": "#include <stdio.h>\nint main(void){int a[]={7,1,5,3,6,4},best=0;for(int i=0;i<6;i++)for(int j=i+1;j<6;j++)if(a[j]-a[i]>best)best=a[j]-a[i];printf(\"%d\\n\",best);return 0;}",
+      "code": "#include <stdio.h>\nint main(void){\n    int a[]={\n        7,1,5,3,6,4\n    }\n    ,best=0;\n    for(int i=0;\n    i<6;\n    i++)for(int j=i+1;\n    j<6;\n    j++)if(a[j]-a[i]>best)best=a[j]-a[i];\n    printf(\"%d\\n\",best);\n    return 0;\n}\n",
       "explain": [
         "建立初始状态",
         "按基础规则遍历",
@@ -2849,7 +2849,7 @@
       "idea": "利用递归返回值、散列表、堆、入度队列、栈或一次扫描维护状态。",
       "complexity": "O(n)时间",
       "risk": "注意数据结构的容量与状态更新顺序。",
-      "code": "#include <stdio.h>\nint main(void){int a[]={7,1,5,3,6,4},low=a[0],best=0;for(int i=1;i<6;i++){if(a[i]-low>best)best=a[i]-low;if(a[i]<low)low=a[i];}printf(\"%d\\n\",best);return 0;}",
+      "code": "#include <stdio.h>\nint main(void){\n    int a[]={\n        7,1,5,3,6,4\n    }\n    ,low=a[0],best=0;\n    for(int i=1;\n    i<6;\n    i++){\n        if(a[i]-low>best)best=a[i]-low;\n        if(a[i]<low)low=a[i];\n    }\n    printf(\"%d\\n\",best);\n    return 0;\n}\n",
       "explain": [
         "明确不变量",
         "维护辅助状态",
@@ -2859,7 +2859,7 @@
     "variation": {
       "question": "巩固题：更换边界样例，解释算法是否仍正确。",
       "idea": "保留算法不变量，检查空输入、重复值和最小规模。",
-      "code": "#include <stdio.h>\nint main(void){int a[]={7,1,5,3,6,4},low=a[0],best=0;for(int i=1;i<6;i++){if(a[i]-low>best)best=a[i]-low;if(a[i]<low)low=a[i];}printf(\"%d\\n\",best);return 0;}"
+      "code": "#include <stdio.h>\nint main(void){\n    int a[]={\n        7,1,5,3,6,4\n    }\n    ,low=a[0],best=0;\n    for(int i=1;\n    i<6;\n    i++){\n        if(a[i]-low>best)best=a[i]-low;\n        if(a[i]<low)low=a[i];\n    }\n    printf(\"%d\\n\",best);\n    return 0;\n}\n"
     },
     "animation": {
       "layout": "array",
