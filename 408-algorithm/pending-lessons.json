@@ -1851,5 +1851,1163 @@
       "反例：若左上角变成3，则旋转方向反了。",
       "矩阵下标与空间限制是408补盲方向。"
     ]
+  },
+  {
+    "id": "lc236-20261026",
+    "date": "2026-10-26",
+    "year": "LeetCode · 408方法训练",
+    "number": "236",
+    "category": "树 · 递归",
+    "title": "二叉树最近公共祖先",
+    "difficulty": "中等",
+    "time": "15–25分钟",
+    "source": "https://leetcode.cn/problems/lowest-common-ancestor-of-a-binary-tree/",
+    "question": "二叉树最近公共祖先。根据题目所述数据结构完成求解；请分别实现朴素方法与优化方法，比较正确性、时间复杂度和空间复杂度。",
+    "constraint": "依据对应力扣原题的输入规模。本站演示代码使用固定小样例，提交力扣时需适配函数接口。",
+    "sample": "示例程序的预期输出：5。",
+    "brute": {
+      "tag": "朴素解",
+      "title": "基础遍历",
+      "idea": "先以直接遍历或递归建立正确性。",
+      "complexity": "O(n)时间",
+      "risk": "注意边界条件和重复元素。",
+      "code": "#include <stdio.h>\ntypedef struct N{int v,l,r;}N;\nN t[]={{3,1,2},{5,3,4},{1,-1,-1},{6,-1,-1},{2,-1,-1}};\nint path(int x,int goal,int a[],int *n){if(x<0)return 0;a[(*n)++]=x;if(x==goal)return 1;if(path(t[x].l,goal,a,n)||path(t[x].r,goal,a,n))return 1;--*n;return 0;}\nint main(void){int a[5],b[5],n=0,m=0,ans=-1;path(0,3,a,&n);path(0,4,b,&m);for(int i=0;i<n&&i<m&&a[i]==b[i];i++)ans=a[i];printf(\"%d\\n\",t[ans].v);return 0;}",
+      "explain": [
+        "建立初始状态",
+        "按基础规则遍历",
+        "核对输出"
+      ]
+    },
+    "optimal": {
+      "tag": "优化解",
+      "title": "408经典数据结构",
+      "idea": "利用递归返回值、散列表、堆、入度队列、栈或一次扫描维护状态。",
+      "complexity": "O(n)时间",
+      "risk": "注意数据结构的容量与状态更新顺序。",
+      "code": "#include <stdio.h>\ntypedef struct N{int v,l,r;}N;\nN t[]={{3,1,2},{5,3,4},{1,-1,-1},{6,-1,-1},{2,-1,-1}};\nint lca(int x,int a,int b){if(x<0||x==a||x==b)return x;int l=lca(t[x].l,a,b),r=lca(t[x].r,a,b);if(l>=0&&r>=0)return x;return l>=0?l:r;}\nint main(void){printf(\"%d\\n\",t[lca(0,3,4)].v);return 0;}",
+      "explain": [
+        "明确不变量",
+        "维护辅助状态",
+        "完成输出"
+      ]
+    },
+    "variation": {
+      "question": "巩固题：更换边界样例，解释算法是否仍正确。",
+      "idea": "保留算法不变量，检查空输入、重复值和最小规模。",
+      "code": "#include <stdio.h>\ntypedef struct N{int v,l,r;}N;\nN t[]={{3,1,2},{5,3,4},{1,-1,-1},{6,-1,-1},{2,-1,-1}};\nint lca(int x,int a,int b){if(x<0||x==a||x==b)return x;int l=lca(t[x].l,a,b),r=lca(t[x].r,a,b);if(l>=0&&r>=0)return x;return l>=0?l:r;}\nint main(void){printf(\"%d\\n\",t[lca(0,3,4)].v);return 0;}"
+    },
+    "animation": {
+      "layout": "array",
+      "brute": [
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            0
+          ],
+          "pointers": {
+            "cur": 0
+          },
+          "text": "读取样例并初始化"
+        },
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            1
+          ],
+          "pointers": {
+            "cur": 1
+          },
+          "text": "执行当前步骤"
+        },
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            2
+          ],
+          "pointers": {
+            "cur": 2
+          },
+          "text": "更新辅助状态"
+        },
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            3
+          ],
+          "pointers": {
+            "cur": 3
+          },
+          "text": "得到结果"
+        }
+      ],
+      "optimal": [
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            0
+          ],
+          "pointers": {
+            "cur": 0
+          },
+          "text": "读取样例并初始化"
+        },
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            1
+          ],
+          "pointers": {
+            "cur": 1
+          },
+          "text": "执行当前步骤"
+        },
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            2
+          ],
+          "pointers": {
+            "cur": 2
+          },
+          "text": "更新辅助状态"
+        },
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            3
+          ],
+          "pointers": {
+            "cur": 3
+          },
+          "text": "得到结果"
+        }
+      ]
+    },
+    "tips": [
+      "先画出过程再写代码。",
+      "朴素解与优化解分别计算复杂度。",
+      "注意边界与重复情况。"
+    ]
+  },
+  {
+    "id": "lc217-20261027",
+    "date": "2026-10-27",
+    "year": "LeetCode · 408方法训练",
+    "number": "217",
+    "category": "查找 · 哈希",
+    "title": "存在重复元素",
+    "difficulty": "中等",
+    "time": "15–25分钟",
+    "source": "https://leetcode.cn/problems/contains-duplicate/",
+    "question": "存在重复元素。根据题目所述数据结构完成求解；请分别实现朴素方法与优化方法，比较正确性、时间复杂度和空间复杂度。",
+    "constraint": "依据对应力扣原题的输入规模。本站演示代码使用固定小样例，提交力扣时需适配函数接口。",
+    "sample": "示例程序的预期输出：1。",
+    "brute": {
+      "tag": "朴素解",
+      "title": "基础遍历",
+      "idea": "先以直接遍历或递归建立正确性。",
+      "complexity": "O(n²)时间",
+      "risk": "注意边界条件和重复元素。",
+      "code": "#include <stdio.h>\nint main(void){int a[]={1,2,3,1},found=0;for(int i=0;i<4;i++)for(int j=i+1;j<4;j++)if(a[i]==a[j])found=1;printf(\"%d\\n\",found);return 0;}",
+      "explain": [
+        "建立初始状态",
+        "按基础规则遍历",
+        "核对输出"
+      ]
+    },
+    "optimal": {
+      "tag": "优化解",
+      "title": "408经典数据结构",
+      "idea": "利用递归返回值、散列表、堆、入度队列、栈或一次扫描维护状态。",
+      "complexity": "平均O(n)时间",
+      "risk": "注意数据结构的容量与状态更新顺序。",
+      "code": "#include <stdio.h>\nint main(void){int a[]={1,2,3,1},h[17]={0},used[17]={0},found=0;for(int i=0;i<4;i++){unsigned k=((unsigned)a[i]*2654435761u)%17;while(used[k]&&h[k]!=a[i])k=(k+1)%17;if(used[k]){found=1;break;}used[k]=1;h[k]=a[i];}printf(\"%d\\n\",found);return 0;}",
+      "explain": [
+        "明确不变量",
+        "维护辅助状态",
+        "完成输出"
+      ]
+    },
+    "variation": {
+      "question": "巩固题：更换边界样例，解释算法是否仍正确。",
+      "idea": "保留算法不变量，检查空输入、重复值和最小规模。",
+      "code": "#include <stdio.h>\nint main(void){int a[]={1,2,3,1},h[17]={0},used[17]={0},found=0;for(int i=0;i<4;i++){unsigned k=((unsigned)a[i]*2654435761u)%17;while(used[k]&&h[k]!=a[i])k=(k+1)%17;if(used[k]){found=1;break;}used[k]=1;h[k]=a[i];}printf(\"%d\\n\",found);return 0;}"
+    },
+    "animation": {
+      "layout": "array",
+      "brute": [
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            0
+          ],
+          "pointers": {
+            "cur": 0
+          },
+          "text": "读取样例并初始化"
+        },
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            1
+          ],
+          "pointers": {
+            "cur": 1
+          },
+          "text": "执行当前步骤"
+        },
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            2
+          ],
+          "pointers": {
+            "cur": 2
+          },
+          "text": "更新辅助状态"
+        },
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            3
+          ],
+          "pointers": {
+            "cur": 3
+          },
+          "text": "得到结果"
+        }
+      ],
+      "optimal": [
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            0
+          ],
+          "pointers": {
+            "cur": 0
+          },
+          "text": "读取样例并初始化"
+        },
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            1
+          ],
+          "pointers": {
+            "cur": 1
+          },
+          "text": "执行当前步骤"
+        },
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            2
+          ],
+          "pointers": {
+            "cur": 2
+          },
+          "text": "更新辅助状态"
+        },
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            3
+          ],
+          "pointers": {
+            "cur": 3
+          },
+          "text": "得到结果"
+        }
+      ]
+    },
+    "tips": [
+      "先画出过程再写代码。",
+      "朴素解与优化解分别计算复杂度。",
+      "注意边界与重复情况。"
+    ]
+  },
+  {
+    "id": "lc215-heap-20261028",
+    "date": "2026-10-28",
+    "year": "LeetCode · 408方法训练",
+    "number": "215",
+    "category": "排序 · 堆",
+    "title": "数组第K大元素：堆",
+    "difficulty": "中等",
+    "time": "15–25分钟",
+    "source": "https://leetcode.cn/problems/kth-largest-element-in-an-array/",
+    "question": "数组第K大元素：堆。根据题目所述数据结构完成求解；请分别实现朴素方法与优化方法，比较正确性、时间复杂度和空间复杂度。",
+    "constraint": "依据对应力扣原题的输入规模。本站演示代码使用固定小样例，提交力扣时需适配函数接口。",
+    "sample": "示例程序的预期输出：5。",
+    "brute": {
+      "tag": "朴素解",
+      "title": "基础遍历",
+      "idea": "先以直接遍历或递归建立正确性。",
+      "complexity": "O(nk)时间",
+      "risk": "注意边界条件和重复元素。",
+      "code": "#include <stdio.h>\nint main(void){int a[]={3,2,1,5,6,4};for(int i=0;i<2;i++){int p=i;for(int j=i+1;j<6;j++)if(a[j]>a[p])p=j;int x=a[i];a[i]=a[p];a[p]=x;}printf(\"%d\\n\",a[1]);return 0;}",
+      "explain": [
+        "建立初始状态",
+        "按基础规则遍历",
+        "核对输出"
+      ]
+    },
+    "optimal": {
+      "tag": "优化解",
+      "title": "408经典数据结构",
+      "idea": "利用递归返回值、散列表、堆、入度队列、栈或一次扫描维护状态。",
+      "complexity": "O(n log k)时间",
+      "risk": "注意数据结构的容量与状态更新顺序。",
+      "code": "#include <stdio.h>\nint main(void){int a[]={3,2,1,5,6,4},h[2],size=0;for(int z=0;z<6;z++){int x=a[z];if(size<2){int i=size++;while(i&&h[(i-1)/2]>x){h[i]=h[(i-1)/2];i=(i-1)/2;}h[i]=x;}else if(x>h[0]){int i=0;while(2*i+1<size){int c=2*i+1;if(c+1<size&&h[c+1]<h[c])c++;if(h[c]>=x)break;h[i]=h[c];i=c;}h[i]=x;}}printf(\"%d\\n\",h[0]);return 0;}",
+      "explain": [
+        "明确不变量",
+        "维护辅助状态",
+        "完成输出"
+      ]
+    },
+    "variation": {
+      "question": "巩固题：更换边界样例，解释算法是否仍正确。",
+      "idea": "保留算法不变量，检查空输入、重复值和最小规模。",
+      "code": "#include <stdio.h>\nint main(void){int a[]={3,2,1,5,6,4},h[2],size=0;for(int z=0;z<6;z++){int x=a[z];if(size<2){int i=size++;while(i&&h[(i-1)/2]>x){h[i]=h[(i-1)/2];i=(i-1)/2;}h[i]=x;}else if(x>h[0]){int i=0;while(2*i+1<size){int c=2*i+1;if(c+1<size&&h[c+1]<h[c])c++;if(h[c]>=x)break;h[i]=h[c];i=c;}h[i]=x;}}printf(\"%d\\n\",h[0]);return 0;}"
+    },
+    "animation": {
+      "layout": "array",
+      "brute": [
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            0
+          ],
+          "pointers": {
+            "cur": 0
+          },
+          "text": "读取样例并初始化"
+        },
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            1
+          ],
+          "pointers": {
+            "cur": 1
+          },
+          "text": "执行当前步骤"
+        },
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            2
+          ],
+          "pointers": {
+            "cur": 2
+          },
+          "text": "更新辅助状态"
+        },
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            3
+          ],
+          "pointers": {
+            "cur": 3
+          },
+          "text": "得到结果"
+        }
+      ],
+      "optimal": [
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            0
+          ],
+          "pointers": {
+            "cur": 0
+          },
+          "text": "读取样例并初始化"
+        },
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            1
+          ],
+          "pointers": {
+            "cur": 1
+          },
+          "text": "执行当前步骤"
+        },
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            2
+          ],
+          "pointers": {
+            "cur": 2
+          },
+          "text": "更新辅助状态"
+        },
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            3
+          ],
+          "pointers": {
+            "cur": 3
+          },
+          "text": "得到结果"
+        }
+      ]
+    },
+    "tips": [
+      "先画出过程再写代码。",
+      "朴素解与优化解分别计算复杂度。",
+      "注意边界与重复情况。"
+    ]
+  },
+  {
+    "id": "lc207-20261029",
+    "date": "2026-10-29",
+    "year": "LeetCode · 408方法训练",
+    "number": "207",
+    "category": "图 · 拓扑排序",
+    "title": "课程表：拓扑排序",
+    "difficulty": "中等",
+    "time": "15–25分钟",
+    "source": "https://leetcode.cn/problems/course-schedule/",
+    "question": "课程表：拓扑排序。根据题目所述数据结构完成求解；请分别实现朴素方法与优化方法，比较正确性、时间复杂度和空间复杂度。",
+    "constraint": "依据对应力扣原题的输入规模。本站演示代码使用固定小样例，提交力扣时需适配函数接口。",
+    "sample": "示例程序的预期输出：1。",
+    "brute": {
+      "tag": "朴素解",
+      "title": "基础遍历",
+      "idea": "先以直接遍历或递归建立正确性。",
+      "complexity": "O(V+E)时间",
+      "risk": "注意边界条件和重复元素。",
+      "code": "#include <stdio.h>\nint e[4][4]={{0,1,0,0},{0,0,1,0},{0,0,0,1},{0,0,0,0}},v[4];\nint dfs(int x){v[x]=1;for(int j=0;j<4;j++)if(e[x][j]){if(v[j]==1)return 0;if(v[j]==0&&!dfs(j))return 0;}v[x]=2;return 1;}\nint main(void){int ok=1;for(int i=0;i<4;i++)if(!v[i]&&!dfs(i))ok=0;printf(\"%d\\n\",ok);return 0;}",
+      "explain": [
+        "建立初始状态",
+        "按基础规则遍历",
+        "核对输出"
+      ]
+    },
+    "optimal": {
+      "tag": "优化解",
+      "title": "408经典数据结构",
+      "idea": "利用递归返回值、散列表、堆、入度队列、栈或一次扫描维护状态。",
+      "complexity": "O(V+E)时间",
+      "risk": "注意数据结构的容量与状态更新顺序。",
+      "code": "#include <stdio.h>\nint main(void){int e[4][4]={{0,1,0,0},{0,0,1,0},{0,0,0,1},{0,0,0,0}},in[4]={0},q[4],h=0,t=0,n=0;for(int i=0;i<4;i++)for(int j=0;j<4;j++)in[j]+=e[i][j];for(int i=0;i<4;i++)if(!in[i])q[t++]=i;while(h<t){int x=q[h++];n++;for(int j=0;j<4;j++)if(e[x][j]&&--in[j]==0)q[t++]=j;}printf(\"%d\\n\",n==4);return 0;}",
+      "explain": [
+        "明确不变量",
+        "维护辅助状态",
+        "完成输出"
+      ]
+    },
+    "variation": {
+      "question": "巩固题：更换边界样例，解释算法是否仍正确。",
+      "idea": "保留算法不变量，检查空输入、重复值和最小规模。",
+      "code": "#include <stdio.h>\nint main(void){int e[4][4]={{0,1,0,0},{0,0,1,0},{0,0,0,1},{0,0,0,0}},in[4]={0},q[4],h=0,t=0,n=0;for(int i=0;i<4;i++)for(int j=0;j<4;j++)in[j]+=e[i][j];for(int i=0;i<4;i++)if(!in[i])q[t++]=i;while(h<t){int x=q[h++];n++;for(int j=0;j<4;j++)if(e[x][j]&&--in[j]==0)q[t++]=j;}printf(\"%d\\n\",n==4);return 0;}"
+    },
+    "animation": {
+      "layout": "array",
+      "brute": [
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            0
+          ],
+          "pointers": {
+            "cur": 0
+          },
+          "text": "读取样例并初始化"
+        },
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            1
+          ],
+          "pointers": {
+            "cur": 1
+          },
+          "text": "执行当前步骤"
+        },
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            2
+          ],
+          "pointers": {
+            "cur": 2
+          },
+          "text": "更新辅助状态"
+        },
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            3
+          ],
+          "pointers": {
+            "cur": 3
+          },
+          "text": "得到结果"
+        }
+      ],
+      "optimal": [
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            0
+          ],
+          "pointers": {
+            "cur": 0
+          },
+          "text": "读取样例并初始化"
+        },
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            1
+          ],
+          "pointers": {
+            "cur": 1
+          },
+          "text": "执行当前步骤"
+        },
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            2
+          ],
+          "pointers": {
+            "cur": 2
+          },
+          "text": "更新辅助状态"
+        },
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            3
+          ],
+          "pointers": {
+            "cur": 3
+          },
+          "text": "得到结果"
+        }
+      ]
+    },
+    "tips": [
+      "先画出过程再写代码。",
+      "朴素解与优化解分别计算复杂度。",
+      "注意边界与重复情况。"
+    ]
+  },
+  {
+    "id": "lc20-20261030",
+    "date": "2026-10-30",
+    "year": "LeetCode · 408方法训练",
+    "number": "20",
+    "category": "栈 · 匹配",
+    "title": "有效括号",
+    "difficulty": "中等",
+    "time": "15–25分钟",
+    "source": "https://leetcode.cn/problems/valid-parentheses/",
+    "question": "有效括号。根据题目所述数据结构完成求解；请分别实现朴素方法与优化方法，比较正确性、时间复杂度和空间复杂度。",
+    "constraint": "依据对应力扣原题的输入规模。本站演示代码使用固定小样例，提交力扣时需适配函数接口。",
+    "sample": "示例程序的预期输出：1。",
+    "brute": {
+      "tag": "朴素解",
+      "title": "基础遍历",
+      "idea": "先以直接遍历或递归建立正确性。",
+      "complexity": "O(n²)时间",
+      "risk": "注意边界条件和重复元素。",
+      "code": "#include <stdio.h>\n#include <string.h>\nint main(void){char s[100]=\"{[()]}\",t[100];strcpy(t,s);int change=1;while(change){change=0;char b[100];int k=0;for(int i=0;t[i];){if((t[i]=='('&&t[i+1]==')')||(t[i]=='['&&t[i+1]==']')||(t[i]=='{'&&t[i+1]=='}')){i+=2;change=1;}else b[k++]=t[i++];}b[k]=0;strcpy(t,b);}printf(\"%d\\n\",t[0]==0);return 0;}",
+      "explain": [
+        "建立初始状态",
+        "按基础规则遍历",
+        "核对输出"
+      ]
+    },
+    "optimal": {
+      "tag": "优化解",
+      "title": "408经典数据结构",
+      "idea": "利用递归返回值、散列表、堆、入度队列、栈或一次扫描维护状态。",
+      "complexity": "O(n)时间",
+      "risk": "注意数据结构的容量与状态更新顺序。",
+      "code": "#include <stdio.h>\nint main(void){char s[]=\"{[()]}\",st[100];int top=0,ok=1;for(int i=0;s[i];i++){char c=s[i];if(c=='('||c=='['||c=='{')st[top++]=c;else if(!top){ok=0;break;}else{char x=st[--top];if(!((x=='('&&c==')')||(x=='['&&c==']')||(x=='{'&&c=='}'))){ok=0;break;}}}printf(\"%d\\n\",ok&&top==0);return 0;}",
+      "explain": [
+        "明确不变量",
+        "维护辅助状态",
+        "完成输出"
+      ]
+    },
+    "variation": {
+      "question": "巩固题：更换边界样例，解释算法是否仍正确。",
+      "idea": "保留算法不变量，检查空输入、重复值和最小规模。",
+      "code": "#include <stdio.h>\nint main(void){char s[]=\"{[()]}\",st[100];int top=0,ok=1;for(int i=0;s[i];i++){char c=s[i];if(c=='('||c=='['||c=='{')st[top++]=c;else if(!top){ok=0;break;}else{char x=st[--top];if(!((x=='('&&c==')')||(x=='['&&c==']')||(x=='{'&&c=='}'))){ok=0;break;}}}printf(\"%d\\n\",ok&&top==0);return 0;}"
+    },
+    "animation": {
+      "layout": "array",
+      "brute": [
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            0
+          ],
+          "pointers": {
+            "cur": 0
+          },
+          "text": "读取样例并初始化"
+        },
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            1
+          ],
+          "pointers": {
+            "cur": 1
+          },
+          "text": "执行当前步骤"
+        },
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            2
+          ],
+          "pointers": {
+            "cur": 2
+          },
+          "text": "更新辅助状态"
+        },
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            3
+          ],
+          "pointers": {
+            "cur": 3
+          },
+          "text": "得到结果"
+        }
+      ],
+      "optimal": [
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            0
+          ],
+          "pointers": {
+            "cur": 0
+          },
+          "text": "读取样例并初始化"
+        },
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            1
+          ],
+          "pointers": {
+            "cur": 1
+          },
+          "text": "执行当前步骤"
+        },
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            2
+          ],
+          "pointers": {
+            "cur": 2
+          },
+          "text": "更新辅助状态"
+        },
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            3
+          ],
+          "pointers": {
+            "cur": 3
+          },
+          "text": "得到结果"
+        }
+      ]
+    },
+    "tips": [
+      "先画出过程再写代码。",
+      "朴素解与优化解分别计算复杂度。",
+      "注意边界与重复情况。"
+    ]
+  },
+  {
+    "id": "lc121-20261031",
+    "date": "2026-10-31",
+    "year": "LeetCode · 408方法训练",
+    "number": "121",
+    "category": "数组 · 贪心",
+    "title": "买卖股票最佳时机",
+    "difficulty": "中等",
+    "time": "15–25分钟",
+    "source": "https://leetcode.cn/problems/best-time-to-buy-and-sell-stock/",
+    "question": "买卖股票最佳时机。根据题目所述数据结构完成求解；请分别实现朴素方法与优化方法，比较正确性、时间复杂度和空间复杂度。",
+    "constraint": "依据对应力扣原题的输入规模。本站演示代码使用固定小样例，提交力扣时需适配函数接口。",
+    "sample": "示例程序的预期输出：5。",
+    "brute": {
+      "tag": "朴素解",
+      "title": "基础遍历",
+      "idea": "先以直接遍历或递归建立正确性。",
+      "complexity": "O(n²)时间",
+      "risk": "注意边界条件和重复元素。",
+      "code": "#include <stdio.h>\nint main(void){int a[]={7,1,5,3,6,4},best=0;for(int i=0;i<6;i++)for(int j=i+1;j<6;j++)if(a[j]-a[i]>best)best=a[j]-a[i];printf(\"%d\\n\",best);return 0;}",
+      "explain": [
+        "建立初始状态",
+        "按基础规则遍历",
+        "核对输出"
+      ]
+    },
+    "optimal": {
+      "tag": "优化解",
+      "title": "408经典数据结构",
+      "idea": "利用递归返回值、散列表、堆、入度队列、栈或一次扫描维护状态。",
+      "complexity": "O(n)时间",
+      "risk": "注意数据结构的容量与状态更新顺序。",
+      "code": "#include <stdio.h>\nint main(void){int a[]={7,1,5,3,6,4},low=a[0],best=0;for(int i=1;i<6;i++){if(a[i]-low>best)best=a[i]-low;if(a[i]<low)low=a[i];}printf(\"%d\\n\",best);return 0;}",
+      "explain": [
+        "明确不变量",
+        "维护辅助状态",
+        "完成输出"
+      ]
+    },
+    "variation": {
+      "question": "巩固题：更换边界样例，解释算法是否仍正确。",
+      "idea": "保留算法不变量，检查空输入、重复值和最小规模。",
+      "code": "#include <stdio.h>\nint main(void){int a[]={7,1,5,3,6,4},low=a[0],best=0;for(int i=1;i<6;i++){if(a[i]-low>best)best=a[i]-low;if(a[i]<low)low=a[i];}printf(\"%d\\n\",best);return 0;}"
+    },
+    "animation": {
+      "layout": "array",
+      "brute": [
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            0
+          ],
+          "pointers": {
+            "cur": 0
+          },
+          "text": "读取样例并初始化"
+        },
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            1
+          ],
+          "pointers": {
+            "cur": 1
+          },
+          "text": "执行当前步骤"
+        },
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            2
+          ],
+          "pointers": {
+            "cur": 2
+          },
+          "text": "更新辅助状态"
+        },
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            3
+          ],
+          "pointers": {
+            "cur": 3
+          },
+          "text": "得到结果"
+        }
+      ],
+      "optimal": [
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            0
+          ],
+          "pointers": {
+            "cur": 0
+          },
+          "text": "读取样例并初始化"
+        },
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            1
+          ],
+          "pointers": {
+            "cur": 1
+          },
+          "text": "执行当前步骤"
+        },
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            2
+          ],
+          "pointers": {
+            "cur": 2
+          },
+          "text": "更新辅助状态"
+        },
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            3
+          ],
+          "pointers": {
+            "cur": 3
+          },
+          "text": "得到结果"
+        }
+      ]
+    },
+    "tips": [
+      "先画出过程再写代码。",
+      "朴素解与优化解分别计算复杂度。",
+      "注意边界与重复情况。"
+    ]
   }
 ]
