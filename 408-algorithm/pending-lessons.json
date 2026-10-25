@@ -2898,5 +2898,216 @@
       "朴素解与优化解分别计算复杂度。",
       "注意边界与重复情况。"
     ]
+  },
+  {
+    "id": "lc684-20261101",
+    "date": "2026-11-01",
+    "year": "LeetCode",
+    "number": "684",
+    "category": "图 · 并查集",
+    "title": "冗余连接：一行 find 判断成环",
+    "difficulty": "中等",
+    "time": "20分钟",
+    "source": "https://leetcode.cn/problems/redundant-connection/",
+    "question": "给定一棵无向树，再添加一条边形成一个环。输入为按顺序给出的边数组，找出删除后仍能使图成为树的边；如有多个答案，返回输入中最后出现的那条。顶点从1编号。",
+    "constraint": "3≤n≤1000；恰有n条边，且恰有一个环。示例程序固定n=4。",
+    "sample": "输入：[[1,2],[2,3],[3,1],[3,4]]\n输出：[3,1]\n加入第三条边前，3和1已通过3→2→1连通。",
+    "brute": {
+      "tag": "DFS",
+      "title": "每加一条边先DFS查连通",
+      "idea": "如果新边两端在已有图中已经连通，加入就会成环；否则再加入邻接矩阵。",
+      "complexity": "O(n³)时间，O(n²)空间（邻接矩阵）。",
+      "risk": "先查后加；每次DFS前清空vis。",
+      "code": "#include <stdio.h>\n#define N 5\nint edge[4][2]={{1,2},{2,3},{3,1},{3,4}};\n\nint g[N][N], vis[N];\nint reach(int u,int t){\n    if(u==t) return 1;\n    vis[u]=1;\n    for(int v=1;v<N;v++)\n        if(g[u][v]&&!vis[v]&&reach(v,t)) return 1;\n    return 0;\n}\nint main(void){\n    for(int i=0;i<4;i++){\n        int u=edge[i][0],v=edge[i][1];\n        for(int j=1;j<N;j++) vis[j]=0;\n        if(reach(u,v)){printf(\"%d %d\\n\",u,v);return 0;}\n        g[u][v]=g[v][u]=1; // 未连通才加边\n    }\n    return 0;\n}\n",
+      "explain": [
+        "邻接矩阵初始全0",
+        "每条边先DFS检查两端是否连通",
+        "已连通就输出当前边，否则添加边"
+      ]
+    },
+    "optimal": {
+      "tag": "并查集",
+      "title": "路径压缩 find + 根合并",
+      "idea": "每条边先找两个端点的根；根相同则成环，否则合并两个根。",
+      "complexity": "此版仅路径压缩，未按秩合并，不能直接写成均摊O(α(n))；额外空间O(n)。",
+      "risk": "必须合并fa[find(u)]而非fa[u]；路径压缩不会自动按秩合并。",
+      "code": "#include <stdio.h>\n#define N 5\nint edge[4][2]={{1,2},{2,3},{3,1},{3,4}};\n\nint fa[N];\nint find(int x){\n    return fa[x]==x?x:(fa[x]=find(fa[x]));\n}\nint main(void){\n    for(int i=1;i<N;i++) fa[i]=i;\n    for(int i=0;i<4;i++){\n        int u=edge[i][0],v=edge[i][1];\n        int x=find(u),y=find(v);\n        if(x==y){printf(\"%d %d\\n\",u,v);return 0;}\n        fa[x]=y; // 合并两个根\n    }\n    return 0;\n}\n",
+      "explain": [
+        "fa[i]=i 初始化",
+        "find递归查根并压缩路径",
+        "根相同判成环；根不同合并"
+      ]
+    },
+    "variation": {
+      "question": "改为[[1,2],[2,3],[3,4],[4,1]]，输出哪条边？",
+      "idea": "前三条边形成1→2→3→4路径，第四条边(4,1)闭合成环，因此输出4 1。",
+      "code": "#include <stdio.h>\n#define N 5\nint edge[4][2]={{1,2},{2,3},{3,4},{4,1}};\n\nint fa[N];\nint find(int x){\n    return fa[x]==x?x:(fa[x]=find(fa[x]));\n}\nint main(void){\n    for(int i=1;i<N;i++) fa[i]=i;\n    for(int i=0;i<4;i++){\n        int u=edge[i][0],v=edge[i][1];\n        int x=find(u),y=find(v);\n        if(x==y){printf(\"%d %d\\n\",u,v);return 0;}\n        fa[x]=y; // 合并两个根\n    }\n    return 0;\n}\n"
+    },
+    "animation": {
+      "layout": "diagram",
+      "brute": [
+        {
+          "diagram": "加入(1,2)：1—2\n3、4尚未连接",
+          "text": "先检查1和2不连通，再添加。"
+        },
+        {
+          "diagram": "加入(2,3)：1—2—3",
+          "text": "2和3尚未连通，可以添加。"
+        },
+        {
+          "diagram": "检查(3,1)：3→2→1已连通\n答案：(3,1)",
+          "text": "无需再添加第三条边，已经检测到环。"
+        }
+      ],
+      "optimal": [
+        {
+          "diagram": "fa=[1,2,3,4]\n各自为根",
+          "text": "初始化4个集合。"
+        },
+        {
+          "diagram": "合并(1,2)：根1挂到2\n合并(2,3)：根2挂到3",
+          "text": "前两条边逐步合并集合。"
+        },
+        {
+          "diagram": "find(3)=3\nfind(1)=3\n答案：(3,1)",
+          "text": "两个端点同根，第三条边冗余。"
+        }
+      ]
+    },
+    "tips": [
+      "判环：加边前两端是否已经连通。",
+      "最短find：fa[x]==x?x:(fa[x]=find(fa[x]))。",
+      "此题可作为408并查集模板题。"
+    ]
+  },
+  {
+    "id": "lc912-merge-20261102",
+    "date": "2026-11-02",
+    "year": "LeetCode",
+    "number": "912",
+    "category": "内部排序 · 归并排序",
+    "title": "排序数组：归并排序的递归与合并",
+    "difficulty": "中等",
+    "time": "25分钟",
+    "source": "https://leetcode.cn/problems/sort-an-array/",
+    "question": "给定整数数组，按非降序排序。要求先写一个容易想到的排序算法，再使用自顶向下归并排序实现O(n log n)的时间复杂度。",
+    "constraint": "1≤n≤5×10^4；示例代码固定n=5，考场需要根据题目接口调整数组容量。",
+    "sample": "输入：[5,2,4,1,3]\n输出：[1,2,3,4,5]",
+    "brute": {
+      "tag": "插入排序",
+      "title": "直接插入排序",
+      "idea": "依次把a[i]插入已排序的前缀中。",
+      "complexity": "O(n²)时间，O(1)额外空间。",
+      "risk": "先保存x，右移元素后插入a[j+1]。",
+      "code": "#include <stdio.h>\n#define N 5\nint a[N]={5,2,4,1,3};\n\nint main(void){\n    for(int i=1;i<N;i++){\n        int x=a[i],j=i-1;\n        while(j>=0&&a[j]>x){a[j+1]=a[j];j--;}\n        a[j+1]=x;\n    }\n    for(int i=0;i<N;i++) printf(\"%d \",a[i]);\n    return 0;\n}\n",
+      "explain": [
+        "前缀a[0..i-1]保持有序",
+        "右移大于x的元素",
+        "把x放到空位"
+      ]
+    },
+    "optimal": {
+      "tag": "归并排序",
+      "title": "二路合并的分治模板",
+      "idea": "将区间递归分为两半，左右分别有序后通过临时数组合并。",
+      "complexity": "O(n log n)时间，O(n)辅助数组，递归栈O(log n)。",
+      "risk": "中点分割为[l,m]和[m+1,r]；剩余元素必须拷贝。",
+      "code": "#include <stdio.h>\n#define N 5\nint a[N]={5,2,4,1,3};\n\nint temp[N];\n// 合并两个已排序区间 [l,m]、[m+1,r]\nvoid merge(int l,int m,int r){\n    int i=l,j=m+1,k=l;\n    while(i<=m&&j<=r)\n        temp[k++]=(a[i]<=a[j])?a[i++]:a[j++];\n    while(i<=m) temp[k++]=a[i++];\n    while(j<=r) temp[k++]=a[j++];\n    for(int p=l;p<=r;p++) a[p]=temp[p];\n}\nvoid mergeSort(int l,int r){\n    if(l>=r) return;\n    int m=l+(r-l)/2;\n    mergeSort(l,m);\n    mergeSort(m+1,r);\n    merge(l,m,r);\n}\nint main(void){\n    mergeSort(0,N-1);\n    for(int i=0;i<N;i++) printf(\"%d \",a[i]);\n    return 0;\n}\n",
+      "explain": [
+        "递归分割到单元素",
+        "左右有序后使用双指针归并",
+        "合并结果写回原数组"
+      ]
+    },
+    "variation": {
+      "question": "把升序改成降序，只改一处比较条件。结果是什么？",
+      "idea": "把merge中的a[i]<=a[j]改为a[i]>=a[j]；样例输出5 4 3 2 1。",
+      "code": "#include <stdio.h>\n#define N 5\nint a[N]={5,2,4,1,3};\n\nint temp[N];\n// 合并两个已排序区间 [l,m]、[m+1,r]\nvoid merge(int l,int m,int r){\n    int i=l,j=m+1,k=l;\n    while(i<=m&&j<=r)\n        temp[k++]=(a[i]>=a[j])?a[i++]:a[j++];\n    while(i<=m) temp[k++]=a[i++];\n    while(j<=r) temp[k++]=a[j++];\n    for(int p=l;p<=r;p++) a[p]=temp[p];\n}\nvoid mergeSort(int l,int r){\n    if(l>=r) return;\n    int m=l+(r-l)/2;\n    mergeSort(l,m);\n    mergeSort(m+1,r);\n    merge(l,m,r);\n}\nint main(void){\n    mergeSort(0,N-1);\n    for(int i=0;i<N;i++) printf(\"%d \",a[i]);\n    return 0;\n}\n"
+    },
+    "animation": {
+      "layout": "diagram",
+      "brute": [
+        {
+          "array": [
+            5,
+            2,
+            4,
+            1,
+            3
+          ],
+          "active": [
+            0,
+            1
+          ],
+          "text": "把2插入前缀[5]之前。"
+        },
+        {
+          "array": [
+            2,
+            4,
+            5,
+            1,
+            3
+          ],
+          "active": [
+            1
+          ],
+          "text": "插入4，前三个元素有序。"
+        },
+        {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "active": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "text": "依次插入1和3，得到升序数组。"
+        }
+      ],
+      "optimal": [
+        {
+          "diagram": "[5,2,4,1,3]\n ↙       ↘\n[5,2,4]  [1,3]",
+          "text": "递归划分成两个子区间。"
+        },
+        {
+          "diagram": "[5] [2] [4] [1] [3]",
+          "text": "递归边界：每个单元素区间天然有序。"
+        },
+        {
+          "diagram": "[2,5] + [4] → [2,4,5]\n[1] + [3] → [1,3]",
+          "text": "逐层合并两个有序子区间。"
+        },
+        {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "active": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "text": "合并[2,4,5]与[1,3]，得到最终升序结果。"
+        }
+      ]
+    },
+    "tips": [
+      "归并排序的关键不是分割，而是merge双指针。",
+      "归并排序稳定：相等时优先取左侧。",
+      "递归树log n层，每层O(n)。"
+    ]
   }
 ]
