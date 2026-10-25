@@ -535,7 +535,34 @@ void tailInsert(LNode **tail, LNode *p) {
         if (slow == fast) return 1;
     }
     return 0;
-}</code></pre></div><p><strong>背诵优先级：</strong>树的三种递归遍历、层序遍历、链表头插与逆置、快慢指针判环最值得熟练默写。上面是独立函数模板，使用时需补齐头文件、visit 操作及数据结构初始化。</p></section>
+}</code></pre></div><h3>⑪ 并查集：最短路径压缩版（必背）</h3>
+<p>你说的“一行代码”就是<strong>递归路径压缩的 find</strong>。记住两句话：<strong>查根顺便压缩路径；合并就是一个根挂到另一个根上。</strong></p>
+<div class="codewrap"><button class="copy" type="button" onclick="navigator.clipboard.writeText(document.getElementById('exam-dsu').textContent)">复制代码</button><pre><code id="exam-dsu">#define N 1000
+int fa[N];
+
+// 初始化：每个结点自成一个集合
+void init(int n) {
+    for (int i = 0; i < n; i++)
+        fa[i] = i;
+}
+
+// 查找根 + 路径压缩：核心只有一行
+int find(int x) {
+    return fa[x] == x ? x : (fa[x] = find(fa[x]));
+}
+
+// 合并两个集合：一行即可
+void unite(int x, int y) {
+    fa[find(x)] = find(y);
+}
+
+// 判断是否属于同一集合
+int same(int x, int y) {
+    return find(x) == find(y);
+}</code></pre></div>
+<p><strong>408考场记忆：</strong><code>fa[x] == x</code> 表示找到根；否则递归找根，并把 <code>fa[x]</code> 直接改成根。合并时必须用 <code>find(x)</code> 和 <code>find(y)</code>，不能直接写 <code>fa[x] = y</code>。</p>
+<p><strong>复杂度：</strong>此版只有路径压缩，没有按秩或按大小合并，写法最短，但<strong>不能直接宣称均摊 O(α(n))</strong>；如需经典近线性复杂度保证，还应加入按秩/大小合并。</p>
+<p><strong>背诵优先级：</strong>树的三种递归遍历、层序遍历、链表头插与逆置、快慢指针判环最值得熟练默写。上面是独立函数模板，使用时需补齐头文件、visit 操作及数据结构初始化。</p></section>
 </main></div>
 <footer class="foot">408 Algorithm Lab · 为考场手写而设计 · 一题一剑，终有锋芒。</footer>
 <script>
