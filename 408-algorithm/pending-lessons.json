@@ -1862,187 +1862,76 @@
     "difficulty": "中等",
     "time": "15–25分钟",
     "source": "https://leetcode.cn/problems/lowest-common-ancestor-of-a-binary-tree/",
-    "question": "二叉树最近公共祖先。根据题目所述数据结构完成求解；请分别实现朴素方法与优化方法，比较正确性、时间复杂度和空间复杂度。",
-    "constraint": "依据对应力扣原题的输入规模。本站演示代码使用固定小样例，提交力扣时需适配函数接口。",
-    "sample": "示例程序的预期输出：5。",
+    "question": "给定一棵二叉树的根结点，以及树中两个不同结点 p、q，求它们的最近公共祖先：同时是 p 和 q 祖先（允许结点是自身）、且深度最大的结点。保证 p、q 均在树中。本题用数组模拟二叉树，left/right 保存孩子下标，-1 表示空孩子。",
+    "constraint": "二叉树结点数 2～10^5，结点值互不相同；p、q 必须在树中。考场样例用5个结点演示。深树递归可能栈溢出。",
+    "sample": "示例二叉树：\n        3\n       / \\\n      5   1\n     / \\\n    6   2\n输入：p=6，q=2\n输出：5\n解释：5 是 6 与 2 的最近公共祖先。",
     "brute": {
-      "tag": "朴素解",
-      "title": "基础遍历",
-      "idea": "先以直接遍历或递归建立正确性。",
-      "complexity": "O(n)时间",
-      "risk": "注意边界条件和重复元素。",
-      "code": "#include <stdio.h>\ntypedef struct N{\n    int v,l,r;\n}\nN;\nN t[]={\n    {\n        3,1,2\n    }\n    ,{\n        5,3,4\n    }\n    ,{\n        1,-1,-1\n    }\n    ,{\n        6,-1,-1\n    }\n    ,{\n        2,-1,-1\n    }\n};\nint path(int x,int goal,int a[],int *n){\n    if(x<0)return 0;\n    a[(*n)++]=x;\n    if(x==goal)return 1;\n    if(path(t[x].l,goal,a,n)||path(t[x].r,goal,a,n))return 1;\n    --*n;\n    return 0;\n}\nint main(void){\n    int a[5],b[5],n=0,m=0,ans=-1;\n    path(0,3,a,&n);\n    path(0,4,b,&m);\n    for(int i=0;\n    i<n&&i<m&&a[i]==b[i];\n    i++)ans=a[i];\n    printf(\"%d\\n\",t[ans].v);\n    return 0;\n}\n",
+      "tag": "路径法",
+      "title": "先找两条根到结点的路径",
+      "idea": "分别 DFS 记录根到 p、q 的路径，从前向后比较，最后一个相同的结点就是最近公共祖先。",
+      "complexity": "O(n) 时间；O(n) 路径数组和递归栈（最坏）。",
+      "risk": "路径回溯时必须撤销当前结点；路径数组长度要足够。",
+      "code": "#include <stdio.h>\n\n#define N 5\n\n// 用数组存储二叉树：-1 表示没有孩子\ntypedef struct {\n    int data, left, right;\n} Node;\n\nNode tree[N] = {\n    {3, 1, 2}, {5, 3, 4}, {1, -1, -1},\n    {6, -1, -1}, {2, -1, -1}\n};\n\n// 找从根到目标结点的路径，成功返回 1\nint getPath(int u, int target, int path[], int *len) {\n    if (u == -1) return 0;\n\n    path[(*len)++] = u;\n    if (u == target) return 1;\n\n    if (getPath(tree[u].left, target, path, len) ||\n        getPath(tree[u].right, target, path, len))\n        return 1;\n\n    (*len)--;  // 此路不通，回溯\n    return 0;\n}\n\nint main(void) {\n    int p = 3, q = 4; // 结点值分别为 6、2\n    int a[N], b[N], na = 0, nb = 0;\n    getPath(0, p, a, &na);\n    getPath(0, q, b, &nb);\n\n    int ans = -1;\n    for (int i = 0; i < na && i < nb; i++) {\n        if (a[i] != b[i]) break;\n        ans = a[i]; // 最后一个相同的祖先\n    }\n\n    printf(\"%d\\n\", tree[ans].data); // 5\n    return 0;\n}\n",
       "explain": [
-        "建立初始状态",
-        "按基础规则遍历",
-        "核对输出"
+        "路径数组先记录当前结点",
+        "若目标不在当前子树，回溯时撤销记录",
+        "两条路径的最长公共前缀末端就是答案"
       ]
     },
     "optimal": {
-      "tag": "优化解",
-      "title": "408经典数据结构",
-      "idea": "利用递归返回值、散列表、堆、入度队列、栈或一次扫描维护状态。",
-      "complexity": "O(n)时间",
-      "risk": "注意数据结构的容量与状态更新顺序。",
-      "code": "#include <stdio.h>\ntypedef struct N{\n    int v,l,r;\n}\nN;\nN t[]={\n    {\n        3,1,2\n    }\n    ,{\n        5,3,4\n    }\n    ,{\n        1,-1,-1\n    }\n    ,{\n        6,-1,-1\n    }\n    ,{\n        2,-1,-1\n    }\n};\nint lca(int x,int a,int b){\n    if(x<0||x==a||x==b)return x;\n    int l=lca(t[x].l,a,b),r=lca(t[x].r,a,b);\n    if(l>=0&&r>=0)return x;\n    return l>=0?l:r;\n}\nint main(void){\n    printf(\"%d\\n\",t[lca(0,3,4)].v);\n    return 0;\n}\n",
+      "tag": "后序递归",
+      "title": "一趟 DFS 找最近公共祖先",
+      "idea": "空结点返回-1；遇到p或q返回自身；左右递归若均非空，则当前结点就是答案；否则返回非空一侧。",
+      "complexity": "O(n) 时间；O(h) 递归栈，h 为树高。",
+      "risk": "必须保证两目标都存在；若不保证，需要另行验证。",
+      "code": "#include <stdio.h>\n\n#define N 5\n\n// 用数组存储二叉树：-1 表示没有孩子\ntypedef struct {\n    int data, left, right;\n} Node;\n\nNode tree[N] = {\n    {3, 1, 2}, {5, 3, 4}, {1, -1, -1},\n    {6, -1, -1}, {2, -1, -1}\n};\n\n// 后序思想：左右子树各返回找到的目标结点\nint lca(int u, int p, int q) {\n    if (u == -1 || u == p || u == q)\n        return u;\n\n    int left = lca(tree[u].left, p, q);\n    int right = lca(tree[u].right, p, q);\n\n    if (left != -1 && right != -1)\n        return u; // 两边各有一个目标，当前结点是最近公共祖先\n\n    return left != -1 ? left : right;\n}\n\nint main(void) {\n    int p = 3, q = 4; // 6 与 2\n    int ans = lca(0, p, q);\n    printf(\"%d\\n\", tree[ans].data); // 5\n    return 0;\n}\n",
       "explain": [
-        "明确不变量",
-        "维护辅助状态",
-        "完成输出"
+        "遇到空结点或目标结点直接返回",
+        "分别获取左右子树的搜索结果",
+        "两侧都找到则当前结点为LCA，否则向上返回非空结果"
       ]
     },
     "variation": {
-      "question": "巩固题：更换边界样例，解释算法是否仍正确。",
-      "idea": "保留算法不变量，检查空输入、重复值和最小规模。",
-      "code": "#include <stdio.h>\ntypedef struct N{\n    int v,l,r;\n}\nN;\nN t[]={\n    {\n        3,1,2\n    }\n    ,{\n        5,3,4\n    }\n    ,{\n        1,-1,-1\n    }\n    ,{\n        6,-1,-1\n    }\n    ,{\n        2,-1,-1\n    }\n};\nint lca(int x,int a,int b){\n    if(x<0||x==a||x==b)return x;\n    int l=lca(t[x].l,a,b),r=lca(t[x].r,a,b);\n    if(l>=0&&r>=0)return x;\n    return l>=0?l:r;\n}\nint main(void){\n    printf(\"%d\\n\",t[lca(0,3,4)].v);\n    return 0;\n}\n"
+      "question": "巩固题：同一棵树中 p=6、q=1，最近公共祖先是什么？请修改 main 中 p、q 并验证。",
+      "idea": "结点6位于根的左子树，结点1位于根的右子树，因此最近公共祖先为根结点3；输出3。",
+      "code": "#include <stdio.h>\n\n#define N 5\n\n// 用数组存储二叉树：-1 表示没有孩子\ntypedef struct {\n    int data, left, right;\n} Node;\n\nNode tree[N] = {\n    {3, 1, 2}, {5, 3, 4}, {1, -1, -1},\n    {6, -1, -1}, {2, -1, -1}\n};\n\n// 后序思想：左右子树各返回找到的目标结点\nint lca(int u, int p, int q) {\n    if (u == -1 || u == p || u == q)\n        return u;\n\n    int left = lca(tree[u].left, p, q);\n    int right = lca(tree[u].right, p, q);\n\n    if (left != -1 && right != -1)\n        return u; // 两边各有一个目标，当前结点是最近公共祖先\n\n    return left != -1 ? left : right;\n}\n\nint main(void) {\n    int p = 3, q = 2; // 6 与 1\n    int ans = lca(0, p, q);\n    printf(\"%d\\n\", tree[ans].data); // 3\n    return 0;\n}\n"
     },
     "animation": {
-      "layout": "array",
+      "layout": "diagram",
       "brute": [
         {
-          "array": [
-            3,
-            2,
-            1,
-            5,
-            6,
-            4
-          ],
-          "active": [
-            0
-          ],
-          "pointers": {
-            "cur": 0
-          },
-          "text": "读取样例并初始化"
+          "diagram": "        3\n       / \\\n      5   1\n     / \\\n    6   2\n\np路径: 3 → 5 → 6\nq路径: 尚未寻找",
+          "text": "DFS先找到p=6的根路径。"
         },
         {
-          "array": [
-            3,
-            2,
-            1,
-            5,
-            6,
-            4
-          ],
-          "active": [
-            1
-          ],
-          "pointers": {
-            "cur": 1
-          },
-          "text": "执行当前步骤"
+          "diagram": "        3\n       / \\\n      5   1\n     / \\\n    6   2\n\np路径: 3 → 5 → 6\nq路径: 3 → 5 → 2",
+          "text": "再找到q=2的根路径。"
         },
         {
-          "array": [
-            3,
-            2,
-            1,
-            5,
-            6,
-            4
-          ],
-          "active": [
-            2
-          ],
-          "pointers": {
-            "cur": 2
-          },
-          "text": "更新辅助状态"
-        },
-        {
-          "array": [
-            3,
-            2,
-            1,
-            5,
-            6,
-            4
-          ],
-          "active": [
-            3
-          ],
-          "pointers": {
-            "cur": 3
-          },
-          "text": "得到结果"
+          "diagram": "        3\n       / \\\n      5   1\n     / \\\n    6   2\n\n公共前缀: 3 → [5]\n答案: 5",
+          "text": "从根开始比较，最后一个相同结点是5。"
         }
       ],
       "optimal": [
         {
-          "array": [
-            3,
-            2,
-            1,
-            5,
-            6,
-            4
-          ],
-          "active": [
-            0
-          ],
-          "pointers": {
-            "cur": 0
-          },
-          "text": "读取样例并初始化"
+          "diagram": "        3\n       / \\\n      5   1\n     / \\\n    6   2\n\nlca(6) → 6\nlca(2) → 2",
+          "text": "两个目标结点递归返回自身。"
         },
         {
-          "array": [
-            3,
-            2,
-            1,
-            5,
-            6,
-            4
-          ],
-          "active": [
-            1
-          ],
-          "pointers": {
-            "cur": 1
-          },
-          "text": "执行当前步骤"
+          "diagram": "        3\n       / \\\n      5   1\n     / \\\n    6   2\n\n结点5：左返回6，右返回2\n两侧均非空 → 返回5",
+          "text": "左右子树各有一个目标，结点5即LCA。"
         },
         {
-          "array": [
-            3,
-            2,
-            1,
-            5,
-            6,
-            4
-          ],
-          "active": [
-            2
-          ],
-          "pointers": {
-            "cur": 2
-          },
-          "text": "更新辅助状态"
-        },
-        {
-          "array": [
-            3,
-            2,
-            1,
-            5,
-            6,
-            4
-          ],
-          "active": [
-            3
-          ],
-          "pointers": {
-            "cur": 3
-          },
-          "text": "得到结果"
+          "diagram": "        3\n       / \\\n      5   1\n     / \\\n    6   2\n\n结点3：左返回5，右返回-1\n向上返回5，答案为5",
+          "text": "根结点沿非空分支传递结果。"
         }
       ]
     },
     "tips": [
-      "先画出过程再写代码。",
-      "朴素解与优化解分别计算复杂度。",
-      "注意边界与重复情况。"
+      "先画二叉树，明确祖先允许包含结点自身。",
+      "考场优先背后序递归：空或命中就返回；两侧都有就返回当前。",
+      "路径法直观但需保存两条路径；递归法更简洁。",
+      "最坏树高为n时递归可能栈溢出。"
     ]
   },
   {
