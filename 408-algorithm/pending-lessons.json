@@ -2128,48 +2128,48 @@
     ]
   },
   {
-    "id": "lc215-heap-20261028",
+    "id": "heap-sort-20261028",
     "date": "2026-10-28",
-    "year": "LeetCode · 408方法训练",
-    "number": "215",
-    "category": "排序 · 堆",
-    "title": "数组第K大元素：堆",
+    "year": "408考纲 · 内部排序",
+    "number": "HEAP",
+    "category": "内部排序 · 堆排序",
+    "title": "原地堆排序：建堆与下沉",
     "difficulty": "中等",
     "time": "15–25分钟",
-    "source": "https://leetcode.cn/problems/kth-largest-element-in-an-array/",
-    "question": "数组第K大元素：堆。根据题目所述数据结构完成求解；请分别实现朴素方法与优化方法，比较正确性、时间复杂度和空间复杂度。",
-    "constraint": "依据对应力扣原题的输入规模。本站演示代码使用固定小样例，提交力扣时需适配函数接口。",
-    "sample": "示例程序的预期输出：5。",
+    "source": "https://leetcode.cn/problems/sort-an-array/",
+    "question": "给定整数数组，要求按升序原地排序。先用选择排序得到基础解，再使用大根堆：先建堆，再反复将堆顶最大值交换到末尾，对剩余堆向下调整。",
+    "constraint": "数组元素可以重复；n≥1；本演示固定6个元素。",
+    "sample": "输入：[3,2,1,5,6,4]\n输出：[1,2,3,4,5,6]",
     "brute": {
-      "tag": "朴素解",
-      "title": "基础遍历",
-      "idea": "先以直接遍历或递归建立正确性。",
-      "complexity": "O(nk)时间",
-      "risk": "注意边界条件和重复元素。",
-      "code": "#include <stdio.h>\nint main(void){\n    int a[]={\n        3,2,1,5,6,4\n    };\n    for(int i=0;\n    i<2;\n    i++){\n        int p=i;\n        for(int j=i+1;\n        j<6;\n        j++)if(a[j]>a[p])p=j;\n        int x=a[i];\n        a[i]=a[p];\n        a[p]=x;\n    }\n    printf(\"%d\\n\",a[1]);\n    return 0;\n}\n",
+      "tag": "选择排序",
+      "title": "每轮选择剩余最小值",
+      "idea": "每轮扫描未排序部分的最小值并放到左侧。",
+      "complexity": "O(n²)时间，O(1)空间。",
+      "risk": "内层从i+1开始，交换前保存临时变量。",
+      "code": "#include <stdio.h>\n#define N 6\nint a[N]={3,2,1,5,6,4};\nvoid swap(int *x,int *y){int t=*x;*x=*y;*y=t;}\n\nint main(void){\n    for(int i=0;i<N-1;i++){\n        int p=i;\n        for(int j=i+1;j<N;j++)\n            if(a[j]<a[p]) p=j;\n        swap(&a[i],&a[p]);\n    }\n    for(int i=0;i<N;i++) printf(\"%d \",a[i]);\n    return 0;\n}\n",
       "explain": [
-        "建立初始状态",
-        "按基础规则遍历",
-        "核对输出"
+        "扫描未排序部分",
+        "找到最小值的下标",
+        "交换到已排序前缀末尾"
       ]
     },
     "optimal": {
-      "tag": "优化解",
-      "title": "408经典数据结构",
-      "idea": "利用递归返回值、散列表、堆、入度队列、栈或一次扫描维护状态。",
-      "complexity": "O(n log k)时间",
-      "risk": "注意数据结构的容量与状态更新顺序。",
-      "code": "#include <stdio.h>\nint main(void){\n    int a[]={\n        3,2,1,5,6,4\n    }\n    ,h[2],size=0;\n    for(int z=0;\n    z<6;\n    z++){\n        int x=a[z];\n        if(size<2){\n            int i=size++;\n            while(i&&h[(i-1)/2]>x){\n                h[i]=h[(i-1)/2];\n                i=(i-1)/2;\n            }\n            h[i]=x;\n        }\n        else if(x>h[0]){\n            int i=0;\n            while(2*i+1<size){\n                int c=2*i+1;\n                if(c+1<size&&h[c+1]<h[c])c++;\n                if(h[c]>=x)break;\n                h[i]=h[c];\n                i=c;\n            }\n            h[i]=x;\n        }\n    }\n    printf(\"%d\\n\",h[0]);\n    return 0;\n}\n",
+      "tag": "堆排序",
+      "title": "大根堆 + 向下调整",
+      "idea": "从最后一个非叶结点开始建大根堆；每次把堆顶交换到数组末端并缩小堆。",
+      "complexity": "O(n log n)时间，O(1)额外空间。",
+      "risk": "向下调整的孩子下标为2*i+1、2*i+2；堆范围不含已排序后缀。",
+      "code": "#include <stdio.h>\n#define N 6\nint a[N]={3,2,1,5,6,4};\nvoid swap(int *x,int *y){int t=*x;*x=*y;*y=t;}\n\n// isMax=1 建大根堆；isMax=0 建小根堆\nvoid down(int root,int size,int isMax){\n    while(root*2+1<size){\n        int child=root*2+1;\n        if(child+1<size &&\n           (isMax?a[child+1]>a[child]:a[child+1]<a[child]))\n            child++;\n        if(isMax?a[root]>=a[child]:a[root]<=a[child])\n            break;\n        swap(&a[root],&a[child]);\n        root=child;\n    }\n}\nint main(void){\n    for(int i=N/2-1;i>=0;i--) down(i,N,1);\n    for(int end=N-1;end>0;end--){\n        swap(&a[0],&a[end]);\n        down(0,end,1);\n    }\n    for(int i=0;i<N;i++) printf(\"%d \",a[i]);\n    return 0;\n}\n",
       "explain": [
-        "明确不变量",
-        "维护辅助状态",
-        "完成输出"
+        "从n/2-1向前调整得到大根堆",
+        "堆顶最大值与末尾交换",
+        "缩小堆并重新下沉堆顶"
       ]
     },
     "variation": {
-      "question": "巩固题：更换边界样例，解释算法是否仍正确。",
-      "idea": "保留算法不变量，检查空输入、重复值和最小规模。",
-      "code": "#include <stdio.h>\nint main(void){\n    int a[]={\n        3,2,1,5,6,4\n    }\n    ,h[2],size=0;\n    for(int z=0;\n    z<6;\n    z++){\n        int x=a[z];\n        if(size<2){\n            int i=size++;\n            while(i&&h[(i-1)/2]>x){\n                h[i]=h[(i-1)/2];\n                i=(i-1)/2;\n            }\n            h[i]=x;\n        }\n        else if(x>h[0]){\n            int i=0;\n            while(2*i+1<size){\n                int c=2*i+1;\n                if(c+1<size&&h[c+1]<h[c])c++;\n                if(h[c]>=x)break;\n                h[i]=h[c];\n                i=c;\n            }\n            h[i]=x;\n        }\n    }\n    printf(\"%d\\n\",h[0]);\n    return 0;\n}\n"
+      "question": "巩固题：如何用相同框架得到降序？",
+      "idea": "改为小根堆，依次把最小值交换到数组右端，输出6 5 4 3 2 1。",
+      "code": "#include <stdio.h>\n#define N 6\nint a[N]={3,2,1,5,6,4};\nvoid swap(int *x,int *y){int t=*x;*x=*y;*y=t;}\n\n// isMax=1 建大根堆；isMax=0 建小根堆\nvoid down(int root,int size,int isMax){\n    while(root*2+1<size){\n        int child=root*2+1;\n        if(child+1<size &&\n           (isMax?a[child+1]>a[child]:a[child+1]<a[child]))\n            child++;\n        if(isMax?a[root]>=a[child]:a[root]<=a[child])\n            break;\n        swap(&a[root],&a[child]);\n        root=child;\n    }\n}\nint main(void){\n    for(int i=N/2-1;i>=0;i--) down(i,N,0);\n    for(int end=N-1;end>0;end--){\n        swap(&a[0],&a[end]);\n        down(0,end,0);\n    }\n    for(int i=0;i<N;i++) printf(\"%d \",a[i]);\n    return 0;\n}\n"
     },
     "animation": {
       "layout": "array",
@@ -2184,140 +2184,99 @@
             4
           ],
           "active": [
-            0
-          ],
-          "pointers": {
-            "cur": 0
-          },
-          "text": "读取样例并初始化"
-        },
-        {
-          "array": [
-            3,
-            2,
-            1,
-            5,
-            6,
-            4
-          ],
-          "active": [
-            1
-          ],
-          "pointers": {
-            "cur": 1
-          },
-          "text": "执行当前步骤"
-        },
-        {
-          "array": [
-            3,
-            2,
-            1,
-            5,
-            6,
-            4
-          ],
-          "active": [
+            0,
             2
           ],
-          "pointers": {
-            "cur": 2
-          },
-          "text": "更新辅助状态"
+          "text": "选择排序第一轮找到最小值1。"
         },
         {
           "array": [
-            3,
-            2,
             1,
+            2,
+            3,
             5,
             6,
             4
           ],
           "active": [
-            3
+            0
           ],
-          "pointers": {
-            "cur": 3
-          },
-          "text": "得到结果"
+          "text": "将1交换到首位。"
+        },
+        {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "active": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "text": "逐轮选择，最终有序。"
         }
       ],
       "optimal": [
         {
           "array": [
+            6,
+            5,
+            4,
             3,
             2,
-            1,
-            5,
-            6,
-            4
+            1
           ],
           "active": [
             0
           ],
-          "pointers": {
-            "cur": 0
-          },
-          "text": "读取样例并初始化"
+          "text": "建成大根堆：堆顶为当前最大值6。"
         },
         {
           "array": [
-            3,
-            2,
-            1,
             5,
-            6,
-            4
+            3,
+            4,
+            1,
+            2,
+            6
           ],
           "active": [
-            1
+            5
           ],
-          "pointers": {
-            "cur": 1
-          },
-          "text": "执行当前步骤"
+          "text": "堆顶6换到末尾，前5个元素继续下沉调整。"
         },
         {
           "array": [
-            3,
-            2,
             1,
+            2,
+            3,
+            4,
             5,
-            6,
-            4
+            6
           ],
           "active": [
-            2
-          ],
-          "pointers": {
-            "cur": 2
-          },
-          "text": "更新辅助状态"
-        },
-        {
-          "array": [
-            3,
-            2,
+            0,
             1,
-            5,
-            6,
-            4
+            2,
+            3,
+            4,
+            5
           ],
-          "active": [
-            3
-          ],
-          "pointers": {
-            "cur": 3
-          },
-          "text": "得到结果"
+          "text": "依次取出最大值，最终升序。"
         }
       ]
     },
     "tips": [
-      "先画出过程再写代码。",
-      "朴素解与优化解分别计算复杂度。",
-      "注意边界与重复情况。"
+      "建堆从最后一个非叶结点n/2-1开始。",
+      "大根堆实现升序，堆顶与堆尾交换。",
+      "堆排序时间O(n log n)，额外空间O(1)，不稳定。"
     ]
   },
   {
@@ -2514,196 +2473,121 @@
     ]
   },
   {
-    "id": "lc20-20261030",
+    "id": "lc150-20261030",
     "date": "2026-10-30",
-    "year": "LeetCode · 408方法训练",
-    "number": "20",
-    "category": "栈 · 匹配",
-    "title": "有效括号",
+    "year": "LeetCode",
+    "number": "150",
+    "category": "栈 · 后缀表达式",
+    "title": "逆波兰表达式求值：操作数栈",
     "difficulty": "中等",
     "time": "15–25分钟",
-    "source": "https://leetcode.cn/problems/valid-parentheses/",
-    "question": "有效括号。根据题目所述数据结构完成求解；请分别实现朴素方法与优化方法，比较正确性、时间复杂度和空间复杂度。",
-    "constraint": "依据对应力扣原题的输入规模。本站演示代码使用固定小样例，提交力扣时需适配函数接口。",
-    "sample": "示例程序的预期输出：1。",
+    "source": "https://leetcode.cn/problems/evaluate-reverse-polish-notation/",
+    "question": "给定由整数和+、-、*、/组成的后缀表达式（逆波兰表达式），求其整数结果。运算符出现时从栈中取出右操作数b和左操作数a，计算a op b后压栈。整数除法向零截断。",
+    "constraint": "表达式合法、除数不为0；本演示使用5个token。",
+    "sample": "输入：[\"2\",\"1\",\"+\",\"3\",\"*\"]\n输出：9\n解释：(2+1)×3=9。",
     "brute": {
-      "tag": "朴素解",
-      "title": "基础遍历",
-      "idea": "先以直接遍历或递归建立正确性。",
-      "complexity": "O(n²)时间",
-      "risk": "注意边界条件和重复元素。",
-      "code": "#include <stdio.h>\n#include <string.h>\nint main(void){\n    char s[100]=\"{[()]}\",t[100];\n    strcpy(t,s);\n    int change=1;\n    while(change){\n        change=0;\n        char b[100];\n        int k=0;\n        for(int i=0;\n        t[i];\n        ){\n            if((t[i]=='('&&t[i+1]==')')||(t[i]=='['&&t[i+1]==']')||(t[i]=='{\n                '&&t[i+1]=='\n            }\n            ')){\n                i+=2;\n                change=1;\n            }\n            else b[k++]=t[i++];\n        }\n        b[k]=0;\n        strcpy(t,b);\n    }\n    printf(\"%d\\n\",t[0]==0);\n    return 0;\n}\n",
+      "tag": "递归解析",
+      "title": "从右往左递归求值",
+      "idea": "后缀表达式最右边是运算符；递归先读取右操作数，再读取左操作数。",
+      "complexity": "O(n)时间，O(n)递归栈。",
+      "risk": "减法和除法必须保持a op b的顺序。",
+      "code": "#include <stdio.h>\n#include <stdlib.h>\nchar *t[5]={\"2\",\"1\",\"+\",\"3\",\"*\"};\n\n// 从右向左递归解释后缀表达式\nint eval(int *i){\n    char *s=t[(*i)--];\n    if(s[1]=='\\0'&&(s[0]=='+'||s[0]=='-'||\n       s[0]=='*'||s[0]=='/')){\n        int b=eval(i),a=eval(i); // 先读右操作数\n        if(s[0]=='+') return a+b;\n        if(s[0]=='-') return a-b;\n        if(s[0]=='*') return a*b;\n        return a/b;\n    }\n    return atoi(s);\n}\nint main(void){\n    int i=4;\n    printf(\"%d\\n\",eval(&i)); // (2+1)*3=9\n    return 0;\n}\n",
       "explain": [
-        "建立初始状态",
-        "按基础规则遍历",
-        "核对输出"
+        "从右端读取token",
+        "运算符递归解析右子式和左子式",
+        "按原操作数顺序计算"
       ]
     },
     "optimal": {
-      "tag": "优化解",
-      "title": "408经典数据结构",
-      "idea": "利用递归返回值、散列表、堆、入度队列、栈或一次扫描维护状态。",
-      "complexity": "O(n)时间",
-      "risk": "注意数据结构的容量与状态更新顺序。",
-      "code": "#include <stdio.h>\nint main(void){\n    char s[]=\"{[()]}\",st[100];\n    int top=0,ok=1;\n    for(int i=0;\n    s[i];\n    i++){\n        char c=s[i];\n        if(c=='('||c=='['||c=='{\n            ')st[top++]=c;\n            else if(!top){\n                ok=0;\n                break;\n            }\n            else{\n                char x=st[--top];\n                if(!((x=='('&&c==')')||(x=='['&&c==']')||(x=='{\n                    '&&c=='\n                }\n                '))){\n                    ok=0;\n                    break;\n                }\n            }\n        }\n        printf(\"%d\\n\",ok&&top==0);\n        return 0;\n    }\n",
+      "tag": "顺序栈",
+      "title": "从左到右压栈计算",
+      "idea": "数字入栈；运算符弹出b再弹出a，计算a op b后压回。",
+      "complexity": "O(n)时间，O(n)栈空间。",
+      "risk": "减法与除法不能把a、b颠倒。",
+      "code": "#include <stdio.h>\n#include <stdlib.h>\nchar *t[5]={\"2\",\"1\",\"+\",\"3\",\"*\"};\n\nint main(void){\n    int st[5],top=0;\n    for(int i=0;i<5;i++){\n        char *s=t[i];\n        if(s[1]=='\\0'&&(s[0]=='+'||s[0]=='-'||\n           s[0]=='*'||s[0]=='/')){\n            int b=st[--top],a=st[--top];\n            if(s[0]=='+') st[top++]=a+b;\n            if(s[0]=='-') st[top++]=a-b;\n            if(s[0]=='*') st[top++]=a*b;\n            if(s[0]=='/') st[top++]=a/b;\n        }else st[top++]=atoi(s);\n    }\n    printf(\"%d\\n\",st[0]); // 9\n    return 0;\n}\n",
       "explain": [
-        "明确不变量",
-        "维护辅助状态",
-        "完成输出"
+        "扫描数字直接入栈",
+        "遇运算符弹出右、左操作数",
+        "运算结果压栈，最后栈顶为答案"
       ]
     },
     "variation": {
-      "question": "巩固题：更换边界样例，解释算法是否仍正确。",
-      "idea": "保留算法不变量，检查空输入、重复值和最小规模。",
-      "code": "#include <stdio.h>\nint main(void){\n    char s[]=\"{[()]}\",st[100];\n    int top=0,ok=1;\n    for(int i=0;\n    s[i];\n    i++){\n        char c=s[i];\n        if(c=='('||c=='['||c=='{\n            ')st[top++]=c;\n            else if(!top){\n                ok=0;\n                break;\n            }\n            else{\n                char x=st[--top];\n                if(!((x=='('&&c==')')||(x=='['&&c==']')||(x=='{\n                    '&&c=='\n                }\n                '))){\n                    ok=0;\n                    break;\n                }\n            }\n        }\n        printf(\"%d\\n\",ok&&top==0);\n        return 0;\n    }\n"
+      "question": "巩固题：[\"4\",\"13\",\"5\",\"/\",\"+\"] 的值是多少？",
+      "idea": "13/5按整数除法为2，再加4得到6；完整C程序输出6。",
+      "code": "#include <stdio.h>\n#include <stdlib.h>\nchar *t[5]={\"4\",\"13\",\"5\",\"/\",\"+\"};\n\nint main(void){\n    int st[5],top=0;\n    for(int i=0;i<5;i++){\n        char *s=t[i];\n        if(s[1]=='\\0'&&(s[0]=='+'||s[0]=='-'||\n           s[0]=='*'||s[0]=='/')){\n            int b=st[--top],a=st[--top];\n            if(s[0]=='+') st[top++]=a+b;\n            if(s[0]=='-') st[top++]=a-b;\n            if(s[0]=='*') st[top++]=a*b;\n            if(s[0]=='/') st[top++]=a/b;\n        }else st[top++]=atoi(s);\n    }\n    printf(\"%d\\n\",st[0]); // 6\n    return 0;\n}\n"
     },
     "animation": {
       "layout": "array",
       "brute": [
         {
-          "array": [
-            3,
-            2,
-            1,
-            5,
-            6,
-            4
-          ],
-          "active": [
-            0
-          ],
-          "pointers": {
-            "cur": 0
-          },
-          "text": "读取样例并初始化"
+          "diagram": "从右读 *\n右子式 3 → 3",
+          "text": "右操作数先递归得到3。"
         },
         {
-          "array": [
-            3,
-            2,
-            1,
-            5,
-            6,
-            4
-          ],
-          "active": [
-            1
-          ],
-          "pointers": {
-            "cur": 1
-          },
-          "text": "执行当前步骤"
+          "diagram": "左子式 2 1 + → 3",
+          "text": "递归求得左操作数3。"
         },
         {
-          "array": [
-            3,
-            2,
-            1,
-            5,
-            6,
-            4
-          ],
-          "active": [
-            2
-          ],
-          "pointers": {
-            "cur": 2
-          },
-          "text": "更新辅助状态"
-        },
-        {
-          "array": [
-            3,
-            2,
-            1,
-            5,
-            6,
-            4
-          ],
-          "active": [
-            3
-          ],
-          "pointers": {
-            "cur": 3
-          },
-          "text": "得到结果"
+          "diagram": "3 × 3 = 9",
+          "text": "按顺序计算得到9。"
         }
       ],
       "optimal": [
         {
           "array": [
-            3,
-            2,
-            1,
-            5,
-            6,
-            4
+            2
           ],
           "active": [
             0
           ],
-          "pointers": {
-            "cur": 0
-          },
-          "text": "读取样例并初始化"
+          "text": "读2，压栈。"
         },
         {
           "array": [
-            3,
             2,
-            1,
-            5,
-            6,
-            4
-          ],
-          "active": [
             1
           ],
-          "pointers": {
-            "cur": 1
-          },
-          "text": "执行当前步骤"
+          "active": [
+            0,
+            1
+          ],
+          "text": "读1，压栈。"
         },
         {
           "array": [
-            3,
-            2,
-            1,
-            5,
-            6,
-            4
-          ],
-          "active": [
-            2
-          ],
-          "pointers": {
-            "cur": 2
-          },
-          "text": "更新辅助状态"
-        },
-        {
-          "array": [
-            3,
-            2,
-            1,
-            5,
-            6,
-            4
-          ],
-          "active": [
             3
           ],
-          "pointers": {
-            "cur": 3
-          },
-          "text": "得到结果"
+          "active": [
+            0
+          ],
+          "text": "遇+，弹出1和2，压入3。"
+        },
+        {
+          "array": [
+            3,
+            3
+          ],
+          "active": [
+            0,
+            1
+          ],
+          "text": "读3，压栈。"
+        },
+        {
+          "array": [
+            9
+          ],
+          "active": [
+            0
+          ],
+          "text": "遇*，计算3×3，最终答案9。"
         }
       ]
     },
     "tips": [
-      "先画出过程再写代码。",
-      "朴素解与优化解分别计算复杂度。",
-      "注意边界与重复情况。"
+      "后缀表达式的经典408栈应用。",
+      "遇运算符先弹出的数是右操作数b。",
+      "除法遵循C整数除法向零截断。"
     ]
   },
   {
