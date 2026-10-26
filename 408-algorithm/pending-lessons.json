@@ -2993,5 +2993,148 @@
       "归并排序稳定：相等时优先取左侧。",
       "递归树log n层，每层O(n)。"
     ]
+  },
+  {
+    "id": "lc160-20261103",
+    "date": "2026-11-03",
+    "year": "LeetCode · 408方法训练",
+    "number": "160",
+    "category": "链表 · 相交判定 · 双指针",
+    "title": "相交链表：找到公共尾链的起点",
+    "difficulty": "简单",
+    "time": "15–20分钟",
+    "source": "https://leetcode.cn/problems/intersection-of-two-linked-lists/",
+    "question": "给定两个无环单链表的头指针 headA、headB，若它们共享实际结点，返回第一个公共结点的地址；否则返回 NULL。要求不修改原链表。注意：结点值相同不代表相交，必须比较指针地址。",
+    "constraint": "两个链表长度分别为 m、n；无环；结点值可能重复；公共部分一旦相交，后续结点完全共享。",
+    "sample": "A：1 → 4 → 8 → 10；B：2 → 6 → 5 → 8 → 10。两条链表的 8 和 10 是相同的结点对象。输出：8。",
+    "brute": {
+      "tag": "朴素解",
+      "title": "双重遍历比较地址",
+      "idea": "枚举 A 的每个结点，再扫描 B；找到第一个地址相等的结点即为交点。",
+      "complexity": "时间 O(mn)，额外空间 O(1)",
+      "risk": "只能比较 p == q，不能比较 p->data == q->data。",
+      "code": "#include <stdio.h>\n\n// 两条链表共享同一段尾链：8 -> 10\ntypedef struct Node {\n    int data;\n    struct Node *next;\n} Node;\n\nNode end = {10, NULL};\nNode shared = {8, &end};\nNode a2 = {4, &shared};\nNode a1 = {1, &a2};\nNode b3 = {5, &shared};\nNode b2 = {6, &b3};\nNode b1 = {2, &b2};\n\n// 暴力：逐个比较两条链表的结点地址\nNode *intersection(Node *a, Node *b) {\n    for (Node *p = a; p != NULL; p = p->next) {\n        for (Node *q = b; q != NULL; q = q->next) {\n            if (p == q) return p; // 地址相同才相交\n        }\n    }\n    return NULL;\n}\n\nint main(void) {\n    Node *ans = intersection(&a1, &b1);\n    // 本例输出 8；无交点则输出 -1\n    printf(\"%d\\n\", ans ? ans->data : -1);\n    return 0;\n}\n",
+      "explain": [
+        "外层枚举 A 的结点 p。",
+        "内层枚举 B 的结点 q，比较内存地址。",
+        "相等时立即返回，否则返回 NULL。"
+      ]
+    },
+    "optimal": {
+      "tag": "最优解",
+      "title": "双指针换头对齐",
+      "idea": "p、q 分别从 A、B 出发；走到 NULL 后切换到另一条链表的头部。两者各走 m+n 步后长度差抵消，最终在交点或 NULL 相遇。",
+      "complexity": "时间 O(m+n)，额外空间 O(1)",
+      "risk": "切换条件是 p == NULL，不是 p->next == NULL；无交点时两者会同时变成 NULL。",
+      "code": "#include <stdio.h>\n\n// 两条链表共享同一段尾链：8 -> 10\ntypedef struct Node {\n    int data;\n    struct Node *next;\n} Node;\n\nNode end = {10, NULL};\nNode shared = {8, &end};\nNode a2 = {4, &shared};\nNode a1 = {1, &a2};\nNode b3 = {5, &shared};\nNode b2 = {6, &b3};\nNode b1 = {2, &b2};\n\n// 双指针：各自走完一条链后切换到另一条链\nNode *intersection(Node *a, Node *b) {\n    Node *p = a, *q = b;\n    while (p != q) {\n        p = (p == NULL) ? b : p->next;\n        q = (q == NULL) ? a : q->next;\n    }\n    return p; // 相交则返回公共结点，否则均为 NULL\n}\n\nint main(void) {\n    Node *ans = intersection(&a1, &b1);\n    // 本例输出 8；无交点则输出 -1\n    printf(\"%d\\n\", ans ? ans->data : -1);\n    return 0;\n}\n",
+      "explain": [
+        "p 指向 A 头，q 指向 B 头。",
+        "每次各走一步，走完后换到另一条链表。",
+        "p == q 时停止；相交返回地址，否则返回 NULL。"
+      ]
+    },
+    "variation": {
+      "question": "巩固变式：不允许切换头指针时，如何用两次扫描找到第一个公共结点？请给出完整 C 程序。",
+      "idea": "先求两个链表长度，让较长的链表先走长度差，再同步前进直到地址相等。时间 O(m+n)，额外空间 O(1)。",
+      "code": "#include <stdio.h>\n\n// 两条链表共享同一段尾链：8 -> 10\ntypedef struct Node {\n    int data;\n    struct Node *next;\n} Node;\n\nNode end = {10, NULL};\nNode shared = {8, &end};\nNode a2 = {4, &shared};\nNode a1 = {1, &a2};\nNode b3 = {5, &shared};\nNode b2 = {6, &b3};\nNode b1 = {2, &b2};\n\n// 变式：先计算长度，再对齐两条链表\nint length(Node *p) {\n    int n = 0;\n    while (p != NULL) {\n        n++;\n        p = p->next;\n    }\n    return n;\n}\n\nNode *intersection(Node *a, Node *b) {\n    int m = length(a), n = length(b);\n    while (m > n) { a = a->next; m--; }\n    while (n > m) { b = b->next; n--; }\n\n    // 剩余长度相同，同步前进\n    while (a != b) {\n        a = a->next;\n        b = b->next;\n    }\n    return a;\n}\n\nint main(void) {\n    Node *ans = intersection(&a1, &b1);\n    printf(\"%d\\n\", ans ? ans->data : -1);\n    return 0;\n}\n"
+    },
+    "animation": {
+      "layout": "chains",
+      "rows": [
+        {
+          "label": "链表 A：1 → 4 → 8 → 10",
+          "values": [
+            1,
+            4,
+            8,
+            10
+          ],
+          "sharedFrom": 2,
+          "pointerKey": "p"
+        },
+        {
+          "label": "链表 B：2 → 6 → 5 → 8 → 10",
+          "values": [
+            2,
+            6,
+            5,
+            8,
+            10
+          ],
+          "sharedFrom": 3,
+          "pointerKey": "q"
+        }
+      ],
+      "brute": [
+        {
+          "p": 0,
+          "q": 0,
+          "text": "比较 A 的结点1与 B 的结点2：地址不同。"
+        },
+        {
+          "p": 0,
+          "q": 3,
+          "text": "枚举 B 到值8：A 的结点1与 B 的值8仍非同一地址。"
+        },
+        {
+          "p": 1,
+          "q": 4,
+          "text": "继续比较 A 的结点4与 B 的尾结点10，地址不同。"
+        },
+        {
+          "p": 2,
+          "q": 0,
+          "text": "枚举 A 的结点8，从 B 的头开始查找。"
+        },
+        {
+          "p": 2,
+          "q": 3,
+          "text": "A、B 都指向共享的值8结点：地址相等，返回该结点。"
+        }
+      ],
+      "optimal": [
+        {
+          "p": 0,
+          "q": 0,
+          "text": "p、q 分别从 A 和 B 的头结点出发。"
+        },
+        {
+          "p": 1,
+          "q": 1,
+          "text": "第1步：p=4，q=6。"
+        },
+        {
+          "p": 2,
+          "q": 2,
+          "text": "第2步：p=8，q=5。"
+        },
+        {
+          "p": 3,
+          "q": 3,
+          "text": "第3步：p=10，q=8。"
+        },
+        {
+          "p": 4,
+          "q": 4,
+          "text": "第4步：p 到 NULL，q=10；图中下标越界代表 NULL。"
+        },
+        {
+          "p": 0,
+          "q": 0,
+          "text": "第5~6步：p 已切换到 B，q 已切换到 A。"
+        },
+        {
+          "p": 2,
+          "q": 3,
+          "text": "第8步：p、q 在共享结点8相遇，返回地址。"
+        }
+      ]
+    },
+    "tips": [
+      "408关键：判断链表相交必须比较结点地址。",
+      "双指针换头可抵消链表长度差，代码最短。",
+      "无交点时两个指针都会到 NULL，循环正常结束。",
+      "巩固：长度对齐法也只需要 O(1) 额外空间。"
+    ]
   }
 ]
