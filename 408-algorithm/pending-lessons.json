@@ -3039,94 +3039,285 @@
       "code": "#include <stdio.h>\n\n// 两条链表共享同一段尾链：8 -> 10\ntypedef struct Node {\n    int data;\n    struct Node *next;\n} Node;\n\nNode end = {10, NULL};\nNode shared = {8, &end};\nNode a2 = {4, &shared};\nNode a1 = {1, &a2};\nNode b3 = {5, &shared};\nNode b2 = {6, &b3};\nNode b1 = {2, &b2};\n\n// 变式：先计算长度，再对齐两条链表\nint length(Node *p) {\n    int n = 0;\n    while (p != NULL) {\n        n++;\n        p = p->next;\n    }\n    return n;\n}\n\nNode *intersection(Node *a, Node *b) {\n    int m = length(a), n = length(b);\n    while (m > n) { a = a->next; m--; }\n    while (n > m) { b = b->next; n--; }\n\n    // 剩余长度相同，同步前进\n    while (a != b) {\n        a = a->next;\n        b = b->next;\n    }\n    return a;\n}\n\nint main(void) {\n    Node *ans = intersection(&a1, &b1);\n    printf(\"%d\\n\", ans ? ans->data : -1);\n    return 0;\n}\n"
     },
     "animation": {
-      "layout": "chains",
-      "rows": [
-        {
-          "label": "链表 A：1 → 4 → 8 → 10",
-          "values": [
-            1,
-            4,
-            8,
-            10
-          ],
-          "sharedFrom": 2,
-          "pointerKey": "p"
-        },
-        {
-          "label": "链表 B：2 → 6 → 5 → 8 → 10",
-          "values": [
-            2,
-            6,
-            5,
-            8,
-            10
-          ],
-          "sharedFrom": 3,
-          "pointerKey": "q"
-        }
-      ],
+      "layout": "array",
       "brute": [
         {
-          "p": 0,
-          "q": 0,
-          "text": "比较 A 的结点1与 B 的结点2：地址不同。"
+          "array": [
+            "A:1",
+            "A:4",
+            "B:2",
+            "B:6",
+            "B:5",
+            "共:8",
+            "共:10"
+          ],
+          "pointers": {
+            "p": 0,
+            "q": 2
+          },
+          "active": [
+            0,
+            2
+          ],
+          "text": "先比较 A 的1与 B 的2，地址不同。"
         },
         {
-          "p": 0,
-          "q": 3,
-          "text": "枚举 B 到值8：A 的结点1与 B 的值8仍非同一地址。"
+          "array": [
+            "A:1",
+            "A:4",
+            "B:2",
+            "B:6",
+            "B:5",
+            "共:8",
+            "共:10"
+          ],
+          "pointers": {
+            "p": 0,
+            "q": 5
+          },
+          "active": [
+            0,
+            5
+          ],
+          "text": "即使 B 走到共享结点8，也不等于 A 的1。"
         },
         {
-          "p": 1,
-          "q": 4,
-          "text": "继续比较 A 的结点4与 B 的尾结点10，地址不同。"
+          "array": [
+            "A:1",
+            "A:4",
+            "B:2",
+            "B:6",
+            "B:5",
+            "共:8",
+            "共:10"
+          ],
+          "pointers": {
+            "p": 1,
+            "q": 6
+          },
+          "active": [
+            1,
+            6
+          ],
+          "text": "继续枚举 A 的4，仍没有相同地址。"
         },
         {
-          "p": 2,
-          "q": 0,
-          "text": "枚举 A 的结点8，从 B 的头开始查找。"
+          "array": [
+            "A:1",
+            "A:4",
+            "B:2",
+            "B:6",
+            "B:5",
+            "共:8",
+            "共:10"
+          ],
+          "pointers": {
+            "p": 5,
+            "q": 2
+          },
+          "active": [
+            5,
+            2
+          ],
+          "text": "A 枚举到共享结点8，B 从头重新扫描。"
         },
         {
-          "p": 2,
-          "q": 3,
-          "text": "A、B 都指向共享的值8结点：地址相等，返回该结点。"
+          "array": [
+            "A:1",
+            "A:4",
+            "B:2",
+            "B:6",
+            "B:5",
+            "共:8",
+            "共:10"
+          ],
+          "pointers": {
+            "p": 5,
+            "q": 5
+          },
+          "active": [
+            5,
+            5
+          ],
+          "text": "两个指针地址相同，交点为共享结点8。"
         }
       ],
       "optimal": [
         {
-          "p": 0,
-          "q": 0,
-          "text": "p、q 分别从 A 和 B 的头结点出发。"
+          "array": [
+            "A:1",
+            "A:4",
+            "B:2",
+            "B:6",
+            "B:5",
+            "共:8",
+            "共:10"
+          ],
+          "pointers": {
+            "p": 0,
+            "q": 2
+          },
+          "active": [
+            0,
+            2
+          ],
+          "text": "初始：p=A1，q=B2。"
         },
         {
-          "p": 1,
-          "q": 1,
-          "text": "第1步：p=4，q=6。"
+          "array": [
+            "A:1",
+            "A:4",
+            "B:2",
+            "B:6",
+            "B:5",
+            "共:8",
+            "共:10"
+          ],
+          "pointers": {
+            "p": 1,
+            "q": 3
+          },
+          "active": [
+            1,
+            3
+          ],
+          "text": "第1步：p=A4，q=B6。"
         },
         {
-          "p": 2,
-          "q": 2,
-          "text": "第2步：p=8，q=5。"
+          "array": [
+            "A:1",
+            "A:4",
+            "B:2",
+            "B:6",
+            "B:5",
+            "共:8",
+            "共:10"
+          ],
+          "pointers": {
+            "p": 5,
+            "q": 4
+          },
+          "active": [
+            5,
+            4
+          ],
+          "text": "第2步：p=共享8，q=B5。"
         },
         {
-          "p": 3,
-          "q": 3,
-          "text": "第3步：p=10，q=8。"
+          "array": [
+            "A:1",
+            "A:4",
+            "B:2",
+            "B:6",
+            "B:5",
+            "共:8",
+            "共:10"
+          ],
+          "pointers": {
+            "p": 6,
+            "q": 5
+          },
+          "active": [
+            6,
+            5
+          ],
+          "text": "第3步：p=共享10，q=共享8。"
         },
         {
-          "p": 4,
-          "q": 4,
-          "text": "第4步：p 到 NULL，q=10；图中下标越界代表 NULL。"
+          "array": [
+            "A:1",
+            "A:4",
+            "B:2",
+            "B:6",
+            "B:5",
+            "共:8",
+            "共:10"
+          ],
+          "pointers": {
+            "q": 6
+          },
+          "active": [
+            6
+          ],
+          "text": "第4步：p=NULL，q=共享10。"
         },
         {
-          "p": 0,
-          "q": 0,
-          "text": "第5~6步：p 已切换到 B，q 已切换到 A。"
+          "array": [
+            "A:1",
+            "A:4",
+            "B:2",
+            "B:6",
+            "B:5",
+            "共:8",
+            "共:10"
+          ],
+          "pointers": {
+            "p": 2
+          },
+          "active": [
+            2
+          ],
+          "text": "第5步：p切换到B头2，q=NULL。"
         },
         {
-          "p": 2,
-          "q": 3,
-          "text": "第8步：p、q 在共享结点8相遇，返回地址。"
+          "array": [
+            "A:1",
+            "A:4",
+            "B:2",
+            "B:6",
+            "B:5",
+            "共:8",
+            "共:10"
+          ],
+          "pointers": {
+            "p": 3,
+            "q": 0
+          },
+          "active": [
+            3,
+            0
+          ],
+          "text": "第6步：p=B6，q切换到A头1。"
+        },
+        {
+          "array": [
+            "A:1",
+            "A:4",
+            "B:2",
+            "B:6",
+            "B:5",
+            "共:8",
+            "共:10"
+          ],
+          "pointers": {
+            "p": 4,
+            "q": 1
+          },
+          "active": [
+            4,
+            1
+          ],
+          "text": "第7步：p=B5，q=A4。"
+        },
+        {
+          "array": [
+            "A:1",
+            "A:4",
+            "B:2",
+            "B:6",
+            "B:5",
+            "共:8",
+            "共:10"
+          ],
+          "pointers": {
+            "p": 5,
+            "q": 5
+          },
+          "active": [
+            5,
+            5
+          ],
+          "text": "第8步：p和q同时到达共享结点8，返回该结点。"
         }
       ]
     },
