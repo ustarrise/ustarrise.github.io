@@ -1947,33 +1947,32 @@
     "difficulty": "中等",
     "time": "15–25分钟",
     "source": "https://leetcode.cn/problems/contains-duplicate/",
-    "question": "存在重复元素。根据题目所述数据结构完成求解；请分别实现朴素方法与优化方法，比较正确性、时间复杂度和空间复杂度。",
-    "constraint": "依据对应力扣原题的输入规模。本站演示代码使用固定小样例，提交力扣时需适配函数接口。",
-    "sample": "示例程序的预期输出：1。",
+    "question": "给定一个整数数组 nums，判断是否存在两个不同下标 i、j（i != j），使 nums[i] == nums[j]。若存在重复元素，输出 1；否则输出 0。要求分别给出朴素枚举和优化算法，说明时间、空间复杂度。输入：第一行整数 n，第二行 n 个整数。输出：一个整数 1 或 0。",
+    "constraint": "1 <= n <= 100000；-1000000000 <= nums[i] <= 1000000000。两个相同数即视为重复，允许负数、零；n=1 时一定输出 0。朴素法 O(n²)；优化法可用排序 O(n log n) 时间、O(log n) 递归栈（或散列表平均 O(n) 时间、O(n) 空间）。",
+    "sample": "示例1：\n输入：\n4\n1 2 3 1\n输出：\n1\n解释：下标0和3的元素相等。\n\n示例2：\n输入：\n4\n1 2 3 4\n输出：\n0\n解释：所有元素互不相同。\n\n示例3：\n输入：\n1\n-7\n输出：\n0",
     "brute": {
       "tag": "朴素解",
       "title": "基础遍历",
-      "idea": "先以直接遍历或递归建立正确性。",
-      "complexity": "O(n²)时间",
+      "idea": "枚举所有 i<j 的下标对，遇到相等值立刻返回1；遍历结束仍未命中才返回0。",
+      "complexity": "时间 O(n²)，额外空间 O(1)",
       "risk": "注意边界条件和重复元素。",
-      "code": "/*\n * 【解题思路】存在重复元素（朴素解）\n * 为什么这样做：先以直接遍历或递归建立正确性。\n * 关键理解：建立初始状态\n * 关键理解：按基础规则遍历\n * 关键理解：核对输出\n * 考场注意：注意边界条件和重复元素。\n */\n#include <stdio.h>\nint main(void){\n    int a[]={\n        1,2,3,1\n    }\n    ,found=0;\n    for(int i=0;\n    i<4;\n    i++)for(int j=i+1;\n    j<4;\n    j++)if(a[i]==a[j])found=1;\n    printf(\"%d\\n\",found);\n    return 0;\n}\n",
+      "code": "#include <stdio.h>\n#define MAXN 100000\nint a[MAXN];\n\n// 返回1表示存在重复，返回0表示所有元素不同。\nint containsDuplicate(const int a[], int n) {\n    // 固定第一个下标i，只比较j>i的元素：\n    // 每一对不同下标恰好检查一次，不会把同一个位置和自己比较。\n    for (int i = 0; i < n; i++) {\n        for (int j = i + 1; j < n; j++) {\n            // 发现一对相等元素，就已满足“存在”的要求，可以立即结束。\n            if (a[i] == a[j]) return 1;\n        }\n    }\n    // 所有下标对均检查完仍无相等值，才能断定不存在重复。\n    return 0;\n}\nint main(void) {\n    int n;\n    if (scanf(\"%d\", &n) != 1 || n < 1 || n > MAXN) return 1;\n    for (int i = 0; i < n; i++) if (scanf(\"%d\", &a[i]) != 1) return 1;\n    printf(\"%d\\\\n\", containsDuplicate(a, n));\n    return 0;\n}",
       "explain": [
-        "建立初始状态",
-        "按基础规则遍历",
-        "核对输出"
+        "只枚举j>i：避免同一元素和自己比较，也避免重复比较同一对下标。",
+        "遇到第一对相等值立即返回1：存在性问题无需统计全部重复次数。"
       ]
     },
     "optimal": {
       "tag": "优化解",
       "title": "408经典数据结构",
-      "idea": "利用递归返回值、散列表、堆、入度队列、栈或一次扫描维护状态。",
-      "complexity": "平均O(n)时间",
+      "idea": "先排序使相同值相邻，再线性扫描相邻元素判断是否重复。注意排序会改变原数组。",
+      "complexity": "时间 O(n log n)，额外空间取决于标准库qsort实现",
       "risk": "注意数据结构的容量与状态更新顺序。",
-      "code": "/*\n * 【解题思路】存在重复元素（优化解）\n * 为什么这样做：利用递归返回值、散列表、堆、入度队列、栈或一次扫描维护状态。\n * 关键理解：明确不变量\n * 关键理解：维护辅助状态\n * 关键理解：完成输出\n * 考场注意：注意数据结构的容量与状态更新顺序。\n */\n#include <stdio.h>\nint main(void){\n    int a[]={\n        1,2,3,1\n    }\n    ,h[17]={\n        0\n    }\n    ,used[17]={\n        0\n    }\n    ,found=0;\n    for(int i=0;\n    i<4;\n    i++){\n        unsigned k=((unsigned)a[i]*2654435761u)%17;\n        while(used[k]&&h[k]!=a[i])k=(k+1)%17;\n        if(used[k]){\n            found=1;\n            break;\n        }\n        used[k]=1;\n        h[k]=a[i];\n    }\n    printf(\"%d\\n\",found);\n    return 0;\n}\n",
+      "code": "#include <stdio.h>\n#include <stdlib.h>\n#define MAXN 100000\nint a[MAXN];\n\n// qsort比较器：不能直接写 return x-y，极端整数相减可能溢出。\nint cmp(const void *pa, const void *pb) {\n    int x = *(const int *)pa, y = *(const int *)pb;\n    return (x > y) - (x < y);\n}\nint containsDuplicate(int a[], int n) {\n    // 排序后相同值必然连续：无需再比较所有下标对。\n    qsort(a, n, sizeof(a[0]), cmp);\n    // 只检查相邻两项；i从1开始，确保a[i-1]合法。\n    for (int i = 1; i < n; i++) {\n        if (a[i] == a[i-1]) return 1;\n    }\n    // 相邻项均不同，则排序数组中不可能存在相等元素。\n    return 0;\n}\nint main(void) {\n    int n;\n    if (scanf(\"%d\", &n) != 1 || n < 1 || n > MAXN) return 1;\n    for (int i = 0; i < n; i++) if (scanf(\"%d\", &a[i]) != 1) return 1;\n    printf(\"%d\\\\n\", containsDuplicate(a, n));\n    return 0;\n}",
       "explain": [
-        "明确不变量",
-        "维护辅助状态",
-        "完成输出"
+        "排序保证相同元素必定相邻，因此只需比较a[i]与a[i-1]。",
+        "比较器用关系比较而不是相减，防止有符号整数溢出。",
+        "排序修改输入数组；如果题目要求保留原顺序，需要先复制数组。"
       ]
     },
     "variation": {
