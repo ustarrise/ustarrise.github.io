@@ -1956,7 +1956,7 @@
       "idea": "枚举所有 i<j 的下标对，遇到相等值立刻返回1；遍历结束仍未命中才返回0。",
       "complexity": "时间 O(n²)，额外空间 O(1)",
       "risk": "注意边界条件和重复元素。",
-      "code": "#include <stdio.h>\n#define MAXN 100000\nint a[MAXN];\n\n// 返回1表示存在重复，返回0表示所有元素不同。\nint containsDuplicate(const int a[], int n) {\n    // 固定第一个下标i，只比较j>i的元素：\n    // 每一对不同下标恰好检查一次，不会把同一个位置和自己比较。\n    for (int i = 0; i < n; i++) {\n        for (int j = i + 1; j < n; j++) {\n            // 发现一对相等元素，就已满足“存在”的要求，可以立即结束。\n            if (a[i] == a[j]) return 1;\n        }\n    }\n    // 所有下标对均检查完仍无相等值，才能断定不存在重复。\n    return 0;\n}\nint main(void) {\n    int n;\n    if (scanf(\"%d\", &n) != 1 || n < 1 || n > MAXN) return 1;\n    for (int i = 0; i < n; i++) if (scanf(\"%d\", &a[i]) != 1) return 1;\n    printf(\"%d\\\\n\", containsDuplicate(a, n));\n    return 0;\n}",
+      "code": "#include <stdio.h>\n#define MAXN 100000\nint a[MAXN];\n\n// 返回1表示存在重复，返回0表示所有元素不同。\nint containsDuplicate(const int a[], int n) {\n    // 固定第一个下标i，只比较j>i的元素：\n    // 每一对不同下标恰好检查一次，不会把同一个位置和自己比较。\n    for (int i = 0; i < n; i++) {\n        for (int j = i + 1; j < n; j++) {\n            // 发现一对相等元素，就已满足“存在”的要求，可以立即结束。\n            if (a[i] == a[j]) return 1;\n        }\n    }\n    // 所有下标对均检查完仍无相等值，才能断定不存在重复。\n    return 0;\n}\nint main(void) {\n    int n;\n    if (scanf(\"%d\", &n) != 1 || n < 1 || n > MAXN) return 1;\n    for (int i = 0; i < n; i++) if (scanf(\"%d\", &a[i]) != 1) return 1;\n    printf(\"%d\\n\", containsDuplicate(a, n));\n    return 0;\n}",
       "explain": [
         "只枚举j>i：避免同一元素和自己比较，也避免重复比较同一对下标。",
         "遇到第一对相等值立即返回1：存在性问题无需统计全部重复次数。"
@@ -1968,7 +1968,7 @@
       "idea": "先排序使相同值相邻，再线性扫描相邻元素判断是否重复。注意排序会改变原数组。",
       "complexity": "时间 O(n log n)，额外空间取决于标准库qsort实现",
       "risk": "注意数据结构的容量与状态更新顺序。",
-      "code": "#include <stdio.h>\n#include <stdlib.h>\n#define MAXN 100000\nint a[MAXN];\n\n// qsort比较器：不能直接写 return x-y，极端整数相减可能溢出。\nint cmp(const void *pa, const void *pb) {\n    int x = *(const int *)pa, y = *(const int *)pb;\n    return (x > y) - (x < y);\n}\nint containsDuplicate(int a[], int n) {\n    // 排序后相同值必然连续：无需再比较所有下标对。\n    qsort(a, n, sizeof(a[0]), cmp);\n    // 只检查相邻两项；i从1开始，确保a[i-1]合法。\n    for (int i = 1; i < n; i++) {\n        if (a[i] == a[i-1]) return 1;\n    }\n    // 相邻项均不同，则排序数组中不可能存在相等元素。\n    return 0;\n}\nint main(void) {\n    int n;\n    if (scanf(\"%d\", &n) != 1 || n < 1 || n > MAXN) return 1;\n    for (int i = 0; i < n; i++) if (scanf(\"%d\", &a[i]) != 1) return 1;\n    printf(\"%d\\\\n\", containsDuplicate(a, n));\n    return 0;\n}",
+      "code": "#include <stdio.h>\n#include <stdlib.h>\n#define MAXN 100000\nint a[MAXN];\n\n// qsort比较器：不能直接写 return x-y，极端整数相减可能溢出。\nint cmp(const void *pa, const void *pb) {\n    int x = *(const int *)pa, y = *(const int *)pb;\n    return (x > y) - (x < y);\n}\nint containsDuplicate(int a[], int n) {\n    // 排序后相同值必然连续：无需再比较所有下标对。\n    qsort(a, n, sizeof(a[0]), cmp);\n    // 只检查相邻两项；i从1开始，确保a[i-1]合法。\n    for (int i = 1; i < n; i++) {\n        if (a[i] == a[i-1]) return 1;\n    }\n    // 相邻项均不同，则排序数组中不可能存在相等元素。\n    return 0;\n}\nint main(void) {\n    int n;\n    if (scanf(\"%d\", &n) != 1 || n < 1 || n > MAXN) return 1;\n    for (int i = 0; i < n; i++) if (scanf(\"%d\", &a[i]) != 1) return 1;\n    printf(\"%d\\n\", containsDuplicate(a, n));\n    return 0;\n}",
       "explain": [
         "排序保证相同元素必定相邻，因此只需比较a[i]与a[i-1]。",
         "比较器用关系比较而不是相减，防止有符号整数溢出。",
