@@ -32,7 +32,7 @@ CASES = {
 }
 
 
-def check_one(source, expected, key):
+def check_one(source, expected, key, stdin_data=""):
     with tempfile.TemporaryDirectory() as td:
         src = Path(td) / "test.c"
         exe = Path(td) / "test"
@@ -43,7 +43,7 @@ def check_one(source, expected, key):
         )
         if cc.returncode:
             raise RuntimeError(f"{key}: 编译失败\n{cc.stderr[:2000]}")
-        run = subprocess.run([str(exe)], capture_output=True, text=True, timeout=5)
+        run = subprocess.run([str(exe)], input=stdin_data, capture_output=True, text=True, timeout=5)
         if run.returncode or run.stdout.strip() != expected:
             raise RuntimeError(
                 f"{key}: 结果错误，预期 {expected!r}，实际 {run.stdout.strip()!r}，"
@@ -59,7 +59,7 @@ def main():
         if not case:
             raise ValueError(f"未给题目 {x['id']} 配置预期输出，请先审核")
         for variant in ("brute", "optimal"):
-            check_one(x[variant]["code"], case[0], x["id"] + "." + variant)
+            check_one(x[variant]["code"], case[0], x["id"] + "." + variant, "4\n1 2 3 1\n" if x["id"] == "lc217-20261027" else "")
             count += 1
         check_one(x["variation"]["code"], case[1], x["id"] + ".variation")
         count += 1
