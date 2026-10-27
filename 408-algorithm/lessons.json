@@ -2926,5 +2926,157 @@
       "朴素解与优化解分别计算复杂度。",
       "注意边界与重复情况。"
     ]
+  },
+  {
+    "id": "heap-sort-20261028",
+    "date": "2026-10-28",
+    "year": "408考纲 · 内部排序",
+    "number": "HEAP",
+    "category": "内部排序 · 堆排序",
+    "title": "原地堆排序：建堆与下沉",
+    "difficulty": "中等",
+    "time": "15–25分钟",
+    "source": "https://leetcode.cn/problems/sort-an-array/",
+    "question": "给定整数数组，要求按升序原地排序。先用选择排序得到基础解，再使用大根堆：先建堆，再反复将堆顶最大值交换到末尾，对剩余堆向下调整。",
+    "constraint": "数组元素可以重复；n≥1；本演示固定6个元素。",
+    "sample": "输入：[3,2,1,5,6,4]\n输出：[1,2,3,4,5,6]",
+    "brute": {
+      "tag": "选择排序",
+      "title": "每轮选择剩余最小值",
+      "idea": "每轮扫描未排序部分的最小值并放到左侧。",
+      "complexity": "O(n²)时间，O(1)空间。",
+      "risk": "内层从i+1开始，交换前保存临时变量。",
+      "code": "/*\n * 【解题思路】原地堆排序：建堆与下沉（朴素解）\n * 为什么这样做：每轮扫描未排序部分的最小值并放到左侧。\n * 关键理解：扫描未排序部分\n * 关键理解：找到最小值的下标\n * 关键理解：交换到已排序前缀末尾\n * 考场注意：内层从i+1开始，交换前保存临时变量。\n */\n#include <stdio.h>\n#define N 6\nint a[N]={3,2,1,5,6,4};\nvoid swap(int *x,int *y){int t=*x;*x=*y;*y=t;}\n\nint main(void){\n    for(int i=0;i<N-1;i++){\n        int p=i;\n        for(int j=i+1;j<N;j++)\n            if(a[j]<a[p]) p=j;\n        swap(&a[i],&a[p]);\n    }\n    for(int i=0;i<N;i++) printf(\"%d \",a[i]);\n    return 0;\n}\n",
+      "explain": [
+        "扫描未排序部分",
+        "找到最小值的下标",
+        "交换到已排序前缀末尾"
+      ]
+    },
+    "optimal": {
+      "tag": "堆排序",
+      "title": "大根堆 + 向下调整",
+      "idea": "从最后一个非叶结点开始建大根堆；每次把堆顶交换到数组末端并缩小堆。",
+      "complexity": "O(n log n)时间，O(1)额外空间。",
+      "risk": "向下调整的孩子下标为2*i+1、2*i+2；堆范围不含已排序后缀。",
+      "code": "/*\n * 【解题思路】原地堆排序：建堆与下沉（优化解）\n * 为什么这样做：从最后一个非叶结点开始建大根堆；每次把堆顶交换到数组末端并缩小堆。\n * 关键理解：从n/2-1向前调整得到大根堆\n * 关键理解：堆顶最大值与末尾交换\n * 关键理解：缩小堆并重新下沉堆顶\n * 考场注意：向下调整的孩子下标为2*i+1、2*i+2；堆范围不含已排序后缀。\n */\n#include <stdio.h>\n#define N 6\nint a[N]={3,2,1,5,6,4};\nvoid swap(int *x,int *y){int t=*x;*x=*y;*y=t;}\n\n// isMax=1 建大根堆；isMax=0 建小根堆\nvoid down(int root,int size,int isMax){\n    while(root*2+1<size){\n        int child=root*2+1;\n        if(child+1<size &&\n           (isMax?a[child+1]>a[child]:a[child+1]<a[child]))\n            child++;\n        if(isMax?a[root]>=a[child]:a[root]<=a[child])\n            break;\n        swap(&a[root],&a[child]);\n        root=child;\n    }\n}\nint main(void){\n    for(int i=N/2-1;i>=0;i--) down(i,N,1);\n    for(int end=N-1;end>0;end--){\n        swap(&a[0],&a[end]);\n        down(0,end,1);\n    }\n    for(int i=0;i<N;i++) printf(\"%d \",a[i]);\n    return 0;\n}\n",
+      "explain": [
+        "从n/2-1向前调整得到大根堆",
+        "堆顶最大值与末尾交换",
+        "缩小堆并重新下沉堆顶"
+      ]
+    },
+    "variation": {
+      "question": "巩固题：如何用相同框架得到降序？",
+      "idea": "改为小根堆，依次把最小值交换到数组右端，输出6 5 4 3 2 1。",
+      "code": "#include <stdio.h>\n#define N 6\nint a[N]={3,2,1,5,6,4};\nvoid swap(int *x,int *y){int t=*x;*x=*y;*y=t;}\n\n// isMax=1 建大根堆；isMax=0 建小根堆\nvoid down(int root,int size,int isMax){\n    while(root*2+1<size){\n        int child=root*2+1;\n        if(child+1<size &&\n           (isMax?a[child+1]>a[child]:a[child+1]<a[child]))\n            child++;\n        if(isMax?a[root]>=a[child]:a[root]<=a[child])\n            break;\n        swap(&a[root],&a[child]);\n        root=child;\n    }\n}\nint main(void){\n    for(int i=N/2-1;i>=0;i--) down(i,N,0);\n    for(int end=N-1;end>0;end--){\n        swap(&a[0],&a[end]);\n        down(0,end,0);\n    }\n    for(int i=0;i<N;i++) printf(\"%d \",a[i]);\n    return 0;\n}\n"
+    },
+    "animation": {
+      "layout": "array",
+      "brute": [
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            0,
+            2
+          ],
+          "text": "选择排序第一轮找到最小值1。"
+        },
+        {
+          "array": [
+            1,
+            2,
+            3,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            0
+          ],
+          "text": "将1交换到首位。"
+        },
+        {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "active": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "text": "逐轮选择，最终有序。"
+        }
+      ],
+      "optimal": [
+        {
+          "array": [
+            6,
+            5,
+            4,
+            3,
+            2,
+            1
+          ],
+          "active": [
+            0
+          ],
+          "text": "建成大根堆：堆顶为当前最大值6。"
+        },
+        {
+          "array": [
+            5,
+            3,
+            4,
+            1,
+            2,
+            6
+          ],
+          "active": [
+            5
+          ],
+          "text": "堆顶6换到末尾，前5个元素继续下沉调整。"
+        },
+        {
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "active": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "text": "依次取出最大值，最终升序。"
+        }
+      ]
+    },
+    "tips": [
+      "建堆从最后一个非叶结点n/2-1开始。",
+      "大根堆实现升序，堆顶与堆尾交换。",
+      "堆排序时间O(n log n)，额外空间O(1)，不稳定。"
+    ]
   }
 ]
