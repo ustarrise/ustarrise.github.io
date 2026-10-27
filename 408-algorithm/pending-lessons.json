@@ -3329,5 +3329,195 @@
       "无交点时两个指针都会到 NULL，循环正常结束。",
       "巩固：长度对齐法也只需要 O(1) 额外空间。"
     ]
+  },
+  {
+    "id": "lc98-bst-20261104",
+    "date": "2026-11-04",
+    "year": "LeetCode · 408方法训练",
+    "number": "98",
+    "category": "二叉排序树 · 中序遍历 · 递归区间",
+    "title": "验证二叉搜索树：中序有序与祖先上下界",
+    "difficulty": "中等",
+    "time": "20–25分钟",
+    "source": "https://leetcode.cn/problems/validate-binary-search-tree/",
+    "question": "给定二叉树，判断它是否是严格二叉搜索树（BST）：对每个结点，左子树所有值必须小于该结点，右子树所有值必须大于该结点，左右子树也必须满足 BST 性质。不能只比较父子结点，必须考虑祖先限制。",
+    "constraint": "示例结点值为 int；重复值不允许。最优解用 long long 上下界避免 int 边界溢出。",
+    "sample": "输入：根5，左孩子1，右孩子4；结点4的左孩子3、右孩子6。中序序列1,5,3,4,6；输出：0（不是BST）。",
+    "brute": {
+      "tag": "朴素解",
+      "title": "中序遍历保存数组，再检查严格递增",
+      "idea": "BST 的中序遍历必然严格递增。先用数组保存全部结点值，再逐个比较相邻元素；只要出现当前值≤前值，立即判定不合法。",
+      "complexity": "时间 O(n)，额外空间 O(n)（中序数组和递归栈）",
+      "risk": "数组容量必须不小于结点数；不能允许相等；不能仅检查直接孩子。",
+      "code": "#include <stdio.h>\n#include <limits.h>\n\n// 二叉树结点；用静态结点避免动态分配干扰算法学习\ntypedef struct Node {\n    int val;\n    struct Node *left, *right;\n} Node;\n\nNode n1 = {1, NULL, NULL};\nNode n3 = {3, NULL, NULL};\nNode n6 = {6, NULL, NULL};\nNode n4 = {4, &n3, &n6};\nNode root = {5, &n1, &n4}; // 反例：右子树含有小于5的结点\n\nint a[100], cnt = 0;\n\n// 中序遍历收集值：合法 BST 的中序序列必须严格递增\nvoid inorder(Node *p) {\n    if (p == NULL) return; // 空树无需访问\n    inorder(p->left);\n    a[cnt++] = p->val;     // 访问根，保存中序结果\n    inorder(p->right);\n}\n\nint main(void) {\n    inorder(&root);\n    int ok = 1;\n    for (int i = 1; i < cnt; i++) {\n        if (a[i] <= a[i - 1]) { // 必须严格递增，等于也不合法\n            ok = 0;\n            break;\n        }\n    }\n    printf(\"%d\\n\", ok); // 输出 0，代表不是合法 BST\n    return 0;\n}\n",
+      "explain": [
+        "先递归左子树，再存根值，最后递归右子树；因此收集到中序序列。",
+        "从第二项开始检查 a[i] > a[i-1]；不满足即返回错误。",
+        "示例中 5 后面出现 3，破坏严格递增，输出0。"
+      ]
+    },
+    "optimal": {
+      "tag": "最优解",
+      "title": "递归维护祖先允许的取值范围",
+      "idea": "每个结点必须位于 (low, high) 开区间内；左子树继承下界并把上界改为根值，右子树继承上界并把下界改为根值。无需保存中序数组。",
+      "complexity": "时间 O(n)，额外空间 O(h)（递归栈，h为树高）",
+      "risk": "区间必须是开区间；用 LLONG_MIN/LLONG_MAX 避免 INT_MIN/INT_MAX 本身误判；不能只比较左右孩子。",
+      "code": "#include <stdio.h>\n#include <limits.h>\n\n// 二叉树结点；用静态结点避免动态分配干扰算法学习\ntypedef struct Node {\n    int val;\n    struct Node *left, *right;\n} Node;\n\nNode n1 = {1, NULL, NULL};\nNode n3 = {3, NULL, NULL};\nNode n6 = {6, NULL, NULL};\nNode n4 = {4, &n3, &n6};\nNode root = {5, &n1, &n4}; // 反例：右子树含有小于5的结点\n\n// low < 当前值 < high：祖先也会限制当前子树\nint valid(Node *p, long long low, long long high) {\n    if (p == NULL) return 1; // 空树满足约束\n\n    if (p->val <= low || p->val >= high)\n        return 0; // 越界立即失败，禁止重复值\n\n    // 左子树上界变为当前值；右子树下界变为当前值\n    return valid(p->left, low, p->val) &&\n           valid(p->right, p->val, high);\n}\n\nint main(void) {\n    int ok = valid(&root, LLONG_MIN, LLONG_MAX);\n    printf(\"%d\\n\", ok); // 输出 0\n    return 0;\n}\n",
+      "explain": [
+        "初始允许区间为 (LLONG_MIN,LLONG_MAX)，覆盖全部 int 值。",
+        "遇到空结点返回1，表示当前分支没有违反限制。",
+        "访问左孩子时上界收紧为当前值；访问右孩子时下界收紧为当前值。",
+        "根5的右孩子4不在(5,+∞)内，直接返回0。"
+      ]
+    },
+    "variation": {
+      "question": "巩固变式：把右子树改为根7、左孩子6、右孩子8，左子树仍为1。现在是否是BST？写完整C程序验证。",
+      "idea": "中序为1,5,6,7,8，严格递增；上下界递归均满足，输出1。下面给出完整main与路径检查代码。",
+      "code": "#include <stdio.h>\n#include <limits.h>\ntypedef struct Node {\n    int val;\n    struct Node *left, *right;\n} Node;\nNode n1 = {1, NULL, NULL};\nNode n6 = {6, NULL, NULL};\nNode n8 = {8, NULL, NULL};\nNode n7 = {7, &n6, &n8};\nNode root = {5, &n1, &n7}; // 改成合法 BST\n\nint valid(Node *p, long long low, long long high) {\n    if (p == NULL) return 1;\n    if (p->val <= low || p->val >= high) return 0;\n    return valid(p->left, low, p->val) &&\n           valid(p->right, p->val, high);\n}\n\nint main(void) {\n    printf(\"%d\\n\", valid(&root, LLONG_MIN, LLONG_MAX));\n    // 输出1：中序序列1,5,6,7,8严格递增\n    return 0;\n}\n"
+    },
+    "animation": {
+      "layout": "array",
+      "brute": [
+        {
+          "array": [
+            1,
+            5,
+            3,
+            4,
+            6
+          ],
+          "active": [
+            0
+          ],
+          "pointers": {
+            "current": 0
+          },
+          "text": "中序先访问左子树1，数组=[1]。"
+        },
+        {
+          "array": [
+            1,
+            5,
+            3,
+            4,
+            6
+          ],
+          "active": [
+            1
+          ],
+          "pointers": {
+            "current": 1
+          },
+          "text": "访问根5，数组=[1,5]。"
+        },
+        {
+          "array": [
+            1,
+            5,
+            3,
+            4,
+            6
+          ],
+          "active": [
+            2
+          ],
+          "pointers": {
+            "current": 2
+          },
+          "text": "右子树先访问3，数组=[1,5,3]，发现3≤5，判定非法。"
+        },
+        {
+          "array": [
+            1,
+            5,
+            3,
+            4,
+            6
+          ],
+          "active": [
+            2,
+            3,
+            4
+          ],
+          "pointers": {
+            "current": 2
+          },
+          "text": "完整中序序列[1,5,3,4,6]不递增，输出0。"
+        }
+      ],
+      "optimal": [
+        {
+          "array": [
+            1,
+            5,
+            3,
+            4,
+            6
+          ],
+          "active": [
+            1
+          ],
+          "pointers": {
+            "current": 1
+          },
+          "text": "根5满足(-∞,+∞)，左子树允许(-∞,5)，右子树允许(5,+∞)。"
+        },
+        {
+          "array": [
+            1,
+            5,
+            3,
+            4,
+            6
+          ],
+          "active": [
+            0
+          ],
+          "pointers": {
+            "current": 0
+          },
+          "text": "左孩子1满足(-∞,5)，返回真。"
+        },
+        {
+          "array": [
+            1,
+            5,
+            3,
+            4,
+            6
+          ],
+          "active": [
+            3
+          ],
+          "pointers": {
+            "current": 3
+          },
+          "text": "检查右孩子4：4≤5，违反祖先下界，立即返回假。"
+        },
+        {
+          "array": [
+            1,
+            5,
+            3,
+            4,
+            6
+          ],
+          "active": [
+            1,
+            3
+          ],
+          "pointers": {
+            "current": 1
+          },
+          "text": "整棵树非法，输出0；无需继续访问右子树。"
+        }
+      ]
+    },
+    "tips": [
+      "考场高频陷阱：不能只检查根和左右孩子的大小。",
+      "中序严格递增是最容易背的判定方法。",
+      "区间递归只占 O(h) 栈空间，更适合写优化解。",
+      "拓展：若题目允许重复值，需要重新定义等号归属。"
+    ]
   }
 ]
