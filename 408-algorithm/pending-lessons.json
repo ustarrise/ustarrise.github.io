@@ -3519,5 +3519,269 @@
       "区间递归只占 O(h) 栈空间，更适合写优化解。",
       "拓展：若题目允许重复值，需要重新定义等号归属。"
     ]
+  },
+  {
+    "id": "lc169-20261105",
+    "date": "2026-11-05",
+    "year": "LeetCode · 408方法训练",
+    "number": "169",
+    "category": "数组 · 计数与配对抵消",
+    "title": "多数元素：暴力计数与摩尔投票",
+    "difficulty": "简单",
+    "time": "15–20分钟",
+    "source": "https://leetcode.cn/problems/majority-element/",
+    "question": "给定长度为 n 的非空整数数组，已知存在某个元素出现次数严格大于 n/2，找出这个多数元素。请分别用逐个候选统计和一次遍历的配对抵消法完成。",
+    "constraint": "1 ≤ n ≤ 5×10⁴；元素可能为负数；原题保证多数元素存在。",
+    "sample": "输入：[2,2,1,1,1,2,2]；输出：2（出现4次，严格超过7/2）。",
+    "brute": {
+      "tag": "暴力计数",
+      "title": "枚举候选并统计频次",
+      "idea": "逐个把 a[i] 当作候选值，重新扫描整个数组统计出现次数，找到次数严格超过 n/2 的值就停止。",
+      "complexity": "O(n²) 时间，O(1) 额外空间",
+      "risk": "多数条件必须是 count > n/2，不是 >=；重复候选会造成多余统计。",
+      "code": "#include <stdio.h>\n\nint main(void) {\n    int a[] = {2, 2, 1, 1, 1, 2, 2};\n    int n = sizeof(a) / sizeof(a[0]);\n    int answer = -1;\n\n    // 朴素思路：枚举每个候选值，再扫描整个数组统计次数\n    for (int i = 0; i < n; i++) {\n        int count = 0;\n        for (int j = 0; j < n; j++) {\n            if (a[j] == a[i]) count++;\n        }\n\n        // 超过一半才是多数元素，不能写成 >= n / 2\n        if (count > n / 2) {\n            answer = a[i];\n            break; // 已找到答案，无需继续枚举\n        }\n    }\n\n    printf(\"%d\\n\", answer); // 2 出现4次，超过 7/2\n    return 0;\n}",
+      "explain": [
+        "外层循环选一个候选元素，内层循环数它出现了几次。",
+        "因为答案一定存在，第一次发现次数超过一半就可以结束。",
+        "虽然简单但重复扫描较多，考场可作为朴素正确性思路。"
+      ]
+    },
+    "optimal": {
+      "tag": "最优：摩尔投票",
+      "title": "不同元素配对抵消",
+      "idea": "遇到相同元素票数+1，不同元素票数-1；票数归零时重新选择候选值。由于多数元素出现次数超过其他元素总和，最终不会被完全抵消。",
+      "complexity": "O(n) 时间，O(1) 额外空间",
+      "risk": "count==0 时先更新 candidate；只有保证多数元素存在时，最后才可直接输出候选值。",
+      "code": "#include <stdio.h>\n\nint main(void) {\n    int a[] = {2, 2, 1, 1, 1, 2, 2};\n    int n = sizeof(a) / sizeof(a[0]);\n    int candidate = 0, count = 0;\n\n    for (int i = 0; i < n; i++) {\n        if (count == 0) {\n            // 票数清零时，重新选当前元素为候选人\n            candidate = a[i];\n            count = 1;\n        } else if (a[i] == candidate) {\n            count++; // 相同元素支持候选人\n        } else {\n            count--; // 不同元素相互抵消\n        }\n    }\n\n    // 原题保证多数元素存在，剩下的候选人必为答案\n    printf(\"%d\\n\", candidate);\n    return 0;\n}",
+      "explain": [
+        "count 表示当前候选人在尚未抵消部分的净票数。",
+        "不同元素成对抵消，不影响真正多数元素最终胜出。",
+        "题目保证多数元素存在，因此无需第二遍验证；不保证时必须验证。"
+      ]
+    },
+    "variation": {
+      "question": "巩固变式：如果不保证存在多数元素，应如何修改？输入 [1,2,3,2] 时输出什么？",
+      "idea": "摩尔投票只能得到候选人；再扫描一次统计真实次数，若不大于 n/2 则输出 -1。本例2仅出现两次，不满足严格超过一半，因此输出 -1。",
+      "code": "#include <stdio.h>\n\nint main(void) {\n    int a[] = {1, 2, 3, 2}; // 没有出现次数 > 4/2 的元素\n    int n = sizeof(a) / sizeof(a[0]);\n    int candidate = 0, votes = 0;\n\n    // 第一遍：配对抵消，找可能的多数元素\n    for (int i = 0; i < n; i++) {\n        if (votes == 0) {\n            candidate = a[i];\n            votes = 1;\n        } else if (a[i] == candidate) {\n            votes++;\n        } else {\n            votes--;\n        }\n    }\n\n    // 第二遍：题目不保证多数元素时，必须重新统计\n    int count = 0;\n    for (int i = 0; i < n; i++) {\n        if (a[i] == candidate) count++;\n    }\n\n    printf(\"%d\\n\", count > n / 2 ? candidate : -1);\n    return 0;\n}"
+    },
+    "animation": {
+      "layout": "array",
+      "brute": [
+        {
+          "array": [
+            2,
+            2,
+            1,
+            1,
+            1,
+            2,
+            2
+          ],
+          "active": [
+            0
+          ],
+          "text": "先选 a[0]=2 作为候选值。",
+          "pointers": {
+            "i": 0
+          }
+        },
+        {
+          "array": [
+            2,
+            2,
+            1,
+            1,
+            1,
+            2,
+            2
+          ],
+          "active": [
+            0,
+            1,
+            5,
+            6
+          ],
+          "text": "遍历数组，值为2的位置有 0、1、5、6，共4次。",
+          "pointers": {
+            "i": 0
+          }
+        },
+        {
+          "array": [
+            2,
+            2,
+            1,
+            1,
+            1,
+            2,
+            2
+          ],
+          "active": [
+            0,
+            1,
+            5,
+            6
+          ],
+          "text": "4 > 7/2=3，满足严格过半。",
+          "pointers": {
+            "i": 0
+          }
+        },
+        {
+          "array": [
+            2,
+            2,
+            1,
+            1,
+            1,
+            2,
+            2
+          ],
+          "active": [
+            0,
+            1,
+            5,
+            6
+          ],
+          "text": "立即输出2，不必再尝试其他候选值。",
+          "pointers": {
+            "i": 0
+          }
+        }
+      ],
+      "optimal": [
+        {
+          "array": [
+            2,
+            2,
+            1,
+            1,
+            1,
+            2,
+            2
+          ],
+          "active": [
+            0
+          ],
+          "pointers": {
+            "i": 0
+          },
+          "text": "第1步：候选2，票数1：首次选人。"
+        },
+        {
+          "array": [
+            2,
+            2,
+            1,
+            1,
+            1,
+            2,
+            2
+          ],
+          "active": [
+            1
+          ],
+          "pointers": {
+            "i": 1
+          },
+          "text": "第2步：候选2，票数2：相同加一。"
+        },
+        {
+          "array": [
+            2,
+            2,
+            1,
+            1,
+            1,
+            2,
+            2
+          ],
+          "active": [
+            2
+          ],
+          "pointers": {
+            "i": 2
+          },
+          "text": "第3步：候选2，票数1：遇到1，抵消一票。"
+        },
+        {
+          "array": [
+            2,
+            2,
+            1,
+            1,
+            1,
+            2,
+            2
+          ],
+          "active": [
+            3
+          ],
+          "pointers": {
+            "i": 3
+          },
+          "text": "第4步：候选2，票数0：再遇到1，全部抵消。"
+        },
+        {
+          "array": [
+            2,
+            2,
+            1,
+            1,
+            1,
+            2,
+            2
+          ],
+          "active": [
+            4
+          ],
+          "pointers": {
+            "i": 4
+          },
+          "text": "第5步：候选1，票数1：重新选当前元素1。"
+        },
+        {
+          "array": [
+            2,
+            2,
+            1,
+            1,
+            1,
+            2,
+            2
+          ],
+          "active": [
+            5
+          ],
+          "pointers": {
+            "i": 5
+          },
+          "text": "第6步：候选1，票数0：遇到2，抵消归零。"
+        },
+        {
+          "array": [
+            2,
+            2,
+            1,
+            1,
+            1,
+            2,
+            2
+          ],
+          "active": [
+            6
+          ],
+          "pointers": {
+            "i": 6
+          },
+          "text": "第7步：候选2，票数1：最后选出2。"
+        }
+      ]
+    },
+    "tips": [
+      "考场性价比：核心只有 candidate、count 两个变量，适合15分钟内完成。",
+      "记忆口诀：票数为零换候选；相同加一，不同减一。",
+      "严格大于 n/2 才叫多数元素；变式无保证时要二次验证。"
+    ]
   }
 ]
