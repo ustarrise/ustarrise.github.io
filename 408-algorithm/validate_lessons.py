@@ -7,6 +7,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 CASES = {
+    "lc169-20261105": ("2", "-1"),
     "lc88-20261012": ("1 2 3 4 5 6", "9 8 7 6 5"),
     "lc876-20261013": ("4", "1"),
     "lc104-20261014": ("3", "2"),
