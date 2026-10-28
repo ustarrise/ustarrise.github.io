@@ -3078,5 +3078,198 @@
       "大根堆实现升序，堆顶与堆尾交换。",
       "堆排序时间O(n log n)，额外空间O(1)，不稳定。"
     ]
+  },
+  {
+    "id": "lc207-20261029",
+    "date": "2026-10-29",
+    "year": "LeetCode · 408方法训练",
+    "number": "207",
+    "category": "图 · 拓扑排序",
+    "title": "课程表：拓扑排序",
+    "difficulty": "中等",
+    "time": "15–25分钟",
+    "source": "https://leetcode.cn/problems/course-schedule/",
+    "question": "课程表：拓扑排序。根据题目所述数据结构完成求解；请分别实现朴素方法与优化方法，比较正确性、时间复杂度和空间复杂度。",
+    "constraint": "依据对应力扣原题的输入规模。本站演示代码使用固定小样例，提交力扣时需适配函数接口。",
+    "sample": "示例程序的预期输出：1。",
+    "brute": {
+      "tag": "朴素解",
+      "title": "基础遍历",
+      "idea": "先以直接遍历或递归建立正确性。",
+      "complexity": "O(V+E)时间",
+      "risk": "注意边界条件和重复元素。",
+      "code": "/*\n * 【解题思路】课程表：拓扑排序（朴素解）\n * 为什么这样做：先以直接遍历或递归建立正确性。\n * 关键理解：建立初始状态\n * 关键理解：按基础规则遍历\n * 关键理解：核对输出\n * 考场注意：注意边界条件和重复元素。\n */\n#include <stdio.h>\nint e[4][4]={\n    {\n        0,1,0,0\n    }\n    ,{\n        0,0,1,0\n    }\n    ,{\n        0,0,0,1\n    }\n    ,{\n        0,0,0,0\n    }\n}\n,v[4];\nint dfs(int x){\n    v[x]=1;\n    for(int j=0;\n    j<4;\n    j++)if(e[x][j]){\n        if(v[j]==1)return 0;\n        if(v[j]==0&&!dfs(j))return 0;\n    }\n    v[x]=2;\n    return 1;\n}\nint main(void){\n    int ok=1;\n    for(int i=0;\n    i<4;\n    i++)if(!v[i]&&!dfs(i))ok=0;\n    printf(\"%d\\n\",ok);\n    return 0;\n}\n",
+      "explain": [
+        "建立初始状态",
+        "按基础规则遍历",
+        "核对输出"
+      ]
+    },
+    "optimal": {
+      "tag": "优化解",
+      "title": "408经典数据结构",
+      "idea": "利用递归返回值、散列表、堆、入度队列、栈或一次扫描维护状态。",
+      "complexity": "O(V+E)时间",
+      "risk": "注意数据结构的容量与状态更新顺序。",
+      "code": "/*\n * 【解题思路】课程表：拓扑排序（优化解）\n * 为什么这样做：利用递归返回值、散列表、堆、入度队列、栈或一次扫描维护状态。\n * 关键理解：明确不变量\n * 关键理解：维护辅助状态\n * 关键理解：完成输出\n * 考场注意：注意数据结构的容量与状态更新顺序。\n */\n#include <stdio.h>\nint main(void){\n    int e[4][4]={\n        {\n            0,1,0,0\n        }\n        ,{\n            0,0,1,0\n        }\n        ,{\n            0,0,0,1\n        }\n        ,{\n            0,0,0,0\n        }\n    }\n    ,in[4]={\n        0\n    }\n    ,q[4],h=0,t=0,n=0;\n    for(int i=0;\n    i<4;\n    i++)for(int j=0;\n    j<4;\n    j++)in[j]+=e[i][j];\n    for(int i=0;\n    i<4;\n    i++)if(!in[i])q[t++]=i;\n    while(h<t){\n        int x=q[h++];\n        n++;\n        for(int j=0;\n        j<4;\n        j++)if(e[x][j]&&--in[j]==0)q[t++]=j;\n    }\n    printf(\"%d\\n\",n==4);\n    return 0;\n}\n",
+      "explain": [
+        "明确不变量",
+        "维护辅助状态",
+        "完成输出"
+      ]
+    },
+    "variation": {
+      "question": "巩固题：更换边界样例，解释算法是否仍正确。",
+      "idea": "保留算法不变量，检查空输入、重复值和最小规模。",
+      "code": "#include <stdio.h>\nint main(void){\n    int e[4][4]={\n        {\n            0,1,0,0\n        }\n        ,{\n            0,0,1,0\n        }\n        ,{\n            0,0,0,1\n        }\n        ,{\n            0,0,0,0\n        }\n    }\n    ,in[4]={\n        0\n    }\n    ,q[4],h=0,t=0,n=0;\n    for(int i=0;\n    i<4;\n    i++)for(int j=0;\n    j<4;\n    j++)in[j]+=e[i][j];\n    for(int i=0;\n    i<4;\n    i++)if(!in[i])q[t++]=i;\n    while(h<t){\n        int x=q[h++];\n        n++;\n        for(int j=0;\n        j<4;\n        j++)if(e[x][j]&&--in[j]==0)q[t++]=j;\n    }\n    printf(\"%d\\n\",n==4);\n    return 0;\n}\n"
+    },
+    "animation": {
+      "layout": "array",
+      "brute": [
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            0
+          ],
+          "pointers": {
+            "cur": 0
+          },
+          "text": "读取样例并初始化"
+        },
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            1
+          ],
+          "pointers": {
+            "cur": 1
+          },
+          "text": "执行当前步骤"
+        },
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            2
+          ],
+          "pointers": {
+            "cur": 2
+          },
+          "text": "更新辅助状态"
+        },
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            3
+          ],
+          "pointers": {
+            "cur": 3
+          },
+          "text": "得到结果"
+        }
+      ],
+      "optimal": [
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            0
+          ],
+          "pointers": {
+            "cur": 0
+          },
+          "text": "读取样例并初始化"
+        },
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            1
+          ],
+          "pointers": {
+            "cur": 1
+          },
+          "text": "执行当前步骤"
+        },
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            2
+          ],
+          "pointers": {
+            "cur": 2
+          },
+          "text": "更新辅助状态"
+        },
+        {
+          "array": [
+            3,
+            2,
+            1,
+            5,
+            6,
+            4
+          ],
+          "active": [
+            3
+          ],
+          "pointers": {
+            "cur": 3
+          },
+          "text": "得到结果"
+        }
+      ]
+    },
+    "tips": [
+      "先画出过程再写代码。",
+      "朴素解与优化解分别计算复杂度。",
+      "注意边界与重复情况。"
+    ]
   }
 ]
