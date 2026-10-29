@@ -3785,5 +3785,129 @@
       "记忆口诀：票数为零换候选；相同加一，不同减一。",
       "严格大于 n/2 才叫多数元素；变式无保证时要二次验证。"
     ]
+  },
+  {
+    "id": "lc503-20261106",
+    "date": "2026-11-06",
+    "year": "LeetCode",
+    "number": "503",
+    "category": "栈 · 单调栈",
+    "title": "循环数组下一个更大元素：单调栈",
+    "difficulty": "中等",
+    "time": "15–25分钟",
+    "source": "https://leetcode.cn/problems/next-greater-element-ii/",
+    "question": "给定循环数组，对每个位置寻找向右遇到的第一个严格更大的元素；走到末尾后从开头继续。若不存在则输出-1。分别实现朴素扫描与单调栈。",
+    "constraint": "本例[1,2,1]；只扫描其他n-1个位置，不能把自身当作下一个元素。",
+    "sample": "输入：[1,2,1]\n输出：[2,-1,2]\n解释：两个1都能找到2；2没有更大元素。",
+    "brute": {
+      "tag": "朴素扫描",
+      "title": "逐项循环向右查找",
+      "idea": "对每个位置最多扫描n-1个后继位置，遇到第一个更大值就停止。",
+      "complexity": "O(n²)时间，O(n)答案空间。",
+      "risk": "使用(i+step)%n回绕，step从1到n-1。",
+      "code": "#include <stdio.h>\nint main(void) {\n    int a[] = {1, 2, 1};\n    int n = 3, ans[3];\n\n    // 逐个位置向右寻找第一个严格更大的数\n    for (int i = 0; i < n; i++) {\n        ans[i] = -1; // 默认找不到\n        for (int step = 1; step < n; step++) {\n            int j = (i + step) % n; // 循环回绕\n            if (a[j] > a[i]) {\n                ans[i] = a[j];\n                break; // 第一个更大值就是答案\n            }\n        }\n    }\n\n    // 输出各位置的下一个更大元素\n    for (int i = 0; i < n; i++)\n        printf(\"%d%s\", ans[i], i == n - 1 ? \"\\n\" : \" \");\n    return 0;\n}\n",
+      "explain": [
+        "固定位置i。",
+        "从下一位向右循环扫描。",
+        "遇到第一个严格更大的值就停止，否则返回-1。"
+      ]
+    },
+    "optimal": {
+      "tag": "推荐背诵",
+      "title": "倒序两轮单调栈",
+      "idea": "倒序遍历2n次，栈保留候选下标；弹掉所有小于等于当前值的候选。",
+      "complexity": "O(n)时间，O(n)辅助空间。",
+      "risk": "相等不算更大，弹栈条件必须是<=；只在i<n时写入答案。",
+      "code": "#include <stdio.h>\nint main(void) {\n    int a[] = {1, 2, 1};\n    int n = 3, ans[3];\n\n    int st[6], top = 0; // 单调栈保存下标\n    // 倒序遍历两轮，i%n模拟循环数组\n    for (int i = 2 * n - 1; i >= 0; i--) {\n        int k = i % n;\n        // 不大于当前值的候选不可能是答案\n        while (top > 0 && a[st[top - 1]] <= a[k])\n            top--;\n        // 只在第二轮记录最终答案\n        if (i < n)\n            ans[k] = top ? a[st[top - 1]] : -1;\n        st[top++] = k; // 当前下标入栈\n    }\n\n    // 输出各位置的下一个更大元素\n    for (int i = 0; i < n; i++)\n        printf(\"%d%s\", ans[i], i == n - 1 ? \"\\n\" : \" \");\n    return 0;\n}\n",
+      "explain": [
+        "倒序扫描两轮，i%n实现回绕。",
+        "弹出不大于当前值的栈顶元素。",
+        "栈顶是下一个更大值；记录答案后入栈。"
+      ]
+    },
+    "variation": {
+      "question": "巩固题：循环数组[3,8,4,1,2]的下一个更大元素是什么？写完整C程序。",
+      "idea": "输出8 -1 8 2 3；4回绕后找到8，2回绕后找到3。",
+      "code": "#include <stdio.h>\nint main(void) {\n    int a[] = {3, 8, 4, 1, 2};\n    int n = 5, ans[5];\n\n    int st[10], top = 0; // 单调栈保存下标\n    // 倒序遍历两轮，i%n模拟循环数组\n    for (int i = 2 * n - 1; i >= 0; i--) {\n        int k = i % n;\n        // 不大于当前值的候选不可能是答案\n        while (top > 0 && a[st[top - 1]] <= a[k])\n            top--;\n        // 只在第二轮记录最终答案\n        if (i < n)\n            ans[k] = top ? a[st[top - 1]] : -1;\n        st[top++] = k; // 当前下标入栈\n    }\n\n    // 输出各位置的下一个更大元素\n    for (int i = 0; i < n; i++)\n        printf(\"%d%s\", ans[i], i == n - 1 ? \"\\n\" : \" \");\n    return 0;\n}\n"
+    },
+    "animation": {
+      "layout": "array",
+      "brute": [
+        {
+          "array": [
+            1,
+            2,
+            1
+          ],
+          "active": [
+            0
+          ],
+          "text": "位置0的1向右遇到2。"
+        },
+        {
+          "array": [
+            1,
+            2,
+            1
+          ],
+          "active": [
+            1
+          ],
+          "text": "位置1的2没有更大元素。"
+        },
+        {
+          "array": [
+            1,
+            2,
+            1
+          ],
+          "active": [
+            2
+          ],
+          "text": "位置2的1回绕后遇到2。"
+        }
+      ],
+      "optimal": [
+        {
+          "array": [
+            1,
+            2,
+            1
+          ],
+          "active": [
+            0
+          ],
+          "text": "第一轮倒序维护候选栈。"
+        },
+        {
+          "array": [
+            1,
+            2,
+            1
+          ],
+          "active": [
+            1
+          ],
+          "text": "遇到2时弹出不大于2的候选。"
+        },
+        {
+          "array": [
+            1,
+            2,
+            1
+          ],
+          "active": [
+            2
+          ],
+          "text": "第二轮读取栈顶，得到[2,-1,2]。"
+        }
+      ]
+    },
+    "tips": [
+      "考场口诀：右向左，弹掉小于等于当前值的栈顶。",
+      "循环数组无需复制，用i%n遍历2n次。",
+      "栈中存下标，方便适配其他单调栈题。",
+      "相等不算更大。"
+    ]
   }
 ]
