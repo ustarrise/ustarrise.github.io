@@ -3273,5 +3273,123 @@
       "邻接矩阵版本两法均O(n²)，不要误写成O(n+m)；邻接表才能达到O(n+m)。",
       "有向图DFS判环看颜色1；拓扑排序判环看最终处理顶点数是否等于n。"
     ]
+  },
+  {
+    "id": "lc150-20261030",
+    "date": "2026-10-30",
+    "year": "LeetCode",
+    "number": "150",
+    "category": "栈 · 后缀表达式",
+    "title": "逆波兰表达式求值：操作数栈",
+    "difficulty": "中等",
+    "time": "15–25分钟",
+    "source": "https://leetcode.cn/problems/evaluate-reverse-polish-notation/",
+    "question": "给定由整数和+、-、*、/组成的后缀表达式（逆波兰表达式），求其整数结果。运算符出现时从栈中取出右操作数b和左操作数a，计算a op b后压栈。整数除法向零截断。",
+    "constraint": "表达式合法、除数不为0；本演示使用5个token。",
+    "sample": "输入：[\"2\",\"1\",\"+\",\"3\",\"*\"]\n输出：9\n解释：(2+1)×3=9。",
+    "brute": {
+      "tag": "递归解析",
+      "title": "从右往左递归求值",
+      "idea": "后缀表达式最右边是运算符；递归先读取右操作数，再读取左操作数。",
+      "complexity": "O(n)时间，O(n)递归栈。",
+      "risk": "减法和除法必须保持a op b的顺序。",
+      "code": "/*\n * 【解题思路】逆波兰表达式求值：操作数栈（朴素解）\n * 为什么这样做：后缀表达式最右边是运算符；递归先读取右操作数，再读取左操作数。\n * 关键理解：从右端读取token\n * 关键理解：运算符递归解析右子式和左子式\n * 关键理解：按原操作数顺序计算\n * 考场注意：减法和除法必须保持a op b的顺序。\n */\n#include <stdio.h>\n#include <stdlib.h>\nchar *t[5]={\"2\",\"1\",\"+\",\"3\",\"*\"};\n\n// 从右向左递归解释后缀表达式\nint eval(int *i){\n    char *s=t[(*i)--];\n    if(s[1]=='\\0'&&(s[0]=='+'||s[0]=='-'||\n       s[0]=='*'||s[0]=='/')){\n        int b=eval(i),a=eval(i); // 先读右操作数\n        if(s[0]=='+') return a+b;\n        if(s[0]=='-') return a-b;\n        if(s[0]=='*') return a*b;\n        return a/b;\n    }\n    return atoi(s);\n}\nint main(void){\n    int i=4;\n    printf(\"%d\\n\",eval(&i)); // (2+1)*3=9\n    return 0;\n}\n",
+      "explain": [
+        "从右端读取token",
+        "运算符递归解析右子式和左子式",
+        "按原操作数顺序计算"
+      ]
+    },
+    "optimal": {
+      "tag": "顺序栈",
+      "title": "从左到右压栈计算",
+      "idea": "数字入栈；运算符弹出b再弹出a，计算a op b后压回。",
+      "complexity": "O(n)时间，O(n)栈空间。",
+      "risk": "减法与除法不能把a、b颠倒。",
+      "code": "/*\n * 【解题思路】逆波兰表达式求值：操作数栈（优化解）\n * 为什么这样做：数字入栈；运算符弹出b再弹出a，计算a op b后压回。\n * 关键理解：扫描数字直接入栈\n * 关键理解：遇运算符弹出右、左操作数\n * 关键理解：运算结果压栈，最后栈顶为答案\n * 考场注意：减法与除法不能把a、b颠倒。\n */\n#include <stdio.h>\n#include <stdlib.h>\nchar *t[5]={\"2\",\"1\",\"+\",\"3\",\"*\"};\n\nint main(void){\n    int st[5],top=0;\n    for(int i=0;i<5;i++){\n        char *s=t[i];\n        if(s[1]=='\\0'&&(s[0]=='+'||s[0]=='-'||\n           s[0]=='*'||s[0]=='/')){\n            int b=st[--top],a=st[--top];\n            if(s[0]=='+') st[top++]=a+b;\n            if(s[0]=='-') st[top++]=a-b;\n            if(s[0]=='*') st[top++]=a*b;\n            if(s[0]=='/') st[top++]=a/b;\n        }else st[top++]=atoi(s);\n    }\n    printf(\"%d\\n\",st[0]); // 9\n    return 0;\n}\n",
+      "explain": [
+        "扫描数字直接入栈",
+        "遇运算符弹出右、左操作数",
+        "运算结果压栈，最后栈顶为答案"
+      ]
+    },
+    "variation": {
+      "question": "巩固题：[\"4\",\"13\",\"5\",\"/\",\"+\"] 的值是多少？",
+      "idea": "13/5按整数除法为2，再加4得到6；完整C程序输出6。",
+      "code": "#include <stdio.h>\n#include <stdlib.h>\nchar *t[5]={\"4\",\"13\",\"5\",\"/\",\"+\"};\n\nint main(void){\n    int st[5],top=0;\n    for(int i=0;i<5;i++){\n        char *s=t[i];\n        if(s[1]=='\\0'&&(s[0]=='+'||s[0]=='-'||\n           s[0]=='*'||s[0]=='/')){\n            int b=st[--top],a=st[--top];\n            if(s[0]=='+') st[top++]=a+b;\n            if(s[0]=='-') st[top++]=a-b;\n            if(s[0]=='*') st[top++]=a*b;\n            if(s[0]=='/') st[top++]=a/b;\n        }else st[top++]=atoi(s);\n    }\n    printf(\"%d\\n\",st[0]); // 6\n    return 0;\n}\n"
+    },
+    "animation": {
+      "layout": "array",
+      "brute": [
+        {
+          "diagram": "从右读 *\n右子式 3 → 3",
+          "text": "右操作数先递归得到3。"
+        },
+        {
+          "diagram": "左子式 2 1 + → 3",
+          "text": "递归求得左操作数3。"
+        },
+        {
+          "diagram": "3 × 3 = 9",
+          "text": "按顺序计算得到9。"
+        }
+      ],
+      "optimal": [
+        {
+          "array": [
+            2
+          ],
+          "active": [
+            0
+          ],
+          "text": "读2，压栈。"
+        },
+        {
+          "array": [
+            2,
+            1
+          ],
+          "active": [
+            0,
+            1
+          ],
+          "text": "读1，压栈。"
+        },
+        {
+          "array": [
+            3
+          ],
+          "active": [
+            0
+          ],
+          "text": "遇+，弹出1和2，压入3。"
+        },
+        {
+          "array": [
+            3,
+            3
+          ],
+          "active": [
+            0,
+            1
+          ],
+          "text": "读3，压栈。"
+        },
+        {
+          "array": [
+            9
+          ],
+          "active": [
+            0
+          ],
+          "text": "遇*，计算3×3，最终答案9。"
+        }
+      ]
+    },
+    "tips": [
+      "后缀表达式的经典408栈应用。",
+      "遇运算符先弹出的数是右操作数b。",
+      "除法遵循C整数除法向零截断。"
+    ]
   }
 ]
