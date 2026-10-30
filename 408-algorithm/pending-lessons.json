@@ -3909,5 +3909,211 @@
       "栈中存下标，方便适配其他单调栈题。",
       "相等不算更大。"
     ]
+  },
+  {
+    "id": "lc622-20261107",
+    "date": "2026-11-07",
+    "year": "LeetCode · 408方法训练",
+    "number": "622",
+    "category": "队列 · 循环队列 · 数组下标",
+    "title": "设计循环队列：取模实现队头队尾复用",
+    "difficulty": "基础",
+    "time": "15–20分钟",
+    "source": "https://leetcode.cn/problems/design-circular-queue/",
+    "question": "用容量为 3 的数组实现先进先出队列。支持 enQueue、deQueue、读取队头和队尾，满队时拒绝插入、空队时拒绝删除。比较普通线性数组（删除后左移）与循环队列（下标取模）的代价。演示：依次入队 10、20、30；尝试再入队 40 应失败；出队一次后再入队 40，最终队头为 20、队尾为 40、元素数为 3。请解释为什么循环队列可以复用原下标 0。",
+    "constraint": "本页 C 演示固定 CAP=3，结点为整数；实际题目支持任意正容量 k。使用 size 记录元素数，避免 front==rear 时无法区分空和满。队列操作须满足先进先出。",
+    "sample": "容量 3：入队 10,20,30 → 再入队 40 失败 → 出队 10 → 入队 40 成功。输出：1 20 40 3（失败标记、队头、队尾、长度）。",
+    "brute": {
+      "tag": "朴素解",
+      "title": "线性数组 + 出队时左移",
+      "idea": "保持 a[0] 永远是队头；入队追加到末尾，出队把后面所有元素向前挪一格。逻辑容易，但出队会移动 O(n) 个元素。",
+      "complexity": "入队 O(1)，出队 O(n)，读取队头/队尾 O(1)，空间 O(k)。",
+      "risk": "出队前判断空；循环左移只到 size-1；队满时不可越界写入。",
+      "code": "#include <stdio.h>\n#define CAP 3\ntypedef struct {\n    int a[CAP];\n    int size;\n} Queue;\n\n// 线性数组：队头始终在下标 0。\nvoid init(Queue *q) { q->size = 0; }\nint enQueue(Queue *q, int x) {\n    if (q->size == CAP) return 0; // 满队列不能插入\n    q->a[q->size++] = x;          // 从尾部插入\n    return 1;\n}\nint deQueue(Queue *q) {\n    if (q->size == 0) return 0;   // 空队列不能删除\n    // 为保持队头在 0，所有剩余元素都要左移。\n    for (int i = 1; i < q->size; i++)\n        q->a[i - 1] = q->a[i];\n    q->size--;\n    return 1;\n}\nint getFront(Queue *q) { return q->size ? q->a[0] : -1; }\nint getRear(Queue *q) { return q->size ? q->a[q->size - 1] : -1; }\nint main(void) {\n    Queue q;\n    init(&q);\n    enQueue(&q, 10);\n    enQueue(&q, 20);\n    enQueue(&q, 30);\n    int rejected = !enQueue(&q, 40); // 已满，插入失败\n    deQueue(&q);                      // 删除 10，后续元素左移\n    enQueue(&q, 40);\n    printf(\"%d %d %d %d\\n\", rejected, getFront(&q),\n           getRear(&q), q.size);      // 1 20 40 3\n    return 0;\n}",
+      "explain": [
+        "size 表示当前元素数，等于 CAP 就不能继续入队。",
+        "删除 a[0] 后将 a[1..size-1] 左移，保证新的 a[0] 是队头。",
+        "连续操作后顺序为 20、30、40，因此输出 1 20 40 3。"
+      ]
+    },
+    "optimal": {
+      "tag": "优化解",
+      "title": "循环数组 + size 判满",
+      "idea": "不搬动数据，维护 front 和 size；入队位置是 (front+size)%CAP，出队只更新 front=(front+1)%CAP。",
+      "complexity": "入队、出队、读队头/队尾均 O(1)，空间 O(k)。",
+      "risk": "取模位置必须用 CAP 而不是 size；入队先检查满，出队先检查空；读取队尾用 (front+size-1)%CAP。",
+      "code": "#include <stdio.h>\n#define CAP 3\ntypedef struct {\n    int a[CAP];\n    int front; // 队头所在的数组下标\n    int size;  // 当前队列元素数\n} Queue;\n\nvoid init(Queue *q) { q->front = 0; q->size = 0; }\nint enQueue(Queue *q, int x) {\n    if (q->size == CAP) return 0; // 队满\n    // 队尾的下一空位可能绕回数组开头。\n    int rear = (q->front + q->size) % CAP;\n    q->a[rear] = x;\n    q->size++;\n    return 1;\n}\nint deQueue(Queue *q) {\n    if (q->size == 0) return 0;   // 队空\n    // 不移动元素，只让队头指针循环前进。\n    q->front = (q->front + 1) % CAP;\n    q->size--;\n    return 1;\n}\nint getFront(Queue *q) {\n    return q->size ? q->a[q->front] : -1;\n}\nint getRear(Queue *q) {\n    return q->size ? q->a[(q->front + q->size - 1) % CAP] : -1;\n}\nint main(void) {\n    Queue q;\n    init(&q);\n    enQueue(&q, 10);\n    enQueue(&q, 20);\n    enQueue(&q, 30);\n    int rejected = !enQueue(&q, 40); // 队满，返回 0\n    deQueue(&q);                      // front 从 0 变为 1\n    enQueue(&q, 40);                  // 写回数组下标 0\n    printf(\"%d %d %d %d\\n\", rejected, getFront(&q),\n           getRear(&q), q.size);      // 1 20 40 3\n    return 0;\n}",
+      "explain": [
+        "队列满的条件是 size==CAP，空的条件是 size==0。",
+        "当 front=1、size=2 时，入队下标 (1+2)%3=0，旧空间得到复用。",
+        "出队只移动 front，不移动数组元素，时间复杂度从 O(n) 降为 O(1)。"
+      ]
+    },
+    "variation": {
+      "question": "巩固题：容量只有 1 时，先入队 5，再尝试入队 6（应失败），出队后入队 9。输出失败标记、队头、队尾、长度，并说明为什么对 1 取模仍然正确。",
+      "idea": "把 CAP 改成 1，其余操作不变。由于 (0+1)%1=0，唯一槽位可以反复复用；队满由 size 判定。预期输出 1 9 9 1。",
+      "code": "#include <stdio.h>\n#define CAP 1\ntypedef struct {\n    int a[CAP];\n    int front; // 队头所在的数组下标\n    int size;  // 当前队列元素数\n} Queue;\n\nvoid init(Queue *q) { q->front = 0; q->size = 0; }\nint enQueue(Queue *q, int x) {\n    if (q->size == CAP) return 0; // 队满\n    // 队尾的下一空位可能绕回数组开头。\n    int rear = (q->front + q->size) % CAP;\n    q->a[rear] = x;\n    q->size++;\n    return 1;\n}\nint deQueue(Queue *q) {\n    if (q->size == 0) return 0;   // 队空\n    // 不移动元素，只让队头指针循环前进。\n    q->front = (q->front + 1) % CAP;\n    q->size--;\n    return 1;\n}\nint getFront(Queue *q) {\n    return q->size ? q->a[q->front] : -1;\n}\nint getRear(Queue *q) {\n    return q->size ? q->a[(q->front + q->size - 1) % CAP] : -1;\n}\nint main(void) {\n    Queue q;\n    init(&q);\n    enQueue(&q, 5);\n    \n    int rejected = !enQueue(&q, 6); // 队满，返回 0\n    deQueue(&q);                      // (0+1)%1 仍为 0\n    enQueue(&q, 9);                   // 仅有的槽位被复用\n    printf(\"%d %d %d %d\\n\", rejected, getFront(&q),\n           getRear(&q), q.size);      // 1 9 9 1\n    return 0;\n}"
+    },
+    "animation": {
+      "layout": "array",
+      "brute": [
+        {
+          "array": [
+            "·",
+            "·",
+            "·"
+          ],
+          "active": [],
+          "pointers": {
+            "size": 0
+          },
+          "text": "初始空队列，size=0。"
+        },
+        {
+          "array": [
+            10,
+            20,
+            30
+          ],
+          "active": [
+            0,
+            1,
+            2
+          ],
+          "pointers": {
+            "front": 0,
+            "rear": 2
+          },
+          "text": "三个元素顺序入队，队满。"
+        },
+        {
+          "array": [
+            10,
+            20,
+            30
+          ],
+          "active": [
+            2
+          ],
+          "pointers": {
+            "size": 3
+          },
+          "text": "再入队 40 失败，数组保持不变。"
+        },
+        {
+          "array": [
+            20,
+            30,
+            "·"
+          ],
+          "active": [
+            0,
+            1
+          ],
+          "pointers": {
+            "front": 0,
+            "rear": 1
+          },
+          "text": "删除 10 后，20、30 必须整体左移。"
+        },
+        {
+          "array": [
+            20,
+            30,
+            40
+          ],
+          "active": [
+            2
+          ],
+          "pointers": {
+            "front": 0,
+            "rear": 2
+          },
+          "text": "入队 40，队头 20，队尾 40。"
+        }
+      ],
+      "optimal": [
+        {
+          "array": [
+            "·",
+            "·",
+            "·"
+          ],
+          "active": [],
+          "pointers": {
+            "front": 0,
+            "size": 0
+          },
+          "text": "初始 front=0，size=0。"
+        },
+        {
+          "array": [
+            10,
+            20,
+            30
+          ],
+          "active": [
+            0,
+            1,
+            2
+          ],
+          "pointers": {
+            "front": 0,
+            "size": 3
+          },
+          "text": "三个元素入队，size=3，队满。"
+        },
+        {
+          "array": [
+            10,
+            20,
+            30
+          ],
+          "active": [
+            0
+          ],
+          "pointers": {
+            "front": 0,
+            "size": 3
+          },
+          "text": "再入队 40 失败，不覆盖已有元素。"
+        },
+        {
+          "array": [
+            10,
+            20,
+            30
+          ],
+          "active": [
+            1
+          ],
+          "pointers": {
+            "front": 1,
+            "size": 2
+          },
+          "text": "出队后 front=1，数组不需要左移。"
+        },
+        {
+          "array": [
+            40,
+            20,
+            30
+          ],
+          "active": [
+            0
+          ],
+          "pointers": {
+            "front": 1,
+            "rear": 0
+          },
+          "text": "新队尾下标 (1+2)%3=0；物理顺序变了，但逻辑队列仍是 20→30→40。"
+        }
+      ]
+    },
+    "tips": [
+      "考场优先背：队满 size==CAP；队空 size==0；队尾插入位置 (front+size)%CAP。",
+      "循环队列的逻辑顺序不等于数组从下标 0 开始的物理顺序。",
+      "两种实现都能保持 FIFO，但普通数组出队 O(n)，循环队列出队 O(1)。"
+    ]
   }
 ]
