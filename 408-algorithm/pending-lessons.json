@@ -4115,5 +4115,91 @@
       "循环队列的逻辑顺序不等于数组从下标 0 开始的物理顺序。",
       "两种实现都能保持 FIFO，但普通数组出队 O(n)，循环队列出队 O(1)。"
     ]
+  },
+  {
+    "id": "lc53-20261108",
+    "date": "2026-11-08",
+    "year": "LeetCode",
+    "number": "53",
+    "category": "数组 · 连续区间",
+    "title": "最大子数组和：从枚举区间到一趟扫描",
+    "difficulty": "中等",
+    "time": "20分钟",
+    "source": "https://leetcode.cn/problems/maximum-subarray/",
+    "question": "给定一个非空整数数组，找出和最大的非空连续子数组，输出其最大和。子数组必须连续，也可以只有一个元素。",
+    "constraint": "1≤n≤100000；元素可为负数，数组可能全部为负。示例程序用固定9个整数。",
+    "sample": "输入：[-2,1,-3,4,-1,2,1,-5,4]\n输出：6\n最大连续区间是[4,-1,2,1]。",
+    "brute": {
+      "tag": "枚举区间",
+      "title": "双重循环 + 累加",
+      "idea": "固定左端点i，右端点j依次右移。sum+=a[j]得到[i,j]区间和，并维护最大值。",
+      "complexity": "O(n²)时间，O(1)额外空间。",
+      "risk": "best必须初始化为a[0]，否则全负数时错误地返回0。",
+      "code": "/*\n * 朴素法：枚举每个非空连续区间。\n * 固定左端点i，右端点j逐个向右移动。\n * sum累加新加入的a[j]，不必反复重算区间和。\n */\n#include <stdio.h>\nint main(void) {\n    int a[] = {-2,1,-3,4,-1,2,1,-5,4};\n    int n = sizeof(a) / sizeof(a[0]);\n    int best = a[0]; // 全负数时不能设成0\n    for (int i = 0; i < n; i++) {\n        int sum = 0;\n        for (int j = i; j < n; j++) {\n            sum += a[j]; // 当前区间[i,j]的和\n            if (sum > best) best = sum;\n        }\n    }\n    printf(\"%d\\n\", best); // 6\n    return 0;\n}",
+      "explain": [
+        "固定i后将sum置0，向右逐个累加a[j]，避免重复求和。",
+        "每个非空连续区间都被枚举一次，因此不会漏解。",
+        "用a[0]初始化best，避免全负数时误选空区间。"
+      ]
+    },
+    "optimal": {
+      "tag": "一趟扫描",
+      "title": "维护以当前位置结尾的最大和",
+      "idea": "cur表示必须以当前元素结尾的最大连续子数组和；此前cur<0就重新开始，否则延长原区间。best记录全局最大值。",
+      "complexity": "O(n)时间，O(1)额外空间。",
+      "risk": "cur和best都用a[0]初始化；判断前一个cur是否为负，而不是a[i]是否为负。",
+      "code": "/*\n * 优化法：一趟扫描。\n * cur是必须以当前位置结尾的最大连续子数组和。\n * 若此前cur<0，接上负前缀只会更差，所以重新开始。\n * best是到目前为止出现过的最大和。\n */\n#include <stdio.h>\nint main(void) {\n    int a[] = {-2,1,-3,4,-1,2,1,-5,4};\n    int n = sizeof(a) / sizeof(a[0]);\n    int cur = a[0], best = a[0]; // 不可初始化为0\n    for (int i = 1; i < n; i++) {\n        if (cur < 0) cur = a[i]; // 舍弃负前缀\n        else cur += a[i];        // 接到原区间后面\n        if (cur > best) best = cur;\n    }\n    printf(\"%d\\n\", best); // 6\n    return 0;\n}",
+      "explain": [
+        "此前区间和若为负，接上它只会让后续区间和更小，所以直接从a[i]重新开始。",
+        "否则把a[i]接到当前区间末尾，仍保持连续。",
+        "每一步更新best，因为最优区间不一定以最后一个元素结尾。"
+      ]
+    },
+    "variation": {
+      "question": "数组改成[-3,-2,-5]，最大连续子数组和是多少？为什么不能把best初始化为0？",
+      "idea": "答案是-2，选择单个元素-2。初始化为0会错误地选择不允许的空区间。",
+      "code": "#include <stdio.h>\nint main(void) {\n    int a[] = {-3,-2,-5};\n    int cur = a[0], best = a[0];\n    for (int i = 1; i < 3; i++) {\n        if (cur < 0) cur = a[i];\n        else cur += a[i];\n        if (cur > best) best = cur;\n    }\n    printf(\"%d\\n\", best); // -2\n    return 0;\n}"
+    },
+    "animation": {
+      "layout": "diagram",
+      "brute": [
+        {
+          "diagram": "i=3，固定左端点a[3]=4\nsum：4 → 3 → 5 → 6",
+          "text": "右端点逐步移动，累加得到区间[4,-1,2,1]的和6。"
+        },
+        {
+          "diagram": "所有区间均被检查\nbest=6",
+          "text": "枚举完全部起点后，最大值为6。"
+        }
+      ],
+      "optimal": [
+        {
+          "diagram": "a[0]=-2\ncur=-2，best=-2",
+          "text": "从首元素开始，兼容全负数。"
+        },
+        {
+          "diagram": "a[1]=1\n原cur=-2<0\ncur=1，best=1",
+          "text": "负前缀被舍弃。"
+        },
+        {
+          "diagram": "a[3]=4\n原cur=-2<0\ncur=4，best=4",
+          "text": "重新开始新的连续区间。"
+        },
+        {
+          "diagram": "a[4]=-1 → cur=3\na[5]=2 → cur=5\na[6]=1 → cur=6\nbest=6",
+          "text": "得到最大和6。"
+        },
+        {
+          "diagram": "a[7]=-5 → cur=1\na[8]=4 → cur=5\nbest仍为6",
+          "text": "当前区间和不一定等于历史最优值。"
+        }
+      ]
+    },
+    "tips": [
+      "子数组必须连续且非空。",
+      "朴素法固定左端点，右端点累加，O(n²)。",
+      "优化法只维护cur和best，O(n)时间、O(1)空间。",
+      "全负数是关键边界：不能用0初始化best。"
+    ]
   }
 ]
