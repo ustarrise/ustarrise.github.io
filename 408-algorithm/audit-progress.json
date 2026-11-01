@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "last_audit_date": "2026-11-01",
+  "scope": "408-algorithm only",
+  "status_note": "记录已经核查和修复的范围，不代表所有题目、边界和动画均已完整验证。",
+  "published_today": {
+    "date": "2026-11-01",
+    "id": "lc684-20261101",
+    "present": true,
+    "review_commit": "cd692450f5fa899a6b894d70dec7a1c43140ad1c"
+  },
+  "future_queue": {
+    "from": "2026-11-02",
+    "through": "2026-11-08",
+    "continuous_days": 7
+  },
+  "reviews": [
+    {
+      "date": "2026-11-01",
+      "id": "lc684-20261101",
+      "scope": "题意/示例/关键注释/并查集动画修复",
+      "commit": "cd692450f5fa899a6b894d70dec7a1c43140ad1c"
+    },
+    {
+      "date": "2026-11-02",
+      "id": "lc912-merge-20261102",
+      "scope": "题面/代码排版/插入排序及归并排序动画修复",
+      "commit": "94810df35db32e3e16e239d1333ff31394d8caa3"
+    },
+    {
+      "date": "2026-11-03",
+      "id": "lc160-20261103",
+      "scope": "题意/代码静态检查，补充不相交和同值不同地址样例",
+      "commit": "37e04d26ff5399eac26513fdfe87aa89e5ddfb4d"
+    },
+    {
+      "date": "2026-11-04",
+      "id": "lc98-bst-20261104",
+      "scope": "核对来源约束、修复中序数组100容量越界、补充正反/重复/极值样例、修正中序动画与真实代码执行顺序",
+      "commit": "37e04d26ff5399eac26513fdfe87aa89e5ddfb4d",
+      "local_c_tests": [
+        "原反例0",
+        "合法BST1",
+        "重复值0",
+        "INT_MIN/INT_MAX边界1",
+        "10000结点有序右链1"
+      ]
+    },
+    {
+      "date": "2026-11-05",
+      "id": "lc169-20261105",
+      "scope": "题意/代码/动画静态检查，补充单元素与负数样例",
+      "commit": "37e04d26ff5399eac26513fdfe87aa89e5ddfb4d"
+    },
+    {
+      "date": "2026-11-06",
+      "id": "lc503-20261106",
+      "scope": "补充约束/边界样例，单调栈动画按i=5至0拆分为6帧并核对栈状态",
+      "commit": "37e04d26ff5399eac26513fdfe87aa89e5ddfb4d"
+    },
+    {
+      "date": "2026-11-07",
+      "id": "lc622-20261107",
+      "scope": "补充操作序列/容量1样例，循环队列动画拆成7帧并核对front/rear",
+      "commit": "37e04d26ff5399eac26513fdfe87aa89e5ddfb4d"
+    },
+    {
+      "date": "2026-11-08",
+      "id": "lc53-20261108",
+      "scope": "题意/代码静态检查，补充全负数/单元素边界样例",
+      "commit": "37e04d26ff5399eac26513fdfe87aa89e5ddfb4d"
+    }
+  ],
+  "validation": {
+    "previous_actions_run_id": 41256128923,
+    "previous_result": "27道备用题81份C程序按现有固定样例编译运行成功",
+    "new_commit_actions_result": "待验证",
+    "local_modified_code": "仅11月4日朴素BST代码扩容，已本地gcc编译运行原例及4组边界/正反例"
+  },
+  "next_priorities": [
+    "核查历史已发布题的题意与样例是否完整，尤其只有预期输出、无输入的记录",
+    "继续细化11月8日朴素法动画及11月6日朴素法动画",
+    "为新增题完善多组输入/边界测试，现有validate_lessons.py以固定样例为主"
+  ]
+}
