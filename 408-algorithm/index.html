@@ -596,47 +596,12 @@ $("why").innerHTML=d.explain.map(function(x){return "<li>"+esc(x)+"</li>"}).join
 }
 // 兼容历史题库中压缩为单行的 C 代码：显示时自动分行，保留原始代码数据。
 function readableC(source) {
+  // Never guess C syntax from punctuation: the source code is authoritative.
+  // Automatic splitting can corrupt for-loops, comments and string literals.
   if (typeof source !== "string") return "";
-  var s = source.replace(/\\r\\n/g, "\n");
-  if (s.split("\n").length >= 7) return s;
-  var out = "", indent = 0, line = "", inString = false, inChar = false;
-  var escaped = false, paren = 0, inLineComment = false, inBlockComment = false;
-  function emit() {
-    if (line.trim()) out += "    ".repeat(Math.max(0, indent)) + line.trim() + "\n";
-    line = "";
-  }
-  for (var i = 0; i < s.length; i++) {
-    var c = s[i], next = s[i + 1] || "";
-    if (c === "\n") { emit(); inLineComment = false; continue; }
-    if (inLineComment || inBlockComment) {
-      line += c;
-      if (inBlockComment && c === "*" && next === "/") { line += "/"; i++; inBlockComment = false; }
-      continue;
-    }
-    if (inString || inChar) {
-      line += c;
-      if (!escaped && c === (inString ? '"' : "'")) { inString = false; inChar = false; }
-      if (c === "\\\\" && !escaped) escaped = true; else escaped = false;
-      continue;
-    }
-    if (c === "/" && next === "/") { line += "//"; i++; inLineComment = true; continue; }
-    if (c === "/" && next === "*") { line += "/*"; i++; inBlockComment = true; continue; }
-    if (c === '"') { inString = true; line += c; continue; }
-    if (c === "'") { inChar = true; line += c; continue; }
-    if (c === "(") paren++;
-    if (c === ")") paren = Math.max(0, paren - 1);
-    if (c === "{") { line += c; emit(); indent++; }
-    else if (c === "}") {
-      emit(); indent = Math.max(0, indent - 1); line += c;
-      if (next === ";") { line += ";"; i++; }
-      emit();
-    }
-    else if (c === ";" && paren === 0) { line += c; emit(); }
-    else line += c;
-  }
-  emit();
-  return out.trimEnd();
+  return source.replace(/\\r\\n?/g, "\\n").replace(/\\t/g, "    ");
 }
+
 function frames(){
 if(!current || !current.animation) return [{diagram:current ? current.sample : "",text:"本题请按上方样例手动演示。"}];
 var xs=current.animation[mode];
