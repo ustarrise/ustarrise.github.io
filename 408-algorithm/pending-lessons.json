@@ -2894,16 +2894,16 @@
     "difficulty": "中等",
     "time": "25分钟",
     "source": "https://leetcode.cn/problems/sort-an-array/",
-    "question": "给定整数数组，按非降序排序。要求先写一个容易想到的排序算法，再使用自顶向下归并排序实现O(n log n)的时间复杂度。",
+    "question": "给定整数数组，按非降序排序。要求先写一个容易想到的排序算法，再使用自顶向下归并排序实现O(n log n)的时间复杂度。 本站C程序将示例数组直接初始化在代码中，无须从标准输入读取；实际输出用空格分隔。",
     "constraint": "1≤n≤5×10^4；示例代码固定n=5，考场需要根据题目接口调整数组容量。",
-    "sample": "输入：[5,2,4,1,3]\n输出：[1,2,3,4,5]",
+    "sample": "输入：[5,2,4,1,3]\n输出：[1,2,3,4,5]\n程序实际打印：1 2 3 4 5（数字之间为空格）。\n边界示例：输入[1]，输出[1]；输入[2,2,1]，输出[1,2,2]。",
     "brute": {
       "tag": "插入排序",
       "title": "直接插入排序",
       "idea": "依次把a[i]插入已排序的前缀中。",
       "complexity": "O(n²)时间，O(1)额外空间。",
       "risk": "先保存x，右移元素后插入a[j+1]。",
-      "code": "/*\n * 【解题思路】排序数组：归并排序的递归与合并（朴素解）\n * 为什么这样做：依次把a[i]插入已排序的前缀中。\n * 关键理解：前缀a[0..i-1]保持有序\n * 关键理解：右移大于x的元素\n * 关键理解：把x放到空位\n * 考场注意：先保存x，右移元素后插入a[j+1]。\n */\n#include <stdio.h>\n#define N 5\nint a[N]={5,2,4,1,3};\n\nint main(void){\n    for(int i=1;i<N;i++){\n        int x=a[i],j=i-1;\n        while(j>=0&&a[j]>x){a[j+1]=a[j];j--;}\n        a[j+1]=x;\n    }\n    for(int i=0;i<N;i++) printf(\"%d \",a[i]);\n    return 0;\n}\n",
+      "code": "#include <stdio.h>\n#define N 5\n\nint a[N] = {5, 2, 4, 1, 3};\n\nint main(void) {\n    for (int i = 1; i < N; i++) {\n        int x = a[i];\n        int j = i - 1;\n        // 左边前缀已有序：比x大的元素必须右移，给x腾出位置。\n        while (j >= 0 && a[j] > x) {\n            a[j + 1] = a[j];\n            j--;\n        }\n        // j停在首个不大于x的元素处；若全部更大，j=-1，插入到0。\n        a[j + 1] = x;\n    }\n    for (int i = 0; i < N; i++) {\n        printf(\"%d%s\", a[i], i == N - 1 ? \"\\n\" : \" \");\n    }\n    return 0;\n}\n",
       "explain": [
         "前缀a[0..i-1]保持有序",
         "右移大于x的元素",
@@ -2916,7 +2916,7 @@
       "idea": "将区间递归分为两半，左右分别有序后通过临时数组合并。",
       "complexity": "O(n log n)时间，O(n)辅助数组，递归栈O(log n)。",
       "risk": "中点分割为[l,m]和[m+1,r]；剩余元素必须拷贝。",
-      "code": "/*\n * 【解题思路】排序数组：归并排序的递归与合并（优化解）\n * 为什么这样做：将区间递归分为两半，左右分别有序后通过临时数组合并。\n * 关键理解：递归分割到单元素\n * 关键理解：左右有序后使用双指针归并\n * 关键理解：合并结果写回原数组\n * 考场注意：中点分割为[l,m]和[m+1,r]；剩余元素必须拷贝。\n */\n#include <stdio.h>\n#define N 5\nint a[N]={5,2,4,1,3};\n\nint temp[N];\n// 合并两个已排序区间 [l,m]、[m+1,r]\nvoid merge(int l,int m,int r){\n    int i=l,j=m+1,k=l;\n    while(i<=m&&j<=r)\n        temp[k++]=(a[i]<=a[j])?a[i++]:a[j++];\n    while(i<=m) temp[k++]=a[i++];\n    while(j<=r) temp[k++]=a[j++];\n    for(int p=l;p<=r;p++) a[p]=temp[p];\n}\nvoid mergeSort(int l,int r){\n    if(l>=r) return;\n    int m=l+(r-l)/2;\n    mergeSort(l,m);\n    mergeSort(m+1,r);\n    merge(l,m,r);\n}\nint main(void){\n    mergeSort(0,N-1);\n    for(int i=0;i<N;i++) printf(\"%d \",a[i]);\n    return 0;\n}\n",
+      "code": "#include <stdio.h>\n#define N 5\n\nint a[N] = {5, 2, 4, 1, 3};\nint temp[N];\n\nvoid merge(int l, int m, int r) {\n    int i = l, j = m + 1, k = l;\n    // 两段各自有序，较小的头元素就是剩余元素中的最小值。\n    while (i <= m && j <= r) {\n        // 相等时取左边，保留原有先后次序（稳定排序）。\n        temp[k++] = a[i] <= a[j] ? a[i++] : a[j++];\n    }\n    // 一边耗尽后，另一边剩余元素已经有序，直接复制。\n    while (i <= m) temp[k++] = a[i++];\n    while (j <= r) temp[k++] = a[j++];\n    for (int p = l; p <= r; p++) a[p] = temp[p];\n}\n\nvoid mergeSort(int l, int r) {\n    // 单元素或空区间天然有序，必须停止递归。\n    if (l >= r) return;\n    int m = l + (r - l) / 2;\n    mergeSort(l, m);\n    mergeSort(m + 1, r);\n    merge(l, m, r);\n}\n\nint main(void) {\n    mergeSort(0, N - 1);\n    for (int i = 0; i < N; i++) {\n        printf(\"%d%s\", a[i], i == N - 1 ? \"\\n\" : \" \");\n    }\n    return 0;\n}\n",
       "explain": [
         "递归分割到单元素",
         "左右有序后使用双指针归并",
@@ -2943,7 +2943,21 @@
             0,
             1
           ],
-          "text": "把2插入前缀[5]之前。"
+          "text": "初始：已排序前缀[5]，准备插入2。"
+        },
+        {
+          "array": [
+            2,
+            5,
+            4,
+            1,
+            3
+          ],
+          "active": [
+            0,
+            1
+          ],
+          "text": "第1轮：5右移，2放到下标0。"
         },
         {
           "array": [
@@ -2954,9 +2968,26 @@
             3
           ],
           "active": [
-            1
+            1,
+            2
           ],
-          "text": "插入4，前三个元素有序。"
+          "text": "第2轮：5右移，4放到下标1。"
+        },
+        {
+          "array": [
+            1,
+            2,
+            4,
+            5,
+            3
+          ],
+          "active": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "text": "第3轮：5、4、2右移，1放到下标0。"
         },
         {
           "array": [
@@ -2967,44 +2998,53 @@
             5
           ],
           "active": [
-            0,
-            1,
             2,
             3,
             4
           ],
-          "text": "依次插入1和3，得到升序数组。"
+          "text": "第4轮：5、4右移，3放到下标2。"
         }
       ],
       "optimal": [
         {
-          "diagram": "[5,2,4,1,3]\n ↙       ↘\n[5,2,4]  [1,3]",
-          "text": "递归划分成两个子区间。"
+          "diagram": "[5,2,4,1,3] → 左[5,2,4]、右[1,3]",
+          "text": "区间[0,4]按m=2分为[0,2]和[3,4]。"
         },
         {
-          "diagram": "[5] [2] [4] [1] [3]",
-          "text": "递归边界：每个单元素区间天然有序。"
+          "diagram": "[5,2,4] → [5,2]、[4]",
+          "text": "左区间[0,2]按m=1继续拆分。"
         },
         {
-          "diagram": "[2,5] + [4] → [2,4,5]\n[1] + [3] → [1,3]",
-          "text": "逐层合并两个有序子区间。"
+          "diagram": "[5,2] → [5]、[2]",
+          "text": "拆到单元素，递归返回。"
         },
         {
-          "array": [
-            1,
-            2,
-            3,
-            4,
-            5
-          ],
-          "active": [
-            0,
-            1,
-            2,
-            3,
-            4
-          ],
-          "text": "合并[2,4,5]与[1,3]，得到最终升序结果。"
+          "diagram": "[5]+[2] → [2,5]",
+          "text": "比较5和2，先取2，再复制5。"
+        },
+        {
+          "diagram": "[2,5]+[4] → [2,4,5]",
+          "text": "依次取2、4，最后复制5。"
+        },
+        {
+          "diagram": "[1]+[3] → [1,3]",
+          "text": "右区间完成合并。"
+        },
+        {
+          "diagram": "左[2,4,5]、右[1,3]：取1",
+          "text": "指针i指向2、j指向1，1较小。"
+        },
+        {
+          "diagram": "剩余左[2,4,5]、右[3]：取2",
+          "text": "2小于3，左指针右移。"
+        },
+        {
+          "diagram": "剩余左[4,5]、右[3]：取3",
+          "text": "3小于4，右指针右移。"
+        },
+        {
+          "diagram": "右侧耗尽：复制4、5 → [1,2,3,4,5]",
+          "text": "归并结束，写回原数组。"
         }
       ]
     },
