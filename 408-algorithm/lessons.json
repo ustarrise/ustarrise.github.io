@@ -3595,16 +3595,16 @@
     "difficulty": "中等",
     "time": "20分钟",
     "source": "https://leetcode.cn/problems/redundant-connection/",
-    "question": "给定一棵无向树，再添加一条边形成一个环。输入为按顺序给出的边数组，找出删除后仍能使图成为树的边；如有多个答案，返回输入中最后出现的那条。顶点从1编号。",
+    "question": "给定一棵无向树，再添加一条边形成一个环。输入为按顺序给出的边数组，找出删除后仍能使图成为树的边；如有多个答案，返回输入中最后出现的那条。顶点从1编号。 本站示例为便于观察算法，将输入边数组直接写在C程序的edge数组中；运行程序不需要键盘输入。",
     "constraint": "3≤n≤1000；恰有n条边，且恰有一个环。示例程序固定n=4。",
-    "sample": "输入：[[1,2],[2,3],[3,1],[3,4]]\n输出：[3,1]\n加入第三条边前，3和1已通过3→2→1连通。",
+    "sample": "输入：[[1,2],[2,3],[3,1],[3,4]]\n输出：[3,1]\n加入第三条边前，3和1已通过3→2→1连通。\n运行方式：程序内置上述4条边，无须标准输入；控制台实际打印：3 1。",
     "brute": {
       "tag": "DFS",
       "title": "每加一条边先DFS查连通",
       "idea": "如果新边两端在已有图中已经连通，加入就会成环；否则再加入邻接矩阵。",
       "complexity": "O(n³)时间，O(n²)空间（邻接矩阵）。",
       "risk": "先查后加；每次DFS前清空vis。",
-      "code": "/*\n * 【解题思路】冗余连接：一行 find 判断成环（朴素解）\n * 为什么这样做：如果新边两端在已有图中已经连通，加入就会成环；否则再加入邻接矩阵。\n * 关键理解：邻接矩阵初始全0\n * 关键理解：每条边先DFS检查两端是否连通\n * 关键理解：已连通就输出当前边，否则添加边\n * 考场注意：先查后加；每次DFS前清空vis。\n */\n#include <stdio.h>\n#define N 5\nint edge[4][2]={{1,2},{2,3},{3,1},{3,4}};\n\nint g[N][N], vis[N];\nint reach(int u,int t){\n    if(u==t) return 1;\n    vis[u]=1;\n    for(int v=1;v<N;v++)\n        if(g[u][v]&&!vis[v]&&reach(v,t)) return 1;\n    return 0;\n}\nint main(void){\n    for(int i=0;i<4;i++){\n        int u=edge[i][0],v=edge[i][1];\n        for(int j=1;j<N;j++) vis[j]=0;\n        if(reach(u,v)){printf(\"%d %d\\n\",u,v);return 0;}\n        g[u][v]=g[v][u]=1; // 未连通才加边\n    }\n    return 0;\n}\n",
+      "code": "/*\n * 【解题思路】冗余连接：一行 find 判断成环（朴素解）\n * 为什么这样做：如果新边两端在已有图中已经连通，加入就会成环；否则再加入邻接矩阵。\n * 关键理解：邻接矩阵初始全0\n * 关键理解：每条边先DFS检查两端是否连通\n * 关键理解：已连通就输出当前边，否则添加边\n * 考场注意：先查后加；每次DFS前清空vis。\n */\n#include <stdio.h>\n#define N 5\nint edge[4][2]={{1,2},{2,3},{3,1},{3,4}};\n\nint g[N][N], vis[N];\nint reach(int u,int t){\n    if(u==t) return 1;\n    vis[u]=1;\n    for(int v=1;v<N;v++)\n        if(g[u][v]&&!vis[v]&&reach(v,t)) return 1;\n    return 0;\n}\nint main(void){\n    for(int i=0;i<4;i++){\n        int u=edge[i][0],v=edge[i][1];\n        for(int j=1;j<N;j++) vis[j]=0;\n        if (reach(u, v)) {\\n            // 旧图已有u到v的路径，再加这条边就会闭合成环。\\n            printf(\"%d %d\\n\", u, v);\\n            return 0;\\n        }\n        g[u][v]=g[v][u]=1; // 未连通才加边\n    }\n    return 0;\n}\n",
       "explain": [
         "邻接矩阵初始全0",
         "每条边先DFS检查两端是否连通",
@@ -3617,7 +3617,7 @@
       "idea": "每条边先找两个端点的根；根相同则成环，否则合并两个根。",
       "complexity": "此版仅路径压缩，未按秩合并，不能直接写成均摊O(α(n))；额外空间O(n)。",
       "risk": "必须合并fa[find(u)]而非fa[u]；路径压缩不会自动按秩合并。",
-      "code": "/*\n * 【解题思路】冗余连接：一行 find 判断成环（优化解）\n * 为什么这样做：每条边先找两个端点的根；根相同则成环，否则合并两个根。\n * 关键理解：fa[i]=i 初始化\n * 关键理解：find递归查根并压缩路径\n * 关键理解：根相同判成环；根不同合并\n * 考场注意：必须合并fa[find(u)]而非fa[u]；路径压缩不会自动按秩合并。\n */\n#include <stdio.h>\n#define N 5\nint edge[4][2]={{1,2},{2,3},{3,1},{3,4}};\n\nint fa[N];\nint find(int x){\n    return fa[x]==x?x:(fa[x]=find(fa[x]));\n}\nint main(void){\n    for(int i=1;i<N;i++) fa[i]=i;\n    for(int i=0;i<4;i++){\n        int u=edge[i][0],v=edge[i][1];\n        int x=find(u),y=find(v);\n        if(x==y){printf(\"%d %d\\n\",u,v);return 0;}\n        fa[x]=y; // 合并两个根\n    }\n    return 0;\n}\n",
+      "code": "/*\n * 【解题思路】冗余连接：一行 find 判断成环（优化解）\n * 为什么这样做：每条边先找两个端点的根；根相同则成环，否则合并两个根。\n * 关键理解：fa[i]=i 初始化\n * 关键理解：find递归查根并压缩路径\n * 关键理解：根相同判成环；根不同合并\n * 考场注意：必须合并fa[find(u)]而非fa[u]；路径压缩不会自动按秩合并。\n */\n#include <stdio.h>\n#define N 5\nint edge[4][2]={{1,2},{2,3},{3,1},{3,4}};\n\nint fa[N];\nint find(int x){\n    // 根节点指向自己；非根节点沿父指针查找，并顺手压缩路径。\\n    return fa[x] == x ? x : (fa[x] = find(fa[x]));\n}\nint main(void){\n    for(int i=1;i<N;i++) fa[i]=i;\n    for(int i=0;i<4;i++){\n        int u=edge[i][0],v=edge[i][1];\n        int x=find(u),y=find(v);\n        if (x == y) {\\n            // 两端已经属于同一连通分量，当前边是冗余边。\\n            printf(\"%d %d\\n\", u, v);\\n            return 0;\\n        }\n        fa[x]=y; // 合并两个根\n    }\n    return 0;\n}\n",
       "explain": [
         "fa[i]=i 初始化",
         "find递归查根并压缩路径",
@@ -3647,16 +3647,32 @@
       ],
       "optimal": [
         {
-          "diagram": "fa=[1,2,3,4]\n各自为根",
-          "text": "初始化4个集合。"
+          "diagram": "初始 fa[1]=1,fa[2]=2,fa[3]=3,fa[4]=4",
+          "text": "每个顶点单独成一个集合。"
         },
         {
-          "diagram": "合并(1,2)：根1挂到2\n合并(2,3)：根2挂到3",
-          "text": "前两条边逐步合并集合。"
+          "diagram": "边(1,2)：find(1)=1，find(2)=2",
+          "text": "根不同，加入此边不会形成环。"
         },
         {
-          "diagram": "find(3)=3\nfind(1)=3\n答案：(3,1)",
-          "text": "两个端点同根，第三条边冗余。"
+          "diagram": "合并(1,2)：fa[1]=2",
+          "text": "把根1挂到根2，1和2连通。"
+        },
+        {
+          "diagram": "边(2,3)：find(2)=2，find(3)=3",
+          "text": "根不同，可以继续合并。"
+        },
+        {
+          "diagram": "合并(2,3)：fa[2]=3；路径1→2→3",
+          "text": "把根2挂到根3；1、2、3已属于同一集合。"
+        },
+        {
+          "diagram": "边(3,1)：find(3)=3；find(1)沿1→2→3得到3",
+          "text": "两端已有路径，添加(3,1)将构成环；路径压缩使fa[1]=3。"
+        },
+        {
+          "diagram": "输出：3 1；停止",
+          "text": "返回当前冗余边；后续(3,4)无需再处理。"
         }
       ]
     },
