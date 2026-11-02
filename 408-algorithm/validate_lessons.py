@@ -8,6 +8,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 CASES = {
     "lc53-20261108": ("6", "-2"),
+    "lc997-20261109": ("3", "-1"),
     "lc622-20261107": ("1 20 40 3", "1 9 9 1"),
     "lc503-20261106": ("2 -1 2", "8 -1 8 2 3"),
     "lc169-20261105": ("2", "-1"),
@@ -29,7 +30,7 @@ CASES = {
     "heap-sort-20261028": ("1 2 3 4 5 6", "6 5 4 3 2 1"),
     "lc207-20261029": ("1", "1"),
     "lc150-20261030": ("9", "6"),
-    "lc121-20261031": ("5", "5"),
+    "lc121-20261031": ("5", "0"),
     "lc684-20261101": ("3 1", "4 1"),
     "lc160-20261103": ("8", "8"),
     "lc912-merge-20261102": ("1 2 3 4 5", "5 4 3 2 1"),
@@ -58,17 +59,36 @@ def check_one(source, expected, key, stdin_data=""):
 
 def main():
     queue = json.loads((ROOT / "pending-lessons.json").read_text(encoding="utf-8"))
+    inputs = {
+        "lc217-20261027": "4\n1 2 3 1\n",
+        "lc997-20261109": "3 2\n1 3\n2 3\n",
+    }
+    variant_inputs = {"lc997-20261109": "3 3\n1 3\n2 3\n3 1\n"}
     count = 0
     for x in queue:
         case = CASES.get(x["id"])
         if not case:
             raise ValueError(f"未给题目 {x['id']} 配置预期输出，请先审核")
         for variant in ("brute", "optimal"):
-            check_one(x[variant]["code"], case[0], x["id"] + "." + variant, "4\n1 2 3 1\n" if x["id"] == "lc217-20261027" else "")
+            check_one(x[variant]["code"], case[0], x["id"] + "." + variant,
+                      inputs.get(x["id"], ""))
             count += 1
-        check_one(x["variation"]["code"], case[1], x["id"] + ".variation")
+        check_one(x["variation"]["code"], case[1], x["id"] + ".variation",
+                  variant_inputs.get(x["id"], ""))
         count += 1
-    print(f"验证通过：{len(queue)} 道题，{count} 份C程序，全部编译运行且结果正确。")
+        if x["id"] == "lc997-20261109":
+            extra = [
+                ("single", "1 0\n", "1"),
+                ("empty", "3 0\n", "-1"),
+                ("pair", "2 1\n1 2\n", "2"),
+                ("star", "4 3\n1 3\n2 3\n4 3\n", "3"),
+            ]
+            for variant in ("brute", "optimal", "variation"):
+                for label, data, expected in extra:
+                    check_one(x[variant]["code"], expected,
+                              x["id"] + "." + variant + "." + label, data)
+                    count += 1
+    print(f"验证通过：{len(queue)} 道题，{count} 次C程序编译运行测试。")
 
 
 if __name__ == "__main__":

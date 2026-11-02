@@ -2604,119 +2604,182 @@
     "difficulty": "中等",
     "time": "15–25分钟",
     "source": "https://leetcode.cn/problems/best-time-to-buy-and-sell-stock/",
-    "question": "买卖股票最佳时机。根据题目所述数据结构完成求解；请分别实现朴素方法与优化方法，比较正确性、时间复杂度和空间复杂度。",
-    "constraint": "依据对应力扣原题的输入规模。本站演示代码使用固定小样例，提交力扣时需适配函数接口。",
-    "sample": "示例程序的预期输出：5。",
+    "question": "给定股票每天的价格数组prices，最多进行一次交易：先在某天买入，再在未来不同的一天卖出。求最大利润；若所有交易都亏损，可以不交易，返回0。禁止先卖后买或多次交易。本站C示例使用代码内置数组，无须键盘输入。",
+    "constraint": "原题：1≤prices.length≤100000，0≤prices[i]≤10000。朴素枚举仅适合小规模演示；优化解O(n)适用完整规模。示例N=6，变式N=5。",
+    "sample": "正例：输入prices=[7,1,5,3,6,4]，输出5（价格1买入，后续价格6卖出）。\n反例：输入prices=[7,6,4,3,1]，输出0（一直下跌，不交易）。\n边界：输入prices=[5]，输出0；输入prices=[3,3,3]，输出0。\n本站C示例控制台打印5；变式程序打印0。",
     "brute": {
-      "tag": "朴素解",
-      "title": "基础遍历",
-      "idea": "先以直接遍历或递归建立正确性。",
-      "complexity": "O(n²)时间",
-      "risk": "注意边界条件和重复元素。",
-      "code": "/*\n * 【解题思路】买卖股票最佳时机（朴素解）\n * 为什么这样做：先以直接遍历或递归建立正确性。\n * 关键理解：建立初始状态\n * 关键理解：按基础规则遍历\n * 关键理解：核对输出\n * 考场注意：注意边界条件和重复元素。\n */\n#include <stdio.h>\nint main(void){\n    int a[]={\n        7,1,5,3,6,4\n    }\n    ,best=0;\n    for(int i=0;\n    i<6;\n    i++)for(int j=i+1;\n    j<6;\n    j++)if(a[j]-a[i]>best)best=a[j]-a[i];\n    printf(\"%d\\n\",best);\n    return 0;\n}\n",
+      "tag": "朴素枚举",
+      "title": "枚举所有合法买卖日",
+      "idea": "枚举买入日i与更晚的卖出日j，计算所有合法利润并维护最大值。",
+      "complexity": "时间O(n²)，额外空间O(1)。",
+      "risk": "j必须大于i，best初始为0以允许不交易。",
+      "code": "#include <stdio.h>\n#define N 6\nstatic int prices[N] = {7, 1, 5, 3, 6, 4};\nint main(void) {\n    int best = 0;\n    // 买入日i必须早于卖出日j，所以只枚举j>i的组合。\n    for (int i = 0; i < N; i++) {\n        for (int j = i + 1; j < N; j++) {\n            int profit = prices[j] - prices[i];\n            if (profit > best) best = profit;\n        }\n    }\n    // 不交易的利润是0；全部下跌时不能返回负利润。\n    printf(\"%d\\n\", best);\n    return 0;\n}\n",
       "explain": [
-        "建立初始状态",
-        "按基础规则遍历",
-        "核对输出"
+        "只枚举j>i，确保先买后卖。",
+        "best初始为0，避免在全跌行情输出负利润。"
       ]
     },
     "optimal": {
-      "tag": "优化解",
-      "title": "408经典数据结构",
-      "idea": "利用递归返回值、散列表、堆、入度队列、栈或一次扫描维护状态。",
-      "complexity": "O(n)时间",
-      "risk": "注意数据结构的容量与状态更新顺序。",
-      "code": "/*\n * 【解题思路】买卖股票最佳时机（优化解）\n * 为什么这样做：利用递归返回值、散列表、堆、入度队列、栈或一次扫描维护状态。\n * 关键理解：明确不变量\n * 关键理解：维护辅助状态\n * 关键理解：完成输出\n * 考场注意：注意数据结构的容量与状态更新顺序。\n */\n#include <stdio.h>\nint main(void){\n    int a[]={\n        7,1,5,3,6,4\n    }\n    ,low=a[0],best=0;\n    for(int i=1;\n    i<6;\n    i++){\n        if(a[i]-low>best)best=a[i]-low;\n        if(a[i]<low)low=a[i];\n    }\n    printf(\"%d\\n\",best);\n    return 0;\n}\n",
+      "tag": "一次扫描",
+      "title": "维护历史最低买入价",
+      "idea": "把当前日作为卖出日，最低买入价lowest来自此前日期；计算利润后再更新lowest。",
+      "complexity": "时间O(n)，额外空间O(1)。",
+      "risk": "先计算当天卖出利润，再更新历史最低价。",
+      "code": "#include <stdio.h>\n#define N 6\nstatic int prices[N] = {7, 1, 5, 3, 6, 4};\nint main(void) {\n    int lowest = prices[0], best = 0;\n    for (int day = 1; day < N; day++) {\n        // 用今天之前的最低价计算今日卖出的利润，保证先买后卖。\n        int profit = prices[day] - lowest;\n        if (profit > best) best = profit;\n        // 算完今日利润后，今天才可成为未来的最低买入价。\n        if (prices[day] < lowest) lowest = prices[day];\n    }\n    printf(\"%d\\n\", best);\n    return 0;\n}\n",
       "explain": [
-        "明确不变量",
-        "维护辅助状态",
-        "完成输出"
+        "lowest代表当前日期之前的最便宜买入选择。",
+        "计算今日利润后再更新lowest，保证时间顺序合法。"
       ]
     },
     "variation": {
-      "question": "巩固题：更换边界样例，解释算法是否仍正确。",
-      "idea": "保留算法不变量，检查空输入、重复值和最小规模。",
-      "code": "#include <stdio.h>\nint main(void){\n    int a[]={\n        7,1,5,3,6,4\n    }\n    ,low=a[0],best=0;\n    for(int i=1;\n    i<6;\n    i++){\n        if(a[i]-low>best)best=a[i]-low;\n        if(a[i]<low)low=a[i];\n    }\n    printf(\"%d\\n\",best);\n    return 0;\n}\n"
+      "question": "股票始终下跌：prices=[7,6,4,3,1]，最优策略是什么？运行完整C程序。",
+      "idea": "不交易，返回0；不应强迫亏损卖出。",
+      "code": "#include <stdio.h>\n#define N 5\nstatic int prices[N] = {7, 6, 4, 3, 1};\nint main(void) {\n    int lowest = prices[0], best = 0;\n    for (int day = 1; day < N; day++) {\n        // 即使每天都下跌，也不强迫进行亏损交易。\n        int profit = prices[day] - lowest;\n        if (profit > best) best = profit;\n        if (prices[day] < lowest) lowest = prices[day];\n    }\n    printf(\"%d\\n\", best);\n    return 0;\n}\n"
     },
     "animation": {
       "layout": "array",
       "brute": [
         {
           "array": [
-            3,
-            2,
+            7,
             1,
             5,
+            3,
             6,
             4
           ],
           "active": [
-            0
-          ],
-          "pointers": {
-            "cur": 0
-          },
-          "text": "读取样例并初始化"
-        },
-        {
-          "array": [
-            3,
-            2,
-            1,
-            5,
-            6,
-            4
-          ],
-          "active": [
+            0,
             1
           ],
           "pointers": {
-            "cur": 1
+            "buy": 0,
+            "sell": 1
           },
-          "text": "执行当前步骤"
+          "text": "i=0买入7，j=1卖出1，利润-6，best=0。"
         },
         {
           "array": [
-            3,
-            2,
+            7,
             1,
             5,
+            3,
             6,
             4
           ],
           "active": [
+            0,
+            4
+          ],
+          "pointers": {
+            "buy": 0,
+            "sell": 4
+          },
+          "text": "继续枚举i=0的后续卖出日，最大利润仍为0。"
+        },
+        {
+          "array": [
+            7,
+            1,
+            5,
+            3,
+            6,
+            4
+          ],
+          "active": [
+            1,
             2
           ],
           "pointers": {
-            "cur": 2
+            "buy": 1,
+            "sell": 2
           },
-          "text": "更新辅助状态"
+          "text": "i=1买入1，j=2卖出5，利润4，best=4。"
         },
         {
           "array": [
-            3,
-            2,
+            7,
             1,
             5,
+            3,
             6,
             4
           ],
           "active": [
+            1,
             3
           ],
           "pointers": {
-            "cur": 3
+            "buy": 1,
+            "sell": 3
           },
-          "text": "得到结果"
+          "text": "j=3卖出3，利润2，best仍为4。"
+        },
+        {
+          "array": [
+            7,
+            1,
+            5,
+            3,
+            6,
+            4
+          ],
+          "active": [
+            1,
+            4
+          ],
+          "pointers": {
+            "buy": 1,
+            "sell": 4
+          },
+          "text": "j=4卖出6，利润5，best=5。"
+        },
+        {
+          "array": [
+            7,
+            1,
+            5,
+            3,
+            6,
+            4
+          ],
+          "active": [
+            1,
+            5
+          ],
+          "pointers": {
+            "buy": 1,
+            "sell": 5
+          },
+          "text": "j=5卖出4，利润3，best仍为5。"
+        },
+        {
+          "array": [
+            7,
+            1,
+            5,
+            3,
+            6,
+            4
+          ],
+          "active": [
+            2,
+            3
+          ],
+          "pointers": {
+            "buy": 2,
+            "sell": 3
+          },
+          "text": "其余买入日继续枚举，均不能超过5，最终输出5。"
         }
       ],
       "optimal": [
         {
           "array": [
-            3,
-            2,
+            7,
             1,
             5,
+            3,
             6,
             4
           ],
@@ -2724,16 +2787,16 @@
             0
           ],
           "pointers": {
-            "cur": 0
+            "lowest": 0
           },
-          "text": "读取样例并初始化"
+          "text": "初始lowest=7，best=0。"
         },
         {
           "array": [
-            3,
-            2,
+            7,
             1,
             5,
+            3,
             6,
             4
           ],
@@ -2741,16 +2804,17 @@
             1
           ],
           "pointers": {
-            "cur": 1
+            "day": 1,
+            "lowest": 1
           },
-          "text": "执行当前步骤"
+          "text": "第1天：1-7=-6，best=0；更新lowest=1。"
         },
         {
           "array": [
-            3,
-            2,
+            7,
             1,
             5,
+            3,
             6,
             4
           ],
@@ -2758,16 +2822,17 @@
             2
           ],
           "pointers": {
-            "cur": 2
+            "day": 2,
+            "lowest": 1
           },
-          "text": "更新辅助状态"
+          "text": "第2天：5-1=4，best=4。"
         },
         {
           "array": [
-            3,
-            2,
+            7,
             1,
             5,
+            3,
             6,
             4
           ],
@@ -2775,16 +2840,53 @@
             3
           ],
           "pointers": {
-            "cur": 3
+            "day": 3,
+            "lowest": 1
           },
-          "text": "得到结果"
+          "text": "第3天：3-1=2，best=4。"
+        },
+        {
+          "array": [
+            7,
+            1,
+            5,
+            3,
+            6,
+            4
+          ],
+          "active": [
+            4
+          ],
+          "pointers": {
+            "day": 4,
+            "lowest": 1
+          },
+          "text": "第4天：6-1=5，best=5。"
+        },
+        {
+          "array": [
+            7,
+            1,
+            5,
+            3,
+            6,
+            4
+          ],
+          "active": [
+            5
+          ],
+          "pointers": {
+            "day": 5,
+            "lowest": 1
+          },
+          "text": "第5天：4-1=3，best仍为5。"
         }
       ]
     },
     "tips": [
-      "先画出过程再写代码。",
-      "朴素解与优化解分别计算复杂度。",
-      "注意边界与重复情况。"
+      "买卖最多一次，必须先买后卖。",
+      "朴素O(n²)，优化只需历史最低价，O(n)。",
+      "不交易允许，最大利润至少为0。"
     ]
   },
   {
@@ -4390,6 +4492,106 @@
       "朴素法固定左端点，右端点累加，O(n²)。",
       "优化法只维护cur和best，O(n)时间、O(1)空间。",
       "全负数是关键边界：不能用0初始化best。"
+    ]
+  },
+  {
+    "id": "lc997-20261109",
+    "date": "2026-11-09",
+    "year": "LeetCode",
+    "number": "997",
+    "category": "图 · 入度与出度 · 查找",
+    "title": "寻找小镇法官：从重复扫描到入度出度统计",
+    "difficulty": "简单",
+    "time": "20分钟",
+    "source": "https://leetcode.cn/problems/find-the-town-judge/",
+    "question": "小镇有n个人，编号1至n；每条有向关系[a,b]表示a信任b。法官必须不信任任何人，且其他n-1人都信任法官。若存在唯一符合定义的人，输出其编号，否则输出-1。C标准输入：第一行n m（m为关系数），接下来m行每行a b；标准输出：一行一个整数。注意边的方向a→b，n=1且m=0时法官是1。",
+    "constraint": "1≤n≤1000；0≤m≤10000；信任关系两两不同，无自环；1≤a,b≤n且a≠b。输入保证符合约束。",
+    "sample": "正例输入：\n3 2\n1 3\n2 3\n输出：3。\n反例输入：\n3 3\n1 3\n2 3\n3 1\n输出：-1（3虽然被两人信任，但也信任了1）。\n边界输入：\n1 0\n输出：1。\n边界输入：\n3 0\n输出：-1。",
+    "brute": {
+      "tag": "朴素枚举",
+      "title": "对每位候选人重新扫描全部关系",
+      "idea": "逐个候选人，重复扫描m条边统计该人的入度和出度。",
+      "complexity": "时间O(n(m+1))，额外空间O(m)存储边表。",
+      "risk": "m=0且n=1时应输出1；入度最大并不意味着一定是法官。",
+      "code": "#include <stdio.h>\n#define MAX_M 10000\nstatic int from[MAX_M], to[MAX_M];\nint main(void) {\n    int n, m;\n    if (scanf(\"%d%d\", &n, &m) != 2) return 1;\n    for (int k = 0; k < m; k++) {\n        if (scanf(\"%d%d\", &from[k], &to[k]) != 2) return 1;\n    }\n    for (int person = 1; person <= n; person++) {\n        int incoming = 0, outgoing = 0;\n        // 每换一个候选人就重新检查全部信任关系。\n        for (int k = 0; k < m; k++) {\n            if (to[k] == person) incoming++;\n            if (from[k] == person) outgoing++;\n        }\n        // 法官必须被其余n-1人信任，自己却不信任任何人。\n        if (outgoing == 0 && incoming == n - 1) {\n            printf(\"%d\\n\", person);\n            return 0; // 满足条件的法官至多一个。\n        }\n    }\n    puts(\"-1\"); // 所有人都不符合条件。\n    return 0;\n}\n",
+      "explain": [
+        "每次重新扫描全部边，统计当前候选人的入度、出度。",
+        "入度n-1且出度0才满足法官定义；否则继续枚举。"
+      ]
+    },
+    "optimal": {
+      "tag": "一次扫描",
+      "title": "入度出度统计",
+      "idea": "读取每条边时只更新对应端点的入度和出度，再扫描n个顶点。",
+      "complexity": "时间O(n+m)，额外空间O(n)。",
+      "risk": "顶点从1编号，数组开n+1；信任a→b不能反向。",
+      "code": "#include <stdio.h>\n#define MAX_N 1000\nstatic int indegree[MAX_N + 1], outdegree[MAX_N + 1];\nint main(void) {\n    int n, m;\n    if (scanf(\"%d%d\", &n, &m) != 2) return 1;\n    for (int k = 0; k < m; k++) {\n        int a, b;\n        if (scanf(\"%d%d\", &a, &b) != 2) return 1;\n        // 有向边a→b：a出度+1，b入度+1。\n        outdegree[a]++;\n        indegree[b]++;\n    }\n    for (int person = 1; person <= n; person++) {\n        // 出度0且入度n-1，两项定义必须同时满足。\n        if (outdegree[person] == 0 && indegree[person] == n - 1) {\n            printf(\"%d\\n\", person);\n            return 0;\n        }\n    }\n    puts(\"-1\");\n    return 0;\n}\n",
+      "explain": [
+        "每条a→b令outdegree[a]++、indegree[b]++。",
+        "同时检查入度n-1和出度0，缺一不可。"
+      ]
+    },
+    "variation": {
+      "question": "只维护score=入度-出度能否判断法官？对于输入3 3 / 1 3 / 2 3 / 3 1，输出什么？",
+      "idea": "无自环且关系不重复，入度最多n-1；score=n-1必有入度n-1、出度0。此例3有出边，因此输出-1。",
+      "code": "#include <stdio.h>\n#define MAX_N 1000\nstatic int score[MAX_N + 1];\nint main(void) {\n    int n, m;\n    if (scanf(\"%d%d\", &n, &m) != 2) return 1;\n    for (int k = 0; k < m; k++) {\n        int a, b;\n        if (scanf(\"%d%d\", &a, &b) != 2) return 1;\n        // score=入度-出度；信任别人减1，被信任加1。\n        score[a]--;\n        score[b]++;\n    }\n    for (int person = 1; person <= n; person++) {\n        // 入度最多n-1，故score=n-1只能由入度n-1且出度0产生。\n        if (score[person] == n - 1) {\n            printf(\"%d\\n\", person);\n            return 0;\n        }\n    }\n    puts(\"-1\");\n    return 0;\n}\n"
+    },
+    "animation": {
+      "layout": "diagram",
+      "brute": [
+        {
+          "diagram": "边表：1→3，2→3\n候选人1；扫描1→3",
+          "text": "1的出度变为1，入度为0。"
+        },
+        {
+          "diagram": "候选人1；扫描2→3\n入度0、出度1",
+          "text": "1不符合出度为0。"
+        },
+        {
+          "diagram": "候选人2；重新扫描两条边\n入度0、出度1",
+          "text": "2同样不符合。"
+        },
+        {
+          "diagram": "候选人3；扫描1→3\n入度1、出度0",
+          "text": "3获得一条入边。"
+        },
+        {
+          "diagram": "候选人3；扫描2→3\n入度2、出度0；输出3",
+          "text": "3同时满足入度n-1=2、出度0。"
+        }
+      ],
+      "optimal": [
+        {
+          "diagram": "顶点1、2、3\n入度[0,0,0]；出度[0,0,0]",
+          "text": "初始化入度、出度数组。"
+        },
+        {
+          "diagram": "高亮有向边1→3\n出度1=1，入度3=1",
+          "text": "处理第一条关系。"
+        },
+        {
+          "diagram": "高亮有向边2→3\n出度2=1，入度3=2",
+          "text": "处理第二条关系。"
+        },
+        {
+          "diagram": "检查顶点1：入度0，出度1",
+          "text": "出度不为0，排除1。"
+        },
+        {
+          "diagram": "检查顶点2：入度0，出度1",
+          "text": "出度不为0，排除2。"
+        },
+        {
+          "diagram": "检查顶点3：入度2，出度0\n输出3",
+          "text": "符合两个条件，立即返回。"
+        }
+      ]
+    },
+    "tips": [
+      "有向边a→b：a的出度+1，b的入度+1。",
+      "法官必须同时满足入度n-1和出度0。",
+      "n=1、m=0时法官是1。",
+      "朴素O(n(m+1))，优化O(n+m)，适合408图的度数训练。"
     ]
   }
 ]
