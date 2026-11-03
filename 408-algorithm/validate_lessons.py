@@ -7,6 +7,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 CASES = {
+    "lc994-20261110": ("4", "1"),
     "lc53-20261108": ("6", "-2"),
     "lc997-20261109": ("3", "-1"),
     "lc622-20261107": ("1 20 40 3", "1 9 9 1"),
@@ -62,8 +63,10 @@ def main():
     inputs = {
         "lc217-20261027": "4\n1 2 3 1\n",
         "lc997-20261109": "3 2\n1 3\n2 3\n",
+        "lc994-20261110": "3 3\n2 1 1\n1 1 0\n0 1 1\n",
     }
-    variant_inputs = {"lc997-20261109": "3 3\n1 3\n2 3\n3 1\n"}
+    variant_inputs = {"lc997-20261109": "3 3\n1 3\n2 3\n3 1\n",
+                      "lc994-20261110": "2 2\n2 0\n0 1\n"}
     count = 0
     for x in queue:
         case = CASES.get(x["id"])
@@ -85,6 +88,22 @@ def main():
             ]
             for variant in ("brute", "optimal", "variation"):
                 for label, data, expected in extra:
+                    check_one(x[variant]["code"], expected,
+                              x["id"] + "." + variant + "." + label, data)
+                    count += 1
+        if x["id"] == "lc994-20261110":
+            # 四邻域与八邻域使用相同输入时可能有不同答案。
+            extra = [
+                ("blocked", "3 3\n2 1 1\n0 1 1\n1 0 1\n", "-1", "2"),
+                ("no_fresh", "1 2\n0 2\n", "0", "0"),
+                ("all_fresh", "1 1\n1\n", "-1", "-1"),
+                ("diagonal", "2 2\n2 0\n0 1\n", "-1", "1"),
+                ("single_rotten", "1 1\n2\n", "0", "0"),
+                ("full_10x10", "10 10\n" + ("2 " * 10 + "\n") * 10, "0", "0"),
+            ]
+            for variant in ("brute", "optimal", "variation"):
+                for label, data, standard, eight in extra:
+                    expected = eight if variant == "variation" else standard
                     check_one(x[variant]["code"], expected,
                               x["id"] + "." + variant + "." + label, data)
                     count += 1
