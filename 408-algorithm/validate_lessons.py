@@ -107,6 +107,17 @@ def main():
                     check_one(x[variant]["code"], expected,
                               x["id"] + "." + variant + "." + label, data)
                     count += 1
+    # 历史正式题库中不在pending队列的题也要做回归，避免错误变式漏检。
+    published = json.loads((ROOT / "lessons.json").read_text(encoding="utf-8"))
+    historical_id = "lc200-20261025"
+    historical = next((x for x in published if x["id"] == historical_id), None)
+    if historical is None:
+        raise ValueError(f"已发布历史题目 {historical_id} 不存在")
+    for variant in ("brute", "optimal", "variation"):
+        expected = "2" if variant == "variation" else "4"
+        check_one(historical[variant]["code"], expected,
+                  historical_id + "." + variant)
+        count += 1
     print(f"验证通过：{len(queue)} 道题，{count} 次C程序编译运行测试。")
 
 
