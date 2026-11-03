@@ -2371,9 +2371,9 @@
     "difficulty": "中等",
     "time": "20–25分钟",
     "source": "https://leetcode.cn/problems/number-of-islands/",
-    "question": "给定由0（水）和1（陆地）组成的m×n网格，只有上下左右相邻的陆地连通。求岛屿数量。",
-    "constraint": "1≤m,n≤300；四方向连通。",
-    "sample": "输入：[[1,1,0,0,0],[1,0,0,1,1],[0,0,1,0,0],[0,0,0,1,1]]；输出：4。",
+    "question": "给定由字符'0'（水）与'1'（陆地）组成的m×n网格，陆地只通过上、下、左、右四个方向连通，求连通的陆地区域（岛屿）数量。对每个尚未访问的陆地格子启动一次DFS或BFS，该次遍历会标记整座岛，岛屿数加1。本站C程序使用下方4×5内置样例矩阵，不需要标准输入；若用于在线判题，需按题目函数接口传入任意m×n网格。",
+    "constraint": "力扣200原题：1≤m,n≤300；grid[i][j]为字符'0'或'1'。本站演示程序用整型0/1的4×5静态数组（ROWS=4、COLS=5），不等于已经实现原题任意尺寸输入接口；DFS深递归可能栈溢出，BFS队列容量需≥m×n。",
+    "sample": "正例（本站程序内置）输入网格：\n1 1 0 0 0\n1 0 0 1 1\n0 0 1 0 0\n0 0 0 1 1\n四邻域输出：4。\n反例/边界：全为0的网格输出0；只有一个1的网格输出1；对角相邻的两个1在四邻域下是2座岛。\n变式（不是原题）：同一4×5网格若改为八邻域连通，(1,3)↔(2,2)↔(3,3)经对角相连，输出2（不是4）。",
     "brute": {
       "tag": "DFS",
       "title": "递归洪水填充",
@@ -2401,9 +2401,9 @@
       ]
     },
     "variation": {
-      "question": "改成8方向连通时如何调整？",
-      "idea": "增加四个对角方向，其他遍历逻辑不变。",
-      "code": "#include <stdio.h>\n\n#define ROWS 4\n#define COLS 5\n#define CAPACITY (ROWS * COLS)\n\nint grid[ROWS][COLS] = {\n    {1, 1, 0, 0, 0},\n    {1, 0, 0, 1, 1},\n    {0, 0, 1, 0, 0},\n    {0, 0, 0, 1, 1}\n};\nint visited[ROWS][COLS] = {0};\n\nint main(void) {\n    // 四方向偏移：下、上、右、左\n    int dr[4] = {1, -1, 0, 0};\n    int dc[4] = {0, 0, 1, -1};\n    int islands = 0;\n\n    for (int row = 0; row < ROWS; row++) {\n        for (int col = 0; col < COLS; col++) {\n            if (grid[row][col] == 0 ||\n                visited[row][col]) {\n                continue;\n            }\n\n            islands++; // 新连通块，即一座新岛\n            int queue[CAPACITY];\n            int front = 0, rear = 0;\n\n            // 用一维编号存储二维坐标\n            queue[rear++] = row * COLS + col;\n            visited[row][col] = 1;\n\n            while (front < rear) {\n                int index = queue[front++];\n                int r = index / COLS;\n                int c = index % COLS;\n\n                for (int k = 0; k < 4; k++) {\n                    int nr = r + dr[k];\n                    int nc = c + dc[k];\n\n                    if (nr < 0 || nr >= ROWS ||\n                        nc < 0 || nc >= COLS) {\n                        continue;\n                    }\n                    if (grid[nr][nc] == 0 ||\n                        visited[nr][nc]) {\n                        continue;\n                    }\n\n                    // 入队时标记，防止重复入队\n                    visited[nr][nc] = 1;\n                    queue[rear++] = nr * COLS + nc;\n                }\n            }\n        }\n    }\n\n    printf(\"%d\\n\", islands); // 输出：4\n    return 0;\n}"
+      "question": "把原题的四邻域改为八邻域（上下左右加四个对角方向）。对本站4×5样例，岛屿数应是多少？为什么？",
+      "idea": "答案2。左上角(0,0),(0,1),(1,0)是一座岛；(1,3),(1,4)通过对角连接(2,2)，再连(3,3),(3,4)，组成另一座岛。方向数组必须改成8个偏移，循环也必须从0遍历到7。",
+      "code": "#include <stdio.h>\n#define ROWS 4\n#define COLS 5\n#define CAPACITY (ROWS * COLS)\n\nint grid[ROWS][COLS] = {\n    {1, 1, 0, 0, 0},\n    {1, 0, 0, 1, 1},\n    {0, 0, 1, 0, 0},\n    {0, 0, 0, 1, 1}\n};\nint visited[ROWS][COLS];\n\nint main(void) {\n    // 对角方向也能连通：第二、三、四块陆地因此成为同一座岛。\n    const int dr[8] = {-1, -1, -1, 0, 0, 1, 1, 1};\n    const int dc[8] = {-1, 0, 1, -1, 1, -1, 0, 1};\n    int islands = 0;\n    for (int row = 0; row < ROWS; row++) {\n        for (int col = 0; col < COLS; col++) {\n            if (grid[row][col] == 0 || visited[row][col]) continue;\n            islands++; // 每次从尚未访问的陆地开始，恰好发现一个新连通块。\n            int queue[CAPACITY], front = 0, rear = 0;\n            visited[row][col] = 1;\n            queue[rear++] = row * COLS + col;\n            while (front < rear) {\n                int index = queue[front++];\n                int r = index / COLS, c = index % COLS;\n                for (int k = 0; k < 8; k++) {\n                    int nr = r + dr[k], nc = c + dc[k];\n                    if (nr < 0 || nr >= ROWS || nc < 0 || nc >= COLS) continue;\n                    if (grid[nr][nc] == 0 || visited[nr][nc]) continue;\n                    visited[nr][nc] = 1; // 入队即标记，避免多个邻居重复加入同一格。\n                    queue[rear++] = nr * COLS + nc;\n                }\n            }\n        }\n    }\n    printf(\"%d\\n\", islands);\n    return 0;\n}\n"
     },
     "animation": {
       "layout": "array",
@@ -2647,7 +2647,9 @@
     "tips": [
       "网格是隐式无向图",
       "DFS与BFS都是O(mn)",
-      "BFS避免深递归"
+      "BFS避免深递归",
+      "四邻域与八邻域不同：改变方向数组时，遍历次数也要同步从4改为8。",
+      "示例代码固定4×5，原题规模最大300×300，不能直接把示例当通用输入模板。"
     ]
   },
   {
