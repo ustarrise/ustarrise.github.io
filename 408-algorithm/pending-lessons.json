@@ -4593,5 +4593,275 @@
       "n=1、m=0时法官是1。",
       "朴素O(n(m+1))，优化O(n+m)，适合408图的度数训练。"
     ]
+  },
+  {
+    "id": "lc994-20261110",
+    "date": "2026-11-10",
+    "year": "LeetCode",
+    "number": "994",
+    "category": "图 · 矩阵 · 多源BFS",
+    "title": "腐烂的橘子：同步模拟与多源BFS",
+    "difficulty": "中等",
+    "time": "25–30分钟",
+    "source": "https://leetcode.cn/problems/rotting-oranges/",
+    "question": "给定m×n网格，0表示空格、1表示新鲜橘子、2表示腐烂橘子。每过1分钟，所有在该分钟开始时已经腐烂的橘子，同时使其上、下、左、右相邻的新鲜橘子腐烂（对角线不算相邻）。求所有新鲜橘子腐烂的最少分钟数；若始终存在无法腐烂的新鲜橘子，输出-1；若开始就没有新鲜橘子，输出0。输入格式：第一行两个整数m n，随后m行，每行n个空格分隔的整数；输出格式：单行整数分钟数。两份原题代码都从标准输入读取，不依赖固定示例。",
+    "constraint": "1≤m,n≤10；grid[r][c]∈{0,1,2}。初始可以没有腐烂橘子，也可以没有新鲜橘子。原题只允许四邻域传播；变式改为八邻域（额外允许对角传播）。",
+    "sample": "正例输入：\n3 3\n2 1 1\n1 1 0\n0 1 1\n输出：4。\n反例输入：\n3 3\n2 1 1\n0 1 1\n1 0 1\n输出：-1（左下角与腐烂区域隔绝）。\n无新鲜橘子边界：\n1 2\n0 2\n输出：0。\n只有新鲜橘子边界：\n1 1\n1\n输出：-1。\n变式八邻域输入：\n2 2\n2 0\n0 1\n输出：1；原题四邻域应输出-1。",
+    "brute": {
+      "tag": "逐分钟模拟",
+      "title": "全网格扫描 + 下一分钟快照",
+      "idea": "每分钟扫描整个网格，仅让本分钟开始前已经腐烂的橘子传播；把新状态写入nextGrid，避免同一分钟连锁扩散。若还有新鲜橘子但这一轮没有变化，则不可能全部腐烂。",
+      "complexity": "最坏O((mn)²)时间（最多mn轮，每轮扫描mn格）；O(mn)额外空间（状态快照）。",
+      "risk": "不能直接在grid中修改后继续让新腐烂位置传播，否则把多分钟误算成一分钟。",
+      "code": "#include <stdio.h>\n#define MAX 10\n\nint grid[MAX][MAX], nextGrid[MAX][MAX];\nconst int dr[4] = {-1, 1, 0, 0};\nconst int dc[4] = {0, 0, -1, 1};\n\nint main(void) {\n    int m, n, fresh = 0, minutes = 0;\n    if (scanf(\"%d%d\", &m, &n) != 2 || m < 1 || m > MAX || n < 1 || n > MAX) return 1;\n    for (int r = 0; r < m; r++) {\n        for (int c = 0; c < n; c++) {\n            if (scanf(\"%d\", &grid[r][c]) != 1 || grid[r][c] < 0 || grid[r][c] > 2) return 1;\n            if (grid[r][c] == 1) fresh++;\n        }\n    }\n    while (fresh > 0) {\n        int changed = 0;\n        // 快照保留本分钟开始时的状态：新腐烂的橘子不能在同一分钟继续传播。\n        for (int r = 0; r < m; r++)\n            for (int c = 0; c < n; c++) nextGrid[r][c] = grid[r][c];\n        for (int r = 0; r < m; r++) {\n            for (int c = 0; c < n; c++) {\n                if (grid[r][c] != 2) continue; // 只有上一分钟就腐烂的橘子可以传播。\n                for (int d = 0; d < 4; d++) {\n                    int nr = r + dr[d], nc = c + dc[d];\n                    if (nr < 0 || nr >= m || nc < 0 || nc >= n) continue;\n                    if (grid[nr][nc] == 1 && nextGrid[nr][nc] == 1) {\n                        nextGrid[nr][nc] = 2;\n                        fresh--;\n                        changed++; // 同一格可能邻接多个烂橘子，但只统计一次。\n                    }\n                }\n            }\n        }\n        // 还有新鲜橘子，却没有任何新腐烂位置：后续状态不会再变化。\n        if (changed == 0) {\n            puts(\"-1\");\n            return 0;\n        }\n        for (int r = 0; r < m; r++)\n            for (int c = 0; c < n; c++) grid[r][c] = nextGrid[r][c];\n        minutes++; // 这一轮所有变化同时生效，恰好经过一分钟。\n    }\n    printf(\"%d\\n\", minutes); // 初始无新鲜橘子时直接输出0。\n    return 0;\n}\n",
+      "explain": [
+        "本轮读取旧grid、只写nextGrid，保证所有变化同时发生。",
+        "nextGrid已变2的格子不重复减少fresh。",
+        "changed=0且fresh>0时返回-1，因为下一分钟状态不会再变化。"
+      ]
+    },
+    "optimal": {
+      "tag": "多源BFS",
+      "title": "队列按层处理腐烂前沿",
+      "idea": "将所有初始腐烂位置入队；每层只处理本层开始时的队列元素，新腐烂的邻居入队并留到下一层，层数就是分钟数。",
+      "complexity": "O(mn)时间（每格最多入队一次，每格至多检查4邻居）；O(mn)空间（队列）。",
+      "risk": "必须在入队时把新鲜橘子改为2；每层长度要在处理该层之前固定，不能让新入队元素同分钟传播。",
+      "code": "#include <stdio.h>\n#define MAX 10\n#define CAP (MAX * MAX)\n\nint grid[MAX][MAX];\nint qr[CAP], qc[CAP];\nconst int dr[4] = {-1, 1, 0, 0};\nconst int dc[4] = {0, 0, -1, 1};\n\nint main(void) {\n    int m, n, fresh = 0, head = 0, tail = 0, minutes = 0;\n    if (scanf(\"%d%d\", &m, &n) != 2 || m < 1 || m > MAX || n < 1 || n > MAX) return 1;\n    for (int r = 0; r < m; r++) {\n        for (int c = 0; c < n; c++) {\n            if (scanf(\"%d\", &grid[r][c]) != 1 || grid[r][c] < 0 || grid[r][c] > 2) return 1;\n            if (grid[r][c] == 1) fresh++;\n            if (grid[r][c] == 2) { qr[tail] = r; qc[tail++] = c; }\n        }\n    }\n    // 初始所有腐烂橘子同时入队，才能模拟多个传播源的同一分钟。\n    while (head < tail && fresh > 0) {\n        int level = tail - head, changed = 0;\n        // 只处理进入本轮前已经在队列中的位置；新入队者属于下一分钟。\n        for (int i = 0; i < level; i++) {\n            int r = qr[head], c = qc[head++];\n            for (int d = 0; d < 4; d++) {\n                int nr = r + dr[d], nc = c + dc[d];\n                if (nr < 0 || nr >= m || nc < 0 || nc >= n) continue;\n                if (grid[nr][nc] != 1) continue; // 0不能传播，2已入队过。\n                grid[nr][nc] = 2; // 入队前标记，防止同一新鲜橘子被多次加入。\n                fresh--;\n                changed++;\n                qr[tail] = nr;\n                qc[tail++] = nc;\n            }\n        }\n        if (changed > 0) minutes++; // 只有这一层真正腐烂了新橘子才计时。\n    }\n    // 队列耗尽但仍有新鲜橘子，说明它与所有传播源不连通。\n    printf(\"%d\\n\", fresh == 0 ? minutes : -1);\n    return 0;\n}\n",
+      "explain": [
+        "所有初始腐烂橘子一起入队，模拟同一时刻的多个传播源。",
+        "level=tail-head固定当前层大小，新入队者下轮才处理。",
+        "首次发现就标记，防止多个腐烂邻居把同一格重复入队。",
+        "队列耗尽而fresh仍非0，返回-1。"
+      ]
+    },
+    "variation": {
+      "question": "改成八邻域：对角线也能传播。输入2×2网格[[2,0],[0,1]]时，原题输出-1，八邻域输出多少？请运行完整C程序验证。",
+      "idea": "把方向数组从4组扩展为8组，仍然多源BFS按层传播。对角位置(1,1)在第一分钟腐烂，因此输出1。此为拓展变式，不是力扣994原题规则。",
+      "code": "#include <stdio.h>\n#define MAX 10\n#define CAP (MAX * MAX)\n\nint grid[MAX][MAX];\nint qr[CAP], qc[CAP];\nconst int dr[8] = {-1, -1, -1, 0, 0, 1, 1, 1};\nconst int dc[8] = {-1, 0, 1, -1, 1, -1, 0, 1};\n\nint main(void) {\n    int m, n, fresh = 0, head = 0, tail = 0, minutes = 0;\n    if (scanf(\"%d%d\", &m, &n) != 2 || m < 1 || m > MAX || n < 1 || n > MAX) return 1;\n    for (int r = 0; r < m; r++) {\n        for (int c = 0; c < n; c++) {\n            if (scanf(\"%d\", &grid[r][c]) != 1 || grid[r][c] < 0 || grid[r][c] > 2) return 1;\n            if (grid[r][c] == 1) fresh++;\n            if (grid[r][c] == 2) { qr[tail] = r; qc[tail++] = c; }\n        }\n    }\n    while (head < tail && fresh > 0) {\n        int level = tail - head, changed = 0;\n        // 八邻域包含对角方向，故传播范围比原题的四邻域更广。\n        for (int i = 0; i < level; i++) {\n            int r = qr[head], c = qc[head++];\n            for (int d = 0; d < 8; d++) {\n                int nr = r + dr[d], nc = c + dc[d];\n                if (nr < 0 || nr >= m || nc < 0 || nc >= n || grid[nr][nc] != 1) continue;\n                grid[nr][nc] = 2; // 首次发现即标记，避免重复入队。\n                fresh--;\n                changed++;\n                qr[tail] = nr;\n                qc[tail++] = nc;\n            }\n        }\n        if (changed > 0) minutes++;\n    }\n    printf(\"%d\\n\", fresh == 0 ? minutes : -1);\n    return 0;\n}\n"
+    },
+    "animation": {
+      "layout": "array",
+      "brute": [
+        {
+          "array": [
+            2,
+            1,
+            1,
+            1,
+            1,
+            0,
+            0,
+            1,
+            1
+          ],
+          "active": [
+            0
+          ],
+          "pointers": {
+            "source": 0
+          },
+          "text": "分钟0：只有(0,0)腐烂，fresh=6；本轮先复制grid到nextGrid。"
+        },
+        {
+          "array": [
+            2,
+            2,
+            1,
+            2,
+            1,
+            0,
+            0,
+            1,
+            1
+          ],
+          "active": [
+            1,
+            3
+          ],
+          "text": "分钟1：旧(0,0)使(0,1)、(1,0)腐烂；同时写入nextGrid，fresh=4。"
+        },
+        {
+          "array": [
+            2,
+            2,
+            2,
+            2,
+            2,
+            0,
+            0,
+            1,
+            1
+          ],
+          "active": [
+            2,
+            4
+          ],
+          "text": "分钟2：旧(0,1)→(0,2)，旧(1,0)→(1,1)；fresh=2。"
+        },
+        {
+          "array": [
+            2,
+            2,
+            2,
+            2,
+            2,
+            0,
+            0,
+            2,
+            1
+          ],
+          "active": [
+            7
+          ],
+          "text": "分钟3：旧(1,1)→(2,1)，fresh=1；本轮没有让新腐烂(2,1)立即继续传播。"
+        },
+        {
+          "array": [
+            2,
+            2,
+            2,
+            2,
+            2,
+            0,
+            0,
+            2,
+            2
+          ],
+          "active": [
+            8
+          ],
+          "text": "分钟4：旧(2,1)→(2,2)，fresh=0；输出4。"
+        }
+      ],
+      "optimal": [
+        {
+          "array": [
+            2,
+            1,
+            1,
+            1,
+            1,
+            0,
+            0,
+            1,
+            1
+          ],
+          "active": [
+            0
+          ],
+          "pointers": {
+            "head": 0
+          },
+          "text": "初始化：队列[(0,0)]，head=0、tail=1、fresh=6；队列从前往后出队。"
+        },
+        {
+          "array": [
+            2,
+            2,
+            1,
+            2,
+            1,
+            0,
+            0,
+            1,
+            1
+          ],
+          "active": [
+            1,
+            3
+          ],
+          "pointers": {
+            "head": 0
+          },
+          "text": "处理第0层：(0,0)入邻居(1,0)、(0,1)，队列新增2格；第1分钟结束，fresh=4。"
+        },
+        {
+          "array": [
+            2,
+            2,
+            1,
+            2,
+            2,
+            0,
+            0,
+            1,
+            1
+          ],
+          "active": [
+            4
+          ],
+          "pointers": {
+            "head": 3
+          },
+          "text": "第2分钟处理队头(1,0)，先让(1,1)腐烂并入队；同层的(0,1)尚未处理，minutes仍为1。"
+        },
+        {
+          "array": [
+            2,
+            2,
+            2,
+            2,
+            2,
+            0,
+            0,
+            1,
+            1
+          ],
+          "active": [
+            2
+          ],
+          "pointers": {
+            "head": 1
+          },
+          "text": "第2分钟再处理(0,1)，让(0,2)腐烂；本层结束，minutes=2、fresh=2。"
+        },
+        {
+          "array": [
+            2,
+            2,
+            2,
+            2,
+            2,
+            0,
+            0,
+            2,
+            1
+          ],
+          "active": [
+            7
+          ],
+          "pointers": {
+            "head": 4
+          },
+          "text": "第3分钟处理(1,1)，让(2,1)腐烂；之后(0,2)没有新邻居，层结束，minutes=3。"
+        },
+        {
+          "array": [
+            2,
+            2,
+            2,
+            2,
+            2,
+            0,
+            0,
+            2,
+            2
+          ],
+          "active": [
+            8
+          ],
+          "pointers": {
+            "head": 7
+          },
+          "text": "第4分钟处理(2,1)，让(2,2)腐烂；fresh=0、minutes=4，停止。"
+        }
+      ]
+    },
+    "tips": [
+      "408考点：网格可以看作无权图，四邻域就是边。",
+      "朴素模拟必须用快照，否则一轮中会错误地连续传播多步。",
+      "多源BFS：所有初始源一起入队，一层恰好对应一分钟。",
+      "入队即标记、固定层大小，是避免重复入队和时间计算错误的关键。"
+    ]
   }
 ]
