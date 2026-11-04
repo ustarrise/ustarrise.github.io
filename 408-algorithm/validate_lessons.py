@@ -7,6 +7,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 CASES = {
+    "lc20-20261111": ("1", "1"),
     "lc994-20261110": ("4", "1"),
     "lc53-20261108": ("6", "-2"),
     "lc997-20261109": ("3", "-1"),
@@ -61,11 +62,12 @@ def check_one(source, expected, key, stdin_data=""):
 def main():
     queue = json.loads((ROOT / "pending-lessons.json").read_text(encoding="utf-8"))
     inputs = {
+        "lc20-20261111": "()[]{}\n",
         "lc217-20261027": "4\n1 2 3 1\n",
         "lc997-20261109": "3 2\n1 3\n2 3\n",
         "lc994-20261110": "3 3\n2 1 1\n1 1 0\n0 1 1\n",
     }
-    variant_inputs = {"lc997-20261109": "3 3\n1 3\n2 3\n3 1\n",
+    variant_inputs = {"lc20-20261111": "a(b[c]{d})\n", "lc997-20261109": "3 3\n1 3\n2 3\n3 1\n",
                       "lc994-20261110": "2 2\n2 0\n0 1\n"}
     count = 0
     for x in queue:
