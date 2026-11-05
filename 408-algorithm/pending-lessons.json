@@ -4863,5 +4863,571 @@
       "多源BFS：所有初始源一起入队，一层恰好对应一分钟。",
       "入队即标记、固定层大小，是避免重复入队和时间计算错误的关键。"
     ]
+  },
+  {
+    "id": "kmp-20261111",
+    "date": "2026-11-11",
+    "year": "原创408练习",
+    "number": "01",
+    "category": "串 · KMP模式匹配",
+    "title": "模式匹配：从逐位比较到KMP",
+    "difficulty": "中等",
+    "time": "20–25分钟",
+    "source": "https://oi-wiki.org/string/kmp/",
+    "question": "给定主串T和模式串P，返回P在T中第一次出现的起始下标（从0开始）；若不存在则返回-1。分别实现逐位朴素匹配和KMP算法。",
+    "constraint": "1≤|T|≤1000，1≤|P|≤1000；字符区分大小写。本站C程序使用内置字符串，无须键盘输入。lps[i]表示P[0..i]的最长相等真前缀与真后缀长度。",
+    "sample": "主串 T = \"ababcabcac\"\n模式串 P = \"abcac\"\n输出：5\n解释：T[5..9]恰好为\"abcac\"。若模式串不存在，输出-1。",
+    "brute": {
+      "title": "逐位枚举起点",
+      "tag": "最直观保底",
+      "idea": "枚举主串中每个可能的起点i，从模式串首字符开始逐位比较；全部匹配才返回i，否则换下一个起点。",
+      "complexity": "时间 O((n-m+1)m)，最坏 O(nm)；额外空间 O(1)。",
+      "risk": "正确但会重复比较已经匹配过的字符；注意i最多只能到n-m。",
+      "code": "/*\n * 朴素模式匹配：枚举主串中的每一个合法起点。\n * j记录当前已经匹配的模式串字符数。\n * 一旦失配，就放弃当前起点，从下一个起点重新比较。\n */\n#include <stdio.h>\n#include <string.h>\n\nint main(void) {\n    char text[] = \"ababcabcac\";\n    char pattern[] = \"abcac\";\n    int n = (int)strlen(text);\n    int m = (int)strlen(pattern);\n    int answer = -1;\n\n    // 最后一个合法起点是 n-m，不能越界\n    for (int i = 0; i <= n - m; i++) {\n        int j = 0;\n        while (j < m && text[i + j] == pattern[j])\n            j++;\n\n        if (j == m) { // 模式串全部匹配\n            answer = i;\n            break;\n        }\n    }\n\n    printf(\"%d\\n\", answer); // 5\n    return 0;\n}",
+      "explain": [
+        "i枚举主串中的候选起点，j表示当前匹配长度。",
+        "失配后i右移一位，j从0重新开始，因此会重复比较。",
+        "只有j达到m，才说明整个模式串匹配成功。"
+      ]
+    },
+    "optimal": {
+      "title": "KMP前缀函数",
+      "tag": "重点掌握",
+      "idea": "先计算模式串每个前缀的lps值。失配时令j=lps[j-1]，保留已匹配部分中仍可能成立的前后缀；主串指针i不回退。",
+      "complexity": "时间 O(n+m)；辅助空间 O(m)。",
+      "risk": "lps是最长相等真前缀与真后缀的长度；失配回退的是模式串指针j，不是主串指针i。",
+      "code": "/*\n * KMP：利用模式串自身的前后缀信息避免主串回退。\n * lps[i]表示pattern[0..i]的最长相等真前缀、\n * 真后缀的长度。\n */\n#include <stdio.h>\n#include <string.h>\n\nint main(void) {\n    char text[] = \"ababcabcac\";\n    char pattern[] = \"abcac\";\n    int n = (int)strlen(text);\n    int m = (int)strlen(pattern);\n    int lps[1005] = {0};\n    int answer = -1;\n\n    // 第一步：计算模式串的lps数组\n    for (int i = 1, len = 0; i < m; ) {\n        if (pattern[i] == pattern[len]) {\n            lps[i++] = ++len;\n        } else if (len > 0) {\n            len = lps[len - 1]; // 缩短候选前后缀\n        } else {\n            lps[i++] = 0;\n        }\n    }\n\n    // 第二步：扫描主串，i只向右移动\n    for (int i = 0, j = 0; i < n; ) {\n        if (text[i] == pattern[j]) {\n            i++;\n            j++;\n            if (j == m) {\n                answer = i - m;\n                break;\n            }\n        } else if (j > 0) {\n            j = lps[j - 1]; // 主串i不回退\n        } else {\n            i++;\n        }\n    }\n\n    printf(\"%d\\n\", answer); // 5\n    return 0;\n}",
+      "explain": [
+        "先求lps：失配时，已匹配前缀中有多长的后缀还能复用。",
+        "比较成功时i、j同时右移；失配且j>0时只回退j。",
+        "j达到m时，当前匹配起点为i-m；总时间线性。"
+      ]
+    },
+    "tips": [
+      "先说清lps[i]的定义：前缀和后缀必须是真前缀、真后缀。",
+      "KMP失配时主串指针不回退，只调整模式串指针。",
+      "若j=0仍失配，主串指针i才前进一步。"
+    ],
+    "variation": {
+      "question": "巩固题：主串T=\"aaaaab\"，模式串P=\"aaab\"。分别用朴素法或KMP求第一次匹配位置，并写出完整C程序。",
+      "idea": "输出2。KMP计算lps=[0,1,2,0]；前面连续的a失配时可复用前缀信息，不必让主串指针回退。",
+      "code": "#include <stdio.h>\n#include <string.h>\n\nint main(void) {\n    char text[] = \"aaaaab\";\n    char pattern[] = \"aaab\";\n    int n = (int)strlen(text);\n    int m = (int)strlen(pattern);\n    int lps[1005] = {0};\n    int answer = -1;\n\n    // 计算模式串的最长相等真前后缀长度\n    for (int i = 1, len = 0; i < m; ) {\n        if (pattern[i] == pattern[len]) {\n            lps[i++] = ++len;\n        } else if (len > 0) {\n            len = lps[len - 1];\n        } else {\n            lps[i++] = 0;\n        }\n    }\n\n    // KMP扫描主串，失配时只调整j\n    for (int i = 0, j = 0; i < n; ) {\n        if (text[i] == pattern[j]) {\n            i++;\n            j++;\n            if (j == m) {\n                answer = i - m;\n                break;\n            }\n        } else if (j > 0) {\n            j = lps[j - 1];\n        } else {\n            i++;\n        }\n    }\n\n    printf(\"%d\\n\", answer); // 2\n    return 0;\n}"
+    },
+    "animation": {
+      "layout": "array",
+      "brute": [
+        {
+          "array": [
+            "a",
+            "b",
+            "a",
+            "b",
+            "c",
+            "a",
+            "b",
+            "c",
+            "a",
+            "c"
+          ],
+          "active": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "text": "从i=0开始比较，前两个字符相同，第三个字符失配；朴素法丢弃本轮已匹配信息。"
+        },
+        {
+          "array": [
+            "a",
+            "b",
+            "a",
+            "b",
+            "c",
+            "a",
+            "b",
+            "c",
+            "a",
+            "c"
+          ],
+          "active": [
+            1
+          ],
+          "text": "i=1时首字符就失配，起点继续右移。"
+        },
+        {
+          "array": [
+            "a",
+            "b",
+            "a",
+            "b",
+            "c",
+            "a",
+            "b",
+            "c",
+            "a",
+            "c"
+          ],
+          "active": [
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "text": "继续枚举起点，仍需从模式串开头重新比较。"
+        },
+        {
+          "array": [
+            "a",
+            "b",
+            "a",
+            "b",
+            "c",
+            "a",
+            "b",
+            "c",
+            "a",
+            "c"
+          ],
+          "active": [
+            5,
+            6,
+            7,
+            8,
+            9
+          ],
+          "text": "i=5时五个字符全部匹配，返回5。"
+        }
+      ],
+      "optimal": [
+        {
+          "array": [
+            "a",
+            "b",
+            "c",
+            "a",
+            "c"
+          ],
+          "active": [
+            0
+          ],
+          "text": "先计算lps。前缀a没有非空相等真前后缀，lps[0]=0。"
+        },
+        {
+          "array": [
+            "a",
+            "b",
+            "c",
+            "a",
+            "c"
+          ],
+          "active": [
+            3
+          ],
+          "text": "pattern[0..3]为abca，最长相等真前后缀是a，因此lps[3]=1。"
+        },
+        {
+          "array": [
+            "a",
+            "b",
+            "c",
+            "a",
+            "c"
+          ],
+          "active": [
+            4
+          ],
+          "text": "完整lps数组为[0,0,0,1,0]。搜索时失配可按lps回退j。"
+        },
+        {
+          "array": [
+            "a",
+            "b",
+            "c",
+            "a",
+            "c"
+          ],
+          "active": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "text": "主串指针始终向右；最终在下标5开始匹配，返回5。"
+        }
+      ]
+    }
+  },
+  {
+    "id": "prim-20261112",
+    "date": "2026-11-12",
+    "year": "原创408练习",
+    "number": "02",
+    "category": "图 · 最小生成树 · Prim",
+    "title": "最小生成树：从扫描边集到Prim数组优化",
+    "difficulty": "中等",
+    "time": "25–30分钟",
+    "source": "https://cp-algorithms.com/graph/mst_prim.html",
+    "question": "给定一个连通无向带权图，顶点编号为0至4。求最小生成树的总权值。先实现朴素Prim：每轮扫描全部边，找一条连接已选与未选顶点的最小边；再实现优化Prim：用low[v]维护未选顶点v连接已选集合的最小边权。",
+    "constraint": "图保证连通、边权为正整数。示例使用5个顶点和7条边；邻接矩阵中INF表示无边。最小生成树恰有V-1条边。",
+    "sample": "边及权值：\n(0,1,2) (0,3,6) (1,2,3) (1,3,8)\n(1,4,5) (2,4,7) (3,4,9)\n输出：16\n一种最小生成树：0-1、1-2、1-4、0-3，总权值2+3+5+6=16。",
+    "brute": {
+      "title": "每轮扫描全部边",
+      "tag": "朴素Prim",
+      "idea": "从顶点0开始。每轮遍历所有边，只考虑恰有一个端点已选的边，取其中权值最小者并把新端点加入集合。",
+      "complexity": "时间 O(VE)；空间 O(V+E)。",
+      "risk": "必须只选跨越已选集合与未选集合的边；若没有这样的边，说明图不连通。",
+      "code": "/*\n * 朴素Prim：每次都扫描整个边集寻找最小跨集合边。\n * selected[u]与selected[v]不同，表示边(u,v)\n * 恰好连接已选顶点和未选顶点。\n */\n#include <stdio.h>\n\n#define INF 99999\ntypedef struct {\n    int u, v, w;\n} Edge;\n\nint main(void) {\n    Edge edges[] = {\n        {0, 1, 2}, {0, 3, 6}, {1, 2, 3},\n        {1, 3, 8}, {1, 4, 5}, {2, 4, 7},\n        {3, 4, 9}\n    };\n    int n = 5;\n    int m = (int)(sizeof(edges) / sizeof(edges[0]));\n    int selected[5] = {1, 0, 0, 0, 0};\n    int total = 0;\n\n    // 每次加入一个新顶点，共需选择n-1条边\n    for (int step = 0; step < n - 1; step++) {\n        int best = INF;\n        int bestIndex = -1;\n\n        // 朴素做法：每一轮重新扫描全部边\n        for (int e = 0; e < m; e++) {\n            int u = edges[e].u;\n            int v = edges[e].v;\n            if (selected[u] != selected[v] && edges[e].w < best) {\n                best = edges[e].w;\n                bestIndex = e;\n            }\n        }\n\n        if (bestIndex == -1) {\n            printf(\"-1\\n\"); // 图不连通\n            return 0;\n        }\n\n        selected[edges[bestIndex].u] = 1;\n        selected[edges[bestIndex].v] = 1;\n        total += best;\n    }\n\n    printf(\"%d\\n\", total); // 16\n    return 0;\n}",
+      "explain": [
+        "selected数组表示当前生成树已经包含哪些顶点。",
+        "跨集合边必须满足selected[u]与selected[v]恰好一个为1。",
+        "每轮加入一条最小跨集合边，直到选出V-1条边。"
+      ]
+    },
+    "optimal": {
+      "title": "low数组优化Prim",
+      "tag": "408重点掌握",
+      "idea": "对每个未选顶点v，只保存它到已选集合的最小边权low[v]。每轮线性找最小low，再用新加入顶点的邻接边更新low。",
+      "complexity": "邻接矩阵实现：时间 O(V²)；空间 O(V²)。",
+      "risk": "选中顶点后只更新未选顶点的low；low[v]表示连接到整个已选集合的最小代价，不是某条固定边。",
+      "code": "/*\n * 优化Prim：low[v]保存未选顶点v连接已选集合的\n * 最小边权。每轮只扫描V个low值，不再扫描全部E条边。\n */\n#include <stdio.h>\n\n#define INF 99999\n\nint main(void) {\n    int g[5][5] = {\n        {0,   2,   INF, 6,   INF},\n        {2,   0,   3,   8,   5},\n        {INF, 3,   0,   INF, 7},\n        {6,   8,   INF, 0,   9},\n        {INF, 5,   7,   9,   0}\n    };\n    int low[5];\n    int used[5] = {1, 0, 0, 0, 0};\n    int total = 0;\n\n    // 初始已选顶点为0，low记录它到其他顶点的边权\n    for (int i = 0; i < 5; i++)\n        low[i] = g[0][i];\n\n    for (int step = 1; step < 5; step++) {\n        int v = -1;\n\n        // 找到连接当前生成树代价最小的未选顶点\n        for (int i = 0; i < 5; i++) {\n            if (!used[i] && (v == -1 || low[i] < low[v]))\n                v = i;\n        }\n\n        if (v == -1 || low[v] == INF) {\n            printf(\"-1\\n\");\n            return 0;\n        }\n\n        used[v] = 1;\n        total += low[v];\n\n        // 新顶点加入后，尝试降低其他顶点的连接代价\n        for (int i = 0; i < 5; i++) {\n            if (!used[i] && g[v][i] < low[i])\n                low[i] = g[v][i];\n        }\n    }\n\n    printf(\"%d\\n\", total); // 16\n    return 0;\n}",
+      "explain": [
+        "low[v]是v连接到整个已选集合的最小边权。",
+        "每轮扫描low数组选最小者，再用新顶点更新其他low值。",
+        "邻接矩阵适合稠密图；稀疏图可进一步用邻接表和优先队列。"
+      ]
+    },
+    "tips": [
+      "最小生成树必须连通全部顶点，且恰有V-1条边。",
+      "Prim每次选择的是跨越已选与未选集合的最小边。",
+      "稠密图常用邻接矩阵O(V²)；稀疏图可考虑堆优化。"
+    ],
+    "variation": {
+      "question": "巩固题：无向连通图有4个顶点，边为(0,1,1)、(0,2,4)、(1,2,2)、(1,3,5)、(2,3,3)。求最小生成树总权值，并写出完整Prim程序。",
+      "idea": "输出6。依次选边0-1（1）、1-2（2）、2-3（3），三条边连接全部四个顶点。",
+      "code": "#include <stdio.h>\n#define INF 99999\n\nint main(void) {\n    int g[4][4] = {\n        {0,   1,   4,   INF},\n        {1,   0,   2,   5},\n        {4,   2,   0,   3},\n        {INF, 5,   3,   0}\n    };\n    int low[4];\n    int used[4] = {1, 0, 0, 0};\n    int total = 0;\n\n    // 从顶点0开始，初始化连接代价\n    for (int i = 0; i < 4; i++)\n        low[i] = g[0][i];\n\n    // 每次选一个low最小的未访问顶点\n    for (int step = 1; step < 4; step++) {\n        int v = -1;\n        for (int i = 0; i < 4; i++) {\n            if (!used[i] && (v == -1 || low[i] < low[v]))\n                v = i;\n        }\n        if (v == -1 || low[v] == INF) {\n            printf(\"-1\\n\");\n            return 0;\n        }\n\n        used[v] = 1;\n        total += low[v];\n\n        // 更新其他未访问顶点的最小连接边\n        for (int i = 0; i < 4; i++) {\n            if (!used[i] && g[v][i] < low[i])\n                low[i] = g[v][i];\n        }\n    }\n\n    printf(\"%d\\n\", total); // 6\n    return 0;\n}"
+    },
+    "animation": {
+      "layout": "array",
+      "brute": [
+        {
+          "array": [
+            2,
+            6,
+            3,
+            8,
+            5,
+            7,
+            9
+          ],
+          "active": [
+            0
+          ],
+          "text": "从顶点0开始，跨集合最小边是0-1，权值2；选中顶点1。"
+        },
+        {
+          "array": [
+            2,
+            6,
+            3,
+            8,
+            5,
+            7,
+            9
+          ],
+          "active": [
+            2
+          ],
+          "text": "当前已选{0,1}，最小跨集合边是1-2，权值3。"
+        },
+        {
+          "array": [
+            2,
+            6,
+            3,
+            8,
+            5,
+            7,
+            9
+          ],
+          "active": [
+            4
+          ],
+          "text": "当前已选{0,1,2}，最小跨集合边是1-4，权值5。"
+        },
+        {
+          "array": [
+            2,
+            6,
+            3,
+            8,
+            5,
+            7,
+            9
+          ],
+          "active": [
+            1
+          ],
+          "text": "最后选0-3，权值6；共选4条边，总权值16。"
+        }
+      ],
+      "optimal": [
+        {
+          "array": [
+            "0",
+            "2",
+            "∞",
+            "6",
+            "∞"
+          ],
+          "active": [
+            0
+          ],
+          "text": "初始选中顶点0，low=[0,2,∞,6,∞]。"
+        },
+        {
+          "array": [
+            "0",
+            "2",
+            "3",
+            "6",
+            "5"
+          ],
+          "active": [
+            1
+          ],
+          "text": "选择low最小的顶点1，代价2；用顶点1更新low，得到3和5。"
+        },
+        {
+          "array": [
+            "0",
+            "2",
+            "3",
+            "6",
+            "5"
+          ],
+          "active": [
+            2
+          ],
+          "text": "选择顶点2，代价3；它到顶点4的边权7，不优于当前low[4]=5。"
+        },
+        {
+          "array": [
+            "0",
+            "2",
+            "3",
+            "6",
+            "5"
+          ],
+          "active": [
+            4
+          ],
+          "text": "选择顶点4，代价5；到顶点3的边权9，不优于low[3]=6。"
+        },
+        {
+          "array": [
+            "0",
+            "2",
+            "3",
+            "6",
+            "5"
+          ],
+          "active": [
+            3
+          ],
+          "text": "选择顶点3，代价6；四条边总权值2+3+5+6=16。"
+        }
+      ]
+    }
+  },
+  {
+    "id": "huffman-20261113",
+    "date": "2026-11-13",
+    "year": "原创408练习",
+    "number": "03",
+    "category": "二叉树 · 哈夫曼树 · 贪心",
+    "title": "哈夫曼树：从反复扫描到小根堆",
+    "difficulty": "中等",
+    "time": "20–25分钟",
+    "source": "https://oi-wiki.org/ds/huffman-tree/",
+    "question": "给定n个正整数作为叶结点权值，每次选取当前最小的两个权值合并为新结点，新结点权值为两者之和。重复直到只剩一个结点，输出所得哈夫曼树的带权路径长度WPL。可用所有合并权值之和计算WPL。",
+    "constraint": "2≤n≤1000，权值为正整数，WPL使用long long保存。本站示例使用内置权值数组，无须键盘输入；题目只要求WPL，不要求输出具体编码。",
+    "sample": "叶结点权值：[5,9,12,13,16,45]\n合并过程：5+9=14，12+13=25，14+16=30，25+30=55，45+55=100。\n输出：224\n解释：WPL等于所有新合并结点权值之和14+25+30+55+100。",
+    "brute": {
+      "title": "每轮扫描找两个最小值",
+      "tag": "朴素贪心",
+      "idea": "用active标记当前仍在森林中的结点。每轮扫描所有已创建结点，找出两个最小权值，删除它们并加入权值之和。",
+      "complexity": "时间 O(n²)；空间 O(n)。",
+      "risk": "两个最小值必须来自当前森林，合并后旧结点要退出候选集合，新结点要加入。",
+      "code": "/*\n * 朴素哈夫曼构造：每轮扫描当前所有活动结点，\n * 找到最小的两个权值并合并。\n * WPL等于每次合并产生的新结点权值之和。\n */\n#include <stdio.h>\n\n#define MAXN 1000\n\nint main(void) {\n    long long weight[2 * MAXN];\n    int active[2 * MAXN] = {0};\n    int n = 6;\n    int nodes = n;\n    int remain = n;\n    long long wpl = 0;\n    int input[6] = {5, 9, 12, 13, 16, 45};\n\n    for (int i = 0; i < n; i++) {\n        weight[i] = input[i];\n        active[i] = 1;\n    }\n\n    while (remain > 1) {\n        int first = -1, second = -1;\n\n        // 扫描所有已创建结点，只考虑仍在森林中的结点\n        for (int i = 0; i < nodes; i++) {\n            if (!active[i]) continue;\n            if (first == -1 || weight[i] < weight[first]) {\n                second = first;\n                first = i;\n            } else if (second == -1 || weight[i] < weight[second]) {\n                second = i;\n            }\n        }\n\n        long long sum = weight[first] + weight[second];\n        active[first] = 0;\n        active[second] = 0;\n        weight[nodes] = sum;\n        active[nodes] = 1;\n        nodes++;\n        remain--;\n        wpl += sum;\n    }\n\n    printf(\"%lld\\n\", wpl); // 224\n    return 0;\n}",
+      "explain": [
+        "active[i]=1表示结点仍在当前森林中，可以参与下一次合并。",
+        "每轮取两个最小权值，合并后旧结点退出、新结点加入。",
+        "每个新结点的权值会贡献一次WPL，因此累加所有合并值。"
+      ]
+    },
+    "optimal": {
+      "title": "小根堆维护最小权值",
+      "tag": "推荐优化",
+      "idea": "把当前森林的权值放入小根堆。每轮连续弹出两个最小值，合并后再把新权值压入堆，避免反复全表扫描。",
+      "complexity": "时间 O(n log n)；空间 O(n)。",
+      "risk": "堆顶是最小值；弹出两个元素后再压入它们的和。不要把已经弹出的旧权值再次放回。",
+      "code": "/*\n * 小根堆优化哈夫曼构造。\n * push把新权值上滤，popMin删除堆顶并下滤。\n * 每次合并只需两次弹出和一次插入。\n */\n#include <stdio.h>\n\n#define MAXN 1000\nlong long heap[2 * MAXN];\nint heapSize = 0;\n\nvoid push(long long x) {\n    int i = ++heapSize;\n    while (i > 1 && heap[i / 2] > x) {\n        heap[i] = heap[i / 2];\n        i /= 2;\n    }\n    heap[i] = x;\n}\n\nlong long popMin(void) {\n    long long result = heap[1];\n    long long last = heap[heapSize--];\n    int i = 1;\n\n    // 用末尾元素填补堆顶，再向下调整\n    while (i * 2 <= heapSize) {\n        int child = i * 2;\n        if (child + 1 <= heapSize && heap[child + 1] < heap[child])\n            child++;\n        if (heap[child] >= last)\n            break;\n        heap[i] = heap[child];\n        i = child;\n    }\n    heap[i] = last;\n    return result;\n}\n\nint main(void) {\n    int input[6] = {5, 9, 12, 13, 16, 45};\n    int n = 6;\n    long long wpl = 0;\n\n    // 初始森林中的每个叶权值都进入小根堆\n    for (int i = 0; i < n; i++)\n        push(input[i]);\n\n    while (heapSize > 1) {\n        long long a = popMin();\n        long long b = popMin();\n        long long sum = a + b;\n\n        wpl += sum;\n        push(sum); // 合并结点重新加入森林\n    }\n\n    printf(\"%lld\\n\", wpl); // 224\n    return 0;\n}",
+      "explain": [
+        "小根堆保证堆顶始终是当前最小权值。",
+        "每轮弹出两个最小值a、b，合并为sum=a+b。",
+        "将sum重新入堆；每轮堆规模减少1，总共合并n-1次。"
+      ]
+    },
+    "tips": [
+      "哈夫曼树每次合并当前森林中权值最小的两个根结点。",
+      "WPL可直接累加每次合并产生的新权值。",
+      "小根堆把每轮找最小值的线性扫描降为对数复杂度。"
+    ],
+    "variation": {
+      "question": "巩固题：叶结点权值为[2,3,7,9]，按哈夫曼算法构造，求WPL。请写出使用小根堆的完整C程序。",
+      "idea": "合并2+3=5，5+7=12，9+12=21，因此WPL=5+12+21=38。",
+      "code": "#include <stdio.h>\n#define MAXN 1000\n\nlong long heap[2 * MAXN];\nint heapSize = 0;\n\nvoid push(long long x) {\n    int i = ++heapSize;\n    while (i > 1 && heap[i / 2] > x) {\n        heap[i] = heap[i / 2];\n        i /= 2;\n    }\n    heap[i] = x;\n}\n\nlong long popMin(void) {\n    long long result = heap[1];\n    long long last = heap[heapSize--];\n    int i = 1;\n\n    while (i * 2 <= heapSize) {\n        int child = i * 2;\n        if (child + 1 <= heapSize && heap[child + 1] < heap[child])\n            child++;\n        if (heap[child] >= last)\n            break;\n        heap[i] = heap[child];\n        i = child;\n    }\n    heap[i] = last;\n    return result;\n}\n\nint main(void) {\n    int weight[4] = {2, 3, 7, 9};\n    long long wpl = 0;\n\n    // 将4个叶结点权值全部加入小根堆\n    for (int i = 0; i < 4; i++)\n        push(weight[i]);\n\n    // 每轮取最小的两个权值进行合并\n    while (heapSize > 1) {\n        long long a = popMin();\n        long long b = popMin();\n        long long sum = a + b;\n        wpl += sum;\n        push(sum);\n    }\n\n    printf(\"%lld\\n\", wpl); // 38\n    return 0;\n}"
+    },
+    "animation": {
+      "layout": "array",
+      "brute": [
+        {
+          "array": [
+            5,
+            9,
+            12,
+            13,
+            16,
+            45
+          ],
+          "active": [
+            0,
+            1
+          ],
+          "text": "扫描森林，选最小的5和9，合并为14；WPL暂为14。"
+        },
+        {
+          "array": [
+            12,
+            13,
+            16,
+            45,
+            14
+          ],
+          "active": [
+            0,
+            1
+          ],
+          "text": "当前森林为12、13、16、45、14；选12和13，合并为25。"
+        },
+        {
+          "array": [
+            16,
+            45,
+            14,
+            25
+          ],
+          "active": [
+            2,
+            3
+          ],
+          "text": "选14和16，合并为30；WPL累计14+25+30=69。"
+        },
+        {
+          "array": [
+            45,
+            25,
+            30
+          ],
+          "active": [
+            1,
+            2
+          ],
+          "text": "选25和30，合并为55；WPL累计124。"
+        },
+        {
+          "array": [
+            45,
+            55
+          ],
+          "active": [
+            0,
+            1
+          ],
+          "text": "最后合并45和55得到100；总WPL=224。"
+        }
+      ],
+      "optimal": [
+        {
+          "array": [
+            5,
+            9,
+            12,
+            13,
+            16,
+            45
+          ],
+          "active": [
+            0,
+            1
+          ],
+          "text": "小根堆堆顶依次为5和9，弹出后合并为14并重新入堆。"
+        },
+        {
+          "array": [
+            12,
+            13,
+            14,
+            16,
+            45
+          ],
+          "active": [
+            0,
+            1
+          ],
+          "text": "下一轮弹出12和13，合并为25；堆中保留14、16、25、45。"
+        },
+        {
+          "array": [
+            14,
+            16,
+            25,
+            45
+          ],
+          "active": [
+            0,
+            1
+          ],
+          "text": "弹出14和16，合并为30；堆中保留25、30、45。"
+        },
+        {
+          "array": [
+            25,
+            30,
+            45
+          ],
+          "active": [
+            0,
+            1
+          ],
+          "text": "弹出25和30，合并为55；堆中保留45、55。"
+        },
+        {
+          "array": [
+            45,
+            55
+          ],
+          "active": [
+            0,
+            1
+          ],
+          "text": "最后合并45和55得到100；所有合并值之和为224。"
+        }
+      ]
+    }
   }
 ]
