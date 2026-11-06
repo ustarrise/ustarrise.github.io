@@ -10,6 +10,7 @@ CASES = {
     "kmp-20261111": ("5", "2"),
     "prim-20261112": ("16", "6"),
     "huffman-20261113": ("224", "38"),
+    "dijkstra-20261114": ("0 8 9 5 7", "0 3 1 4"),
     "lc994-20261110": ("4", "1"),
     "lc53-20261108": ("6", "-2"),
     "lc997-20261109": ("3", "-1"),
@@ -68,6 +69,7 @@ def main():
     animation_minimum = {
         "lc53-20261108": {"brute": 8, "optimal": 9},
         "kmp-20261111": {"brute": 12, "optimal": 17},
+        "dijkstra-20261114": {"brute": 5, "optimal": 6},
     }
     for lesson in queue:
         requirements = animation_minimum.get(lesson["id"], {})
