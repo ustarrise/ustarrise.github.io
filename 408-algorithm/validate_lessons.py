@@ -63,6 +63,27 @@ def check_one(source, expected, key, stdin_data=""):
 
 def main():
     queue = json.loads((ROOT / "pending-lessons.json").read_text(encoding="utf-8"))
+
+    # 关键课程的逐帧动画回归：避免只有结论、缺少指针/状态的粗略动画。
+    animation_minimum = {
+        "lc53-20261108": {"brute": 8, "optimal": 9},
+        "kmp-20261111": {"brute": 12, "optimal": 17},
+    }
+    for lesson in queue:
+        requirements = animation_minimum.get(lesson["id"], {})
+        for method, minimum in requirements.items():
+            frames = lesson.get("animation", {}).get(method, [])
+            if len(frames) < minimum:
+                raise ValueError(
+                    f"{lesson['id']}.{method}: 动画只有{len(frames)}帧，至少需要{minimum}帧"
+                )
+            for index, frame in enumerate(frames):
+                if not frame.get("text") or not (
+                    frame.get("pointers") or frame.get("diagram") or frame.get("array")
+                ):
+                    raise ValueError(
+                        f"{lesson['id']}.{method}: 第{index + 1}帧缺少说明或状态/指针"
+                    )
     inputs = {
         "lc217-20261027": "4\n1 2 3 1\n",
         "lc997-20261109": "3 2\n1 3\n2 3\n",
