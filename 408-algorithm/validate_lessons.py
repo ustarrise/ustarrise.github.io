@@ -98,15 +98,15 @@ def main():
                     count += 1
         if x["id"] == "lc503-20261106":
             extra = [
-                ("single", "1\\n5\\n", "-1"),
-                ("equal", "3\\n2 2 2\\n", "-1 -1 -1"),
-                ("increasing", "3\\n1 2 3\\n", "2 3 -1"),
-                ("wrap", "3\\n3 1 2\\n", "-1 2 3"),
-                ("negative", "3\\n-1 -2 -3\\n", "-1 -1 -1"),
-                ("extreme", "3\\n1000000000 -1000000000 999999999\\n",
+                ("single", "1\n5\n", "-1"),
+                ("equal", "3\n2 2 2\n", "-1 -1 -1"),
+                ("increasing", "3\n1 2 3\n", "2 3 -1"),
+                ("wrap", "3\n3 1 2\n", "-1 2 3"),
+                ("negative", "3\n-1 -2 -3\n", "-1 -1 -1"),
+                ("extreme", "3\n1000000000 -1000000000 999999999\n",
                  "-1 999999999 1000000000"),
-                ("descending", "5\\n5 4 3 2 1\\n", "-1 5 5 5 5"),
-                ("max_n", "10000\\n" + " ".join(map(str, range(1, 10001))) + "\\n",
+                ("descending", "5\n5 4 3 2 1\n", "-1 5 5 5 5"),
+                ("max_n", "10000\n" + " ".join(map(str, range(1, 10001))) + "\n",
                  " ".join(map(str, range(2, 10001))) + " -1"),
             ]
             for variant in ("brute", "optimal", "variation"):
