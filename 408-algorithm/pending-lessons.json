@@ -4523,34 +4523,383 @@
       "layout": "diagram",
       "brute": [
         {
-          "diagram": "i=3，固定左端点a[3]=4\nsum：4 → 3 → 5 → 6",
-          "text": "右端点逐步移动，累加得到区间[4,-1,2,1]的和6。"
+          "array": [
+            -2,
+            1,
+            -3,
+            4,
+            -1,
+            2,
+            1,
+            -5,
+            4
+          ],
+          "active": [
+            0,
+            1
+          ],
+          "pointers": {
+            "i": 0,
+            "j": 1
+          },
+          "text": "枚举区间[0,1]：sum=-1，超过初始best=-2，更新best=-1。"
         },
         {
-          "diagram": "所有区间均被检查\nbest=6",
-          "text": "枚举完全部起点后，最大值为6。"
+          "array": [
+            -2,
+            1,
+            -3,
+            4,
+            -1,
+            2,
+            1,
+            -5,
+            4
+          ],
+          "active": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "pointers": {
+            "i": 0,
+            "j": 3
+          },
+          "text": "区间[0,3]的累加和为0，更新best=0。"
+        },
+        {
+          "array": [
+            -2,
+            1,
+            -3,
+            4,
+            -1,
+            2,
+            1,
+            -5,
+            4
+          ],
+          "active": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "pointers": {
+            "i": 0,
+            "j": 5
+          },
+          "text": "区间[0,5]的和为1，更新best=1。"
+        },
+        {
+          "array": [
+            -2,
+            1,
+            -3,
+            4,
+            -1,
+            2,
+            1,
+            -5,
+            4
+          ],
+          "active": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "pointers": {
+            "i": 0,
+            "j": 6
+          },
+          "text": "区间[0,6]的和为2，更新best=2。"
+        },
+        {
+          "array": [
+            -2,
+            1,
+            -3,
+            4,
+            -1,
+            2,
+            1,
+            -5,
+            4
+          ],
+          "active": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "pointers": {
+            "i": 1,
+            "j": 5
+          },
+          "text": "左端点移到1，区间[1,5]的和为3，更新best=3。"
+        },
+        {
+          "array": [
+            -2,
+            1,
+            -3,
+            4,
+            -1,
+            2,
+            1,
+            -5,
+            4
+          ],
+          "active": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "pointers": {
+            "i": 1,
+            "j": 6
+          },
+          "text": "区间[1,6]的和为4，更新best=4。"
+        },
+        {
+          "array": [
+            -2,
+            1,
+            -3,
+            4,
+            -1,
+            2,
+            1,
+            -5,
+            4
+          ],
+          "active": [
+            3,
+            4,
+            5
+          ],
+          "pointers": {
+            "i": 3,
+            "j": 5
+          },
+          "text": "左端点移到3，区间[3,5]即[4,-1,2]，和为5，更新best=5。"
+        },
+        {
+          "array": [
+            -2,
+            1,
+            -3,
+            4,
+            -1,
+            2,
+            1,
+            -5,
+            4
+          ],
+          "active": [
+            3,
+            4,
+            5,
+            6
+          ],
+          "pointers": {
+            "i": 3,
+            "j": 6
+          },
+          "text": "区间[3,6]即[4,-1,2,1]，和为6，更新best=6；后续区间不再超过它。"
         }
       ],
       "optimal": [
         {
-          "diagram": "a[0]=-2\ncur=-2，best=-2",
-          "text": "从首元素开始，兼容全负数。"
+          "array": [
+            -2,
+            1,
+            -3,
+            4,
+            -1,
+            2,
+            1,
+            -5,
+            4
+          ],
+          "active": [
+            0
+          ],
+          "pointers": {
+            "i": 0
+          },
+          "text": "初始化cur=best=a[0]=-2；必须选非空子数组，所以不能初始化为0。"
         },
         {
-          "diagram": "a[1]=1\n原cur=-2<0\ncur=1，best=1",
-          "text": "负前缀被舍弃。"
+          "array": [
+            -2,
+            1,
+            -3,
+            4,
+            -1,
+            2,
+            1,
+            -5,
+            4
+          ],
+          "active": [
+            1
+          ],
+          "pointers": {
+            "i": 1
+          },
+          "text": "a[1]=1：旧cur=-2<0，舍弃负前缀并重新开始；cur=1，best=1。"
         },
         {
-          "diagram": "a[3]=4\n原cur=-2<0\ncur=4，best=4",
-          "text": "重新开始新的连续区间。"
+          "array": [
+            -2,
+            1,
+            -3,
+            4,
+            -1,
+            2,
+            1,
+            -5,
+            4
+          ],
+          "active": [
+            2
+          ],
+          "pointers": {
+            "i": 2
+          },
+          "text": "a[2]=-3：旧cur=1不为负，接到原区间；cur=-2，best仍为1。"
         },
         {
-          "diagram": "a[4]=-1 → cur=3\na[5]=2 → cur=5\na[6]=1 → cur=6\nbest=6",
-          "text": "得到最大和6。"
+          "array": [
+            -2,
+            1,
+            -3,
+            4,
+            -1,
+            2,
+            1,
+            -5,
+            4
+          ],
+          "active": [
+            3
+          ],
+          "pointers": {
+            "i": 3
+          },
+          "text": "a[3]=4：旧cur=-2<0，重新开始；cur=4，best=4。"
         },
         {
-          "diagram": "a[7]=-5 → cur=1\na[8]=4 → cur=5\nbest仍为6",
-          "text": "当前区间和不一定等于历史最优值。"
+          "array": [
+            -2,
+            1,
+            -3,
+            4,
+            -1,
+            2,
+            1,
+            -5,
+            4
+          ],
+          "active": [
+            4
+          ],
+          "pointers": {
+            "i": 4
+          },
+          "text": "a[4]=-1：接到当前区间，cur=4-1=3；best仍为4。"
+        },
+        {
+          "array": [
+            -2,
+            1,
+            -3,
+            4,
+            -1,
+            2,
+            1,
+            -5,
+            4
+          ],
+          "active": [
+            5
+          ],
+          "pointers": {
+            "i": 5
+          },
+          "text": "a[5]=2：cur=3+2=5，更新best=5。"
+        },
+        {
+          "array": [
+            -2,
+            1,
+            -3,
+            4,
+            -1,
+            2,
+            1,
+            -5,
+            4
+          ],
+          "active": [
+            6
+          ],
+          "pointers": {
+            "i": 6
+          },
+          "text": "a[6]=1：cur=5+1=6，更新best=6。"
+        },
+        {
+          "array": [
+            -2,
+            1,
+            -3,
+            4,
+            -1,
+            2,
+            1,
+            -5,
+            4
+          ],
+          "active": [
+            7
+          ],
+          "pointers": {
+            "i": 7
+          },
+          "text": "a[7]=-5：cur=6-5=1，历史best仍为6。"
+        },
+        {
+          "array": [
+            -2,
+            1,
+            -3,
+            4,
+            -1,
+            2,
+            1,
+            -5,
+            4
+          ],
+          "active": [
+            8
+          ],
+          "pointers": {
+            "i": 8
+          },
+          "text": "a[8]=4：cur=1+4=5，best仍为6；返回6。"
         }
       ]
     },
@@ -4984,58 +5333,60 @@
       "layout": "array",
       "brute": [
         {
-          "array": [
-            "a",
-            "b",
-            "a",
-            "b",
-            "c",
-            "a",
-            "b",
-            "c",
-            "a",
-            "c"
-          ],
+          "diagram": "T: a b a b c a b c a c\nP: a b c a c\n起点s=0：T[0]=a，P[0]=a",
+          "pointers": {
+            "s": 0,
+            "i": 0,
+            "j": 0
+          },
           "active": [
-            0,
-            1,
-            2,
-            3,
-            4
+            0
           ],
-          "text": "从i=0开始比较，前两个字符相同，第三个字符失配；朴素法丢弃本轮已匹配信息。"
+          "text": "起点0第一次比较相等，i、j各前进一位。"
         },
         {
-          "array": [
-            "a",
-            "b",
-            "a",
-            "b",
-            "c",
-            "a",
-            "b",
-            "c",
-            "a",
-            "c"
-          ],
+          "diagram": "T: a b a b c a b c a c\nP: a b c a c\n起点s=0：T[1]=b，P[1]=b",
+          "pointers": {
+            "s": 0,
+            "i": 1,
+            "j": 1
+          },
           "active": [
             1
           ],
-          "text": "i=1时首字符就失配，起点继续右移。"
+          "text": "第二个字符也相等，继续比较。"
         },
         {
-          "array": [
-            "a",
-            "b",
-            "a",
-            "b",
-            "c",
-            "a",
-            "b",
-            "c",
-            "a",
-            "c"
+          "diagram": "T: a b a b c a b c a c\nP: a b c a c\n起点s=0：T[2]=a，P[2]=c（失配）",
+          "pointers": {
+            "s": 0,
+            "i": 2,
+            "j": 2
+          },
+          "active": [
+            2
           ],
+          "text": "第三位失配；朴素法放弃起点0，下一轮从起点1重新开始。"
+        },
+        {
+          "diagram": "T: a b a b c a b c a c\nP: a b c a c\n起点s=1：T[1]=b，P[0]=a（失配）",
+          "pointers": {
+            "s": 1,
+            "i": 1,
+            "j": 0
+          },
+          "active": [
+            1
+          ],
+          "text": "起点1第一位就失配，尝试起点2。"
+        },
+        {
+          "diagram": "T: a b a b c a b c a c\nP: a b c a c\n起点s=2：T[2..5]=abca\nT[6]=b，P[4]=c（失配）",
+          "pointers": {
+            "s": 2,
+            "i": 6,
+            "j": 4
+          },
           "active": [
             2,
             3,
@@ -5043,87 +5394,282 @@
             5,
             6
           ],
-          "text": "继续枚举起点，仍需从模式串开头重新比较。"
+          "text": "起点2连续匹配4位后，在最后一位失配；朴素法不会利用已匹配前后缀，改试起点3。"
         },
         {
-          "array": [
-            "a",
-            "b",
-            "a",
-            "b",
-            "c",
-            "a",
-            "b",
-            "c",
-            "a",
-            "c"
-          ],
+          "diagram": "T: a b a b c a b c a c\nP: a b c a c\n起点s=3：T[3]=b，P[0]=a（失配）",
+          "pointers": {
+            "s": 3,
+            "i": 3,
+            "j": 0
+          },
           "active": [
-            5,
-            6,
-            7,
-            8,
+            3
+          ],
+          "text": "起点3失配。"
+        },
+        {
+          "diagram": "T: a b a b c a b c a c\nP: a b c a c\n起点s=4：T[4]=c，P[0]=a（失配）",
+          "pointers": {
+            "s": 4,
+            "i": 4,
+            "j": 0
+          },
+          "active": [
+            4
+          ],
+          "text": "起点4失配。"
+        },
+        {
+          "diagram": "T: a b a b c a b c a c\nP: a b c a c\n起点s=5：T[5]=a，P[0]=a",
+          "pointers": {
+            "s": 5,
+            "i": 5,
+            "j": 0
+          },
+          "active": [
+            5
+          ],
+          "text": "起点5开始匹配，首字符相等。"
+        },
+        {
+          "diagram": "T: a b a b c a b c a c\nP: a b c a c\nT[6]=b，P[1]=b",
+          "pointers": {
+            "s": 5,
+            "i": 6,
+            "j": 1
+          },
+          "active": [
+            6
+          ],
+          "text": "第二个字符相等。"
+        },
+        {
+          "diagram": "T: a b a b c a b c a c\nP: a b c a c\nT[7]=c，P[2]=c",
+          "pointers": {
+            "s": 5,
+            "i": 7,
+            "j": 2
+          },
+          "active": [
+            7
+          ],
+          "text": "第三个字符相等。"
+        },
+        {
+          "diagram": "T: a b a b c a b c a c\nP: a b c a c\nT[8]=a，P[3]=a",
+          "pointers": {
+            "s": 5,
+            "i": 8,
+            "j": 3
+          },
+          "active": [
+            8
+          ],
+          "text": "第四个字符相等。"
+        },
+        {
+          "diagram": "T: a b a b c a b c a c\nP: a b c a c\nT[9]=c，P[4]=c；完整匹配",
+          "pointers": {
+            "s": 5,
+            "i": 9,
+            "j": 4
+          },
+          "active": [
             9
           ],
-          "text": "i=5时五个字符全部匹配，返回5。"
+          "text": "第五个字符相等，模式串全部匹配，返回起点5。"
         }
       ],
       "optimal": [
         {
-          "array": [
-            "a",
-            "b",
-            "c",
-            "a",
-            "c"
+          "diagram": "P: a b c a c\nlps: 0 0 0 0 0",
+          "pointers": {
+            "i": 1,
+            "len": 0
+          },
+          "active": [
+            1
           ],
+          "text": "初始化lps[0]=0；从i=1开始计算最长相等真前后缀。"
+        },
+        {
+          "diagram": "P: a b c a c\n      ↑\n比较P[1]=b与P[0]=a",
+          "pointers": {
+            "i": 1,
+            "len": 0
+          },
+          "active": [
+            1
+          ],
+          "text": "不相等且len=0，lps[1]=0，i前进到2。"
+        },
+        {
+          "diagram": "P: a b c a c\n        ↑\n比较P[2]=c与P[0]=a",
+          "pointers": {
+            "i": 2,
+            "len": 0
+          },
+          "active": [
+            2
+          ],
+          "text": "仍不相等且len=0，lps[2]=0，i前进到3。"
+        },
+        {
+          "diagram": "P: a b c a c\n      a     a\n比较P[3]=a与P[0]=a",
+          "pointers": {
+            "i": 3,
+            "len": 0
+          },
+          "active": [
+            0,
+            3
+          ],
+          "text": "相等，len增至1，lps[3]=1，i前进到4。"
+        },
+        {
+          "diagram": "P: a b c a c\nlps: 0 0 0 1 0\n比较c与b失配，len:1→lps[0]=0；再比较c与a仍失配",
+          "pointers": {
+            "i": 4,
+            "len": 0
+          },
+          "active": [
+            1,
+            4
+          ],
+          "text": "两次失配后len回到0，lps[4]=0；最终lps=[0,0,0,1,0]。"
+        },
+        {
+          "diagram": "T: a b a b c a b c a c\nP: a b c a c\ni=0,j=0：T[0]=a与P[0]=a相等，前进到(1,1)。",
+          "pointers": {
+            "i": 0,
+            "j": 0
+          },
           "active": [
             0
           ],
-          "text": "先计算lps。前缀a没有非空相等真前后缀，lps[0]=0。"
+          "text": "i=0,j=0：T[0]=a与P[0]=a相等，前进到(1,1)。"
         },
         {
-          "array": [
-            "a",
-            "b",
-            "c",
-            "a",
-            "c"
+          "diagram": "T: a b a b c a b c a c\nP: a b c a c\ni=1,j=1：b与b相等，前进到(2,2)。",
+          "pointers": {
+            "i": 1,
+            "j": 1
+          },
+          "active": [
+            1
           ],
+          "text": "i=1,j=1：b与b相等，前进到(2,2)。"
+        },
+        {
+          "diagram": "T: a b a b c a b c a c\nP: a b c a c\ni=2,j=2：a与c失配，j回退为lps[1]=0；i保持2。",
+          "pointers": {
+            "i": 2,
+            "j": 2
+          },
+          "active": [
+            2
+          ],
+          "text": "i=2,j=2：a与c失配，j回退为lps[1]=0；i保持2。"
+        },
+        {
+          "diagram": "T: a b a b c a b c a c\nP: a b c a c\ni=2,j=0：a与a相等，前进到(3,1)。",
+          "pointers": {
+            "i": 2,
+            "j": 0
+          },
+          "active": [
+            2
+          ],
+          "text": "i=2,j=0：a与a相等，前进到(3,1)。"
+        },
+        {
+          "diagram": "T: a b a b c a b c a c\nP: a b c a c\ni=3,j=1：b与b相等，前进到(4,2)。",
+          "pointers": {
+            "i": 3,
+            "j": 1
+          },
           "active": [
             3
           ],
-          "text": "pattern[0..3]为abca，最长相等真前后缀是a，因此lps[3]=1。"
+          "text": "i=3,j=1：b与b相等，前进到(4,2)。"
         },
         {
-          "array": [
-            "a",
-            "b",
-            "c",
-            "a",
-            "c"
-          ],
+          "diagram": "T: a b a b c a b c a c\nP: a b c a c\ni=4,j=2：c与c相等，前进到(5,3)。",
+          "pointers": {
+            "i": 4,
+            "j": 2
+          },
           "active": [
             4
           ],
-          "text": "完整lps数组为[0,0,0,1,0]。搜索时失配可按lps回退j。"
+          "text": "i=4,j=2：c与c相等，前进到(5,3)。"
         },
         {
-          "array": [
-            "a",
-            "b",
-            "c",
-            "a",
-            "c"
-          ],
+          "diagram": "T: a b a b c a b c a c\nP: a b c a c\ni=5,j=3：a与a相等，前进到(6,4)。",
+          "pointers": {
+            "i": 5,
+            "j": 3
+          },
           "active": [
-            0,
-            1,
-            2,
-            3,
-            4
+            5
           ],
-          "text": "主串指针始终向右；最终在下标5开始匹配，返回5。"
+          "text": "i=5,j=3：a与a相等，前进到(6,4)。"
+        },
+        {
+          "diagram": "T: a b a b c a b c a c\nP: a b c a c\ni=6,j=4：b与c失配，j回退为lps[3]=1；i保持6。",
+          "pointers": {
+            "i": 6,
+            "j": 4
+          },
+          "active": [
+            6
+          ],
+          "text": "i=6,j=4：b与c失配，j回退为lps[3]=1；i保持6。"
+        },
+        {
+          "diagram": "T: a b a b c a b c a c\nP: a b c a c\ni=6,j=1：b与b相等，前进到(7,2)。",
+          "pointers": {
+            "i": 6,
+            "j": 1
+          },
+          "active": [
+            6
+          ],
+          "text": "i=6,j=1：b与b相等，前进到(7,2)。"
+        },
+        {
+          "diagram": "T: a b a b c a b c a c\nP: a b c a c\ni=7,j=2：c与c相等，前进到(8,3)。",
+          "pointers": {
+            "i": 7,
+            "j": 2
+          },
+          "active": [
+            7
+          ],
+          "text": "i=7,j=2：c与c相等，前进到(8,3)。"
+        },
+        {
+          "diagram": "T: a b a b c a b c a c\nP: a b c a c\ni=8,j=3：a与a相等，前进到(9,4)。",
+          "pointers": {
+            "i": 8,
+            "j": 3
+          },
+          "active": [
+            8
+          ],
+          "text": "i=8,j=3：a与a相等，前进到(9,4)。"
+        },
+        {
+          "diagram": "T: a b a b c a b c a c\nP: a b c a c\ni=9,j=4：c与c相等，j变为5，完整匹配；返回i-m=5。",
+          "pointers": {
+            "i": 9,
+            "j": 4
+          },
+          "active": [
+            9
+          ],
+          "text": "i=9,j=4：c与c相等，j变为5，完整匹配；返回i-m=5。"
         }
       ]
     }
