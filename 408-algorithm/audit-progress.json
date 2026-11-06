@@ -133,13 +133,18 @@
   "validation": {
     "previous_actions_run_id": 42141344331,
     "previous_result": "2026-11-03 06:00北京时区发布工作流成功，今日课程已发布",
-    "new_commit_actions_result": "2026-11-06：工作流42141344331的队列策略检查、32道备用题的C程序编译运行测试、当天课程发布、Pages构建均成功；部署步骤当时进行中。",
+    "new_commit_actions_result": "2026-11-06：工作流42141344331在提交91827ec828fa9209f4d7f976e0a74a3691755cd9上完成队列策略检查、32道备用题全部C程序编译运行测试、当天课程发布和Pages构建部署，全部success；审核进度提交8824e6f1c94fa7b42635cf20b9fa012847fadedd对应Pages-only部署42141472280也success。",
     "local_modified_code": "11月6日三份C程序已本地严格编译；8类确定性边界/极值/最大n测试、1000组随机参考答案交叉验证及n=10000三类压力测试通过。validate_lessons.py为lc503新增8类回归用例，并同步更新pending题目副本。",
     "commit_history": [
       "3da63b267ff9f703714b70d59e92eba34dc5553a",
       "b3d7646ed5766108a7864c8839e5c1c72f7a32af",
       "1162c97df2e79a691bb55d39f2f946385e3cdb71",
-      "89b419f7c95445c17590476f1a70de462856c7c4"
+      "89b419f7c95445c17590476f1a70de462856c7c4",
+      "d93436c93290ac563775bb55cfe4f7e67e03faad",
+      "5477b62fbaeb06991ddef0dcad88c22138284128",
+      "0fa733f061c01c56c73f6e7d352e70ebc3a1a553",
+      "91827ec828fa9209f4d7f976e0a74a3691755cd9",
+      "8824e6f1c94fa7b42635cf20b9fa012847fadedd"
     ]
   },
   "next_priorities": [
