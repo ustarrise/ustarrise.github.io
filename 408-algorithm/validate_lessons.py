@@ -67,9 +67,11 @@ def main():
         "lc217-20261027": "4\n1 2 3 1\n",
         "lc997-20261109": "3 2\n1 3\n2 3\n",
         "lc994-20261110": "3 3\n2 1 1\n1 1 0\n0 1 1\n",
+        "lc503-20261106": "3\n1 2 1\n",
     }
     variant_inputs = {"lc997-20261109": "3 3\n1 3\n2 3\n3 1\n",
-                      "lc994-20261110": "2 2\n2 0\n0 1\n"}
+                      "lc994-20261110": "2 2\n2 0\n0 1\n",
+                      "lc503-20261106": "5\n3 8 4 1 2\n"}
     count = 0
     for x in queue:
         case = CASES.get(x["id"])
@@ -88,6 +90,24 @@ def main():
                 ("empty", "3 0\n", "-1"),
                 ("pair", "2 1\n1 2\n", "2"),
                 ("star", "4 3\n1 3\n2 3\n4 3\n", "3"),
+            ]
+            for variant in ("brute", "optimal", "variation"):
+                for label, data, expected in extra:
+                    check_one(x[variant]["code"], expected,
+                              x["id"] + "." + variant + "." + label, data)
+                    count += 1
+        if x["id"] == "lc503-20261106":
+            extra = [
+                ("single", "1\\n5\\n", "-1"),
+                ("equal", "3\\n2 2 2\\n", "-1 -1 -1"),
+                ("increasing", "3\\n1 2 3\\n", "2 3 -1"),
+                ("wrap", "3\\n3 1 2\\n", "-1 2 3"),
+                ("negative", "3\\n-1 -2 -3\\n", "-1 -1 -1"),
+                ("extreme", "3\\n1000000000 -1000000000 999999999\\n",
+                 "-1 999999999 1000000000"),
+                ("descending", "5\\n5 4 3 2 1\\n", "-1 5 5 5 5"),
+                ("max_n", "10000\\n" + " ".join(map(str, range(1, 10001))) + "\\n",
+                 " ".join(map(str, range(2, 10001))) + " -1"),
             ]
             for variant in ("brute", "optimal", "variation"):
                 for label, data, expected in extra:
