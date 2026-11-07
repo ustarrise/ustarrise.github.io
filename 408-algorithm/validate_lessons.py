@@ -69,10 +69,28 @@ def main():
     animation_minimum = {
         "lc53-20261108": {"brute": 8, "optimal": 9},
         "lc622-20261107": {"brute": 5, "optimal": 7},
+        "prim-20261112": {"brute": 4, "optimal": 5},
+        "huffman-20261113": {"brute": 5, "optimal": 5},
         "kmp-20261111": {"brute": 12, "optimal": 17},
         "dijkstra-20261114": {"brute": 5, "optimal": 6},
     }
     for lesson in queue:
+        numeric_bounds = {
+            "prim-20261112": "1≤w≤10^8",
+            "huffman-20261113": "1≤w_i≤10^9",
+            "dijkstra-20261114": "0≤w≤10^8",
+        }
+        required_bound = numeric_bounds.get(lesson["id"])
+        if required_bound and required_bound not in lesson.get("constraint", ""):
+            raise ValueError(f"{lesson['id']}: 缺少与INF/整数范围匹配的权值约束")
+        if lesson["id"] in ("prim-20261112", "dijkstra-20261114"):
+            for method in ("brute", "optimal", "variation"):
+                if "#define INF 1000000000" not in lesson[method]["code"]:
+                    raise ValueError(f"{lesson['id']}.{method}: INF与题目约束不一致")
+        if lesson["id"] == "huffman-20261113":
+            for method in ("brute", "optimal", "variation"):
+                if "long long" not in lesson[method]["code"]:
+                    raise ValueError(f"{lesson['id']}.{method}: 合并权值/WPL应使用long long")
         if lesson["id"] == "lc622-20261107":
             # 力扣622的完整接口还必须包含判空和判满，且三份C程序的main内有状态断言。
             for method in ("brute", "optimal", "variation"):
