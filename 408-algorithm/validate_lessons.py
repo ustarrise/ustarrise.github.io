@@ -68,10 +68,19 @@ def main():
     # 关键课程的逐帧动画回归：避免只有结论、缺少指针/状态的粗略动画。
     animation_minimum = {
         "lc53-20261108": {"brute": 8, "optimal": 9},
+        "lc622-20261107": {"brute": 5, "optimal": 7},
         "kmp-20261111": {"brute": 12, "optimal": 17},
         "dijkstra-20261114": {"brute": 5, "optimal": 6},
     }
     for lesson in queue:
+        if lesson["id"] == "lc622-20261107":
+            # 力扣622的完整接口还必须包含判空和判满，且三份C程序的main内有状态断言。
+            for method in ("brute", "optimal", "variation"):
+                code = lesson[method]["code"]
+                if "int isEmpty(" not in code or "int isFull(" not in code:
+                    raise ValueError(f"{lesson['id']}.{method}: 缺少isEmpty/isFull接口")
+                if "Front(&q) != -1" not in code or "Rear(&q) != -1" not in code:
+                    raise ValueError(f"{lesson['id']}.{method}: 缺少空队列Front/Rear边界断言")
         requirements = animation_minimum.get(lesson["id"], {})
         for method, minimum in requirements.items():
             frames = lesson.get("animation", {}).get(method, [])
