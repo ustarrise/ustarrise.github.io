@@ -7,7 +7,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 CASES = {
-    "aoe-critical-20261115": ("9\\n1->3->4->6", "8\\n1->2->4->6"),
+    "aoe-critical-20261115": ("9\n1->3->4->6", "8\n1->2->4->6"),
     "kmp-20261111": ("5", "2"),
     "prim-20261112": ("16", "6"),
     "huffman-20261113": ("224", "38"),
