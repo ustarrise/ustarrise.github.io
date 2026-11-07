@@ -6291,5 +6291,103 @@
         }
       ]
     }
+  },
+  {
+    "id": "aoe-critical-20261115",
+    "date": "2026-11-15",
+    "year": "408风格",
+    "number": "原创",
+    "category": "图 · AOE网 · 关键路径",
+    "title": "AOE网关键路径：从枚举路径到拓扑动态规划",
+    "difficulty": "中等",
+    "time": "20–25 分钟",
+    "source": "https://en.wikipedia.org/wiki/Critical_path_method",
+    "question": "一个AOE网有6个事件，事件1为源点、事件6为汇点。每条有向边表示一项活动，括号内是活动持续时间：1→2(3)、1→3(2)、2→4(2)、2→5(3)、3→4(4)、3→5(2)、4→6(3)、5→6(2)。求整个工程的最短完成时间，并给出一条关键路径。请先用DFS枚举源点到汇点的路径，再用拓扑排序计算ve和vl，比较两种方法。",
+    "constraint": "图必须是有向无环图；顶点表示事件、边表示活动，边权为持续时间。源点为1、汇点为6。关键活动满足 ve[u] = vl[v] - w(u,v)，即活动总时差为0。示例代码固定该图，不从键盘读入。",
+    "sample": "活动（起点→终点，工期）：\n1→2(3)  1→3(2)\n2→4(2)  2→5(3)\n3→4(4)  3→5(2)\n4→6(3)  5→6(2)\n\n输出：\n9\n1->3->4->6\n说明：项目工期为9，关键路径为1→3→4→6。",
+    "brute": {
+      "title": "DFS枚举所有完整路径",
+      "tag": "保底思路",
+      "idea": "从源点1出发，沿有向边做DFS；每到汇点6，就得到一条完整路径，把路径上的活动工期相加，并保留工期最大的路径及其顶点序列。",
+      "complexity": "时间 O(P·E)，P为源点到汇点的路径数（最坏指数级）；空间 O(V) 递归栈与路径数组。",
+      "risk": "能直接体现“关键路径是最长路径”，但DAG中的路径数可能指数增长；适合小图理解定义，不适合大规模网络。",
+      "code": "/*\n * 朴素法：枚举从源点1到汇点6的所有路径。\n * 每条路径的活动工期相加，保留工期最大的路径。\n * 适合用来理解“项目工期就是最长路径长度”。\n */\n#include <stdio.h>\n#define N 6\n#define M 8\n\nint from[M] = {0, 0, 1, 1, 2, 2, 3, 4};\nint to[M]   = {1, 2, 3, 4, 3, 4, 5, 5};\nint dur[M]  = {3, 2, 2, 3, 4, 2, 3, 2};\n\nint path[N], bestPath[N];\nint best = 0, bestLen = 0;\n\nvoid dfs(int u, int sum, int depth) {\n    path[depth] = u;              // 记录当前路径上的事件\n    if (u == N - 1) {             // 到达汇点6，得到一条完整路径\n        if (sum > best) {\n            best = sum;\n            bestLen = depth + 1;\n            for (int i = 0; i < bestLen; i++)\n                bestPath[i] = path[i]; // 保存当前最长路径\n        }\n        return;\n    }\n\n    // 枚举所有从当前事件u出发的活动\n    for (int e = 0; e < M; e++) {\n        if (from[e] == u)\n            dfs(to[e], sum + dur[e], depth + 1);\n    }\n}\n\nint main(void) {\n    dfs(0, 0, 0);                 // 从事件1（下标0）开始\n    printf(\"%d\\n\", best);         // 项目总工期\n    for (int i = 0; i < bestLen; i++) {\n        if (i > 0) printf(\"->\");\n        printf(\"%d\", bestPath[i] + 1); // 下标转为题目中的1-based编号\n    }\n    printf(\"\\n\");\n    return 0;\n}",
+      "explain": [
+        "DFS只沿真实活动边前进，不能把没有边的两个事件直接相连。",
+        "只有到达汇点6才比较路径工期；中途路径不能当作完整工程方案。",
+        "发现更长路径时，同时复制路径顶点，避免递归回溯后记录被覆盖。",
+        "若有多条最长路径，这份程序保留先搜索到的一条；它们的工期都等于项目工期。"
+      ]
+    },
+    "optimal": {
+      "title": "拓扑排序 + ve/vl两次动态规划",
+      "tag": "考场优选",
+      "idea": "先按入度进行拓扑排序。正向遍历求事件最早发生时间ve，遇到多个前驱取最大；再按逆拓扑序求最迟发生时间vl，遇到多个后继取最小。最后沿总时差为0的活动输出一条关键路径。",
+      "complexity": "邻接矩阵版时间 O(V²)，空间 O(V²)；若改用邻接表，时间可达 O(V+E)。",
+      "risk": "要求AOE网为DAG且源点、汇点明确。考试中应先检查拓扑序是否覆盖全部顶点；若有环，不能直接进行关键路径计算。",
+      "code": "/*\n * 优化法：拓扑排序 + 正向ve + 逆向vl。\n * ve[v]：事件v最早发生时间，按拓扑序取最大值。\n * vl[u]：事件u最迟发生时间，按逆拓扑序取最小值。\n * 活动u->v为关键活动，当 ve[u] == vl[v] - w[u][v]。\n */\n#include <stdio.h>\n#define N 6\n#define M 8\n\nint main(void) {\n    int from[M] = {0, 0, 1, 1, 2, 2, 3, 4};\n    int to[M]   = {1, 2, 3, 4, 3, 4, 5, 5};\n    int dur[M]  = {3, 2, 2, 3, 4, 2, 3, 2};\n    int w[N][N] = {0};            // 邻接矩阵保存活动工期\n    int indeg[N] = {0};\n\n    for (int e = 0; e < M; e++) {\n        w[from[e]][to[e]] = dur[e];\n        indeg[to[e]]++;           // 统计每个事件的入度\n    }\n\n    int q[N], topo[N];\n    int front = 0, rear = 0, k = 0;\n    for (int i = 0; i < N; i++)\n        if (indeg[i] == 0) q[rear++] = i;\n\n    // Kahn拓扑排序；出队事件的ve值已由所有前驱确定\n    int ve[N] = {0};\n    while (front < rear) {\n        int u = q[front++];\n        topo[k++] = u;\n        for (int v = 0; v < N; v++) {\n            if (w[u][v] > 0) {\n                if (ve[v] < ve[u] + w[u][v])\n                    ve[v] = ve[u] + w[u][v]; // 正向取最大\n                indeg[v]--;\n                if (indeg[v] == 0) q[rear++] = v;\n            }\n        }\n    }\n\n    if (k != N) {                 // 有环就不是合法AOE网\n        printf(\"-1\\n\");\n        return 0;\n    }\n\n    int vl[N];\n    for (int i = 0; i < N; i++) vl[i] = ve[N - 1];\n\n    // 逆拓扑序：所有后继的vl已知，当前事件取最小\n    for (int i = k - 1; i >= 0; i--) {\n        int u = topo[i];\n        for (int v = 0; v < N; v++) {\n            if (w[u][v] > 0 && vl[u] > vl[v] - w[u][v])\n                vl[u] = vl[v] - w[u][v];\n        }\n    }\n\n    printf(\"%d\\n\", ve[N - 1]);    // 项目总工期\n\n    // 沿“关键活动”输出一条关键路径\n    int u = 0;\n    printf(\"%d\", u + 1);\n    while (u != N - 1) {\n        int found = 0;\n        for (int v = 0; v < N; v++) {\n            if (w[u][v] > 0 &&\n                ve[u] == vl[v] - w[u][v] &&\n                ve[v] == ve[u] + w[u][v]) {\n                u = v;\n                printf(\"->%d\", u + 1);\n                found = 1;\n                break;\n            }\n        }\n        if (!found) return 1;     // 合法样例中应能走到汇点\n    }\n    printf(\"\\n\");\n    return 0;\n}",
+      "explain": [
+        "入度为0的事件先入队；一个事件出队后，才用它更新后继的ve。",
+        "正向递推：ve[v] = max(ve[v], ve[u] + w(u,v))，因为所有前驱活动都完成后事件才能发生。",
+        "逆向递推：vl[u] = min(vl[u], vl[v] - w(u,v))，因为不能超过任何后继允许的最迟时刻。",
+        "活动u→v的总时差为 vl[v] - w(u,v) - ve[u]；等于0就是关键活动。",
+        "样例ve为[0,3,2,6,6,9]，vl为[0,4,2,6,7,9]，关键路径1→3→4→6，工期9。"
+      ]
+    },
+    "variation": {
+      "question": "巩固题：若活动3→4的持续时间从4缩短为3，其余活动不变，新的项目工期是多少？请给出一条新的关键路径。",
+      "idea": "重新计算后，三条路径1→2→4→6、1→2→5→6、1→3→4→6的工期都为8；项目工期变为8。程序按顶点编号优先输出其中一条：1→2→4→6。",
+      "code": "/*\n * 巩固题：把活动3->4的工期由4改成3，重新求项目工期和一条关键路径。\n * 其余活动不变；重新执行拓扑正向与逆向计算。\n */\n#include <stdio.h>\n#define N 6\n#define M 8\n\nint main(void) {\n    int from[M] = {0, 0, 1, 1, 2, 2, 3, 4};\n    int to[M]   = {1, 2, 3, 4, 3, 4, 5, 5};\n    int dur[M]  = {3, 2, 2, 3, 3, 2, 3, 2}; // 第5条边3->4改为3\n    int w[N][N] = {0}, indeg[N] = {0};\n\n    for (int e = 0; e < M; e++) {\n        w[from[e]][to[e]] = dur[e];\n        indeg[to[e]]++;\n    }\n\n    int q[N], topo[N], front = 0, rear = 0, k = 0;\n    int ve[N] = {0};\n    for (int i = 0; i < N; i++)\n        if (indeg[i] == 0) q[rear++] = i;\n\n    while (front < rear) {\n        int u = q[front++];\n        topo[k++] = u;\n        for (int v = 0; v < N; v++) {\n            if (w[u][v] > 0) {\n                if (ve[v] < ve[u] + w[u][v])\n                    ve[v] = ve[u] + w[u][v];\n                indeg[v]--;\n                if (indeg[v] == 0) q[rear++] = v;\n            }\n        }\n    }\n    if (k != N) return 1;\n\n    int vl[N];\n    for (int i = 0; i < N; i++) vl[i] = ve[N - 1];\n    for (int i = k - 1; i >= 0; i--) {\n        int u = topo[i];\n        for (int v = 0; v < N; v++)\n            if (w[u][v] > 0 && vl[u] > vl[v] - w[u][v])\n                vl[u] = vl[v] - w[u][v];\n    }\n\n    printf(\"%d\\n\", ve[N - 1]);\n    int u = 0;\n    printf(\"%d\", u + 1);\n    while (u != N - 1) {\n        int found = 0;\n        for (int v = 0; v < N; v++) {\n            if (w[u][v] > 0 &&\n                ve[u] == vl[v] - w[u][v] &&\n                ve[v] == ve[u] + w[u][v]) {\n                u = v;\n                printf(\"->%d\", u + 1);\n                found = 1;\n                break;\n            }\n        }\n        if (!found) return 1;\n    }\n    printf(\"\\n\");\n    return 0;\n}"
+    },
+    "animation": {
+      "layout": "diagram",
+      "brute": [
+        {
+          "diagram": "AOE网：\n1→2(3)  1→3(2)\n2→4(2)  2→5(3)\n3→4(4)  3→5(2)\n4→6(3)  5→6(2)",
+          "text": "从源点1开始DFS。每条从1到6的完整路径代表一种工程活动安排。"
+        },
+        {
+          "diagram": "路径：1→2→4→6\n工期：3+2+3=8\n当前最大值：8",
+          "text": "第一条完整路径的工期为8，暂时记录为best=8。"
+        },
+        {
+          "diagram": "路径：1→2→5→6\n工期：3+3+2=8\n当前最大值：8",
+          "text": "第二条路径同样为8，没有超过当前最大值。"
+        },
+        {
+          "diagram": "路径：1→3→4→6\n工期：2+4+3=9\n当前最大值：9",
+          "text": "第三条路径达到9，更新best，并保存这条路径。"
+        },
+        {
+          "diagram": "路径：1→3→5→6\n工期：2+2+2=6\n最终best：9\n关键路径：1→3→4→6",
+          "text": "最后一条路径只有6。枚举结束，最长路径长度就是项目工期9。"
+        }
+      ],
+      "optimal": [
+        {
+          "diagram": "初始入度：\n事件1:0  事件2:1  事件3:1\n事件4:2  事件5:2  事件6:2\n队列：[1]",
+          "text": "拓扑排序从入度为0的源点1开始，保证前驱先于后继处理。"
+        },
+        {
+          "diagram": "拓扑序：1,2,3,4,5,6\nve：0,3,2,6,6,9",
+          "text": "正向计算ve：事件4取max(3+2,2+4)=6；事件6取max(6+3,6+2)=9。"
+        },
+        {
+          "diagram": "逆拓扑序计算完成\nvl：0,4,2,6,7,9",
+          "text": "从汇点6的vl=9向前推；事件2取min(6-2,7-3)=4。"
+        },
+        {
+          "diagram": "活动总时差为0：\n1→3(2)  3→4(4)  4→6(3)\n关键路径：1→3→4→6\n项目工期：9",
+          "text": "关键活动满足ve[u]=vl[v]-w(u,v)，三条关键活动连接成一条工期为9的关键路径。"
+        }
+      ]
+    },
+    "tips": [
+      "AOE网：顶点表示事件，边表示活动，边权表示活动持续时间。",
+      "项目工期等于源点到汇点的最长路径长度，不是最短路径。",
+      "ve正向取max，vl逆向取min；关键活动的总时差为0。",
+      "DFS枚举路径适合理解定义，路径数可能指数增长；拓扑DP才是考场主方法。",
+      "邻接矩阵实现为O(V²)；稀疏图用邻接表可优化到O(V+E)。"
+    ]
   }
 ]
