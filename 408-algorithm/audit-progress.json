@@ -150,14 +150,19 @@
         "朴素和循环实现均通过空队列Front/Rear=-1、判空判满、满队拒绝、出队后再入队和队头队尾检查",
         "容量1变式通过空→满→拒绝→出队→空→重新入队→满状态"
       ],
-      "commit": "f40779c2ba722c94689f73fb5a5c2fe8892eb90c"
+      "commit": "f40779c2ba722c94689f73fb5a5c2fe8892eb90c",
+      "related_commits": [
+        "f40779c2ba722c94689f73fb5a5c2fe8892eb90c",
+        "8b2bf58d0d559c4e967d0462a1906af9f17686c5",
+        "f8a501e4a05535ede9eec3a31ab2361749874752"
+      ]
     }
   ],
   "validation": {
-    "previous_actions_run_id": 42141344331,
-    "previous_result": "2026-11-03 06:00北京时区发布工作流成功，今日课程已发布",
-    "new_commit_actions_result": "2026-11-06：工作流42141344331在提交91827ec828fa9209f4d7f976e0a74a3691755cd9上完成队列策略检查、32道备用题全部C程序编译运行测试、当天课程发布和Pages构建部署，全部success；审核进度提交8824e6f1c94fa7b42635cf20b9fa012847fadedd对应Pages-only部署42141472280也success。；后续备用题动画修复提交20a12f232585e32fde33ccfe35d3851c474ba373对应工作流42141775160的队列策略、全部C编译运行及发布构建成功，Pages部署42141776013 success。",
-    "local_modified_code": "2026-11-07：lc622-20261107三份C程序本地gcc严格编译运行通过；main内断言覆盖空队列Front/Rear、isEmpty/isFull、满队拒绝、出队后复用、容量1变式。validate_lessons.py新增lc622动画帧数及完整API静态回归检查；等待本次提交对应GitHub Actions最终结果。",
+    "previous_actions_run_id": 42322349620,
+    "previous_result": "2026-11-07：408 Daily Publish and Pages 工作流42322349620在提交f8a501e4a05535ede9eec3a31ab2361749874752上完成；队列策略检查、33道备用题全部C程序编译运行、当天课程发布、Pages构建与部署均success。",
+    "new_commit_actions_result": "本次lc622修复涉及提交f40779c2ba722c94689f73fb5a5c2fe8892eb90c（正式题库）、8b2bf58d0d559c4e967d0462a1906af9f17686c5（备用题库）、f8a501e4a05535ede9eec3a31ab2361749874752（测试脚本）；全量GitHub Actions运行42322349620成功。审核记录提交ad525f139939268a32776b1555a1fe4306267f88之后另一次Pages-only部署运行42322364901的build成功但deploy失败，后续将以新的Pages部署结果为准。",
+    "local_modified_code": "2026-11-07：lc622-20261107三份C程序本地gcc -std=c11 -Wall -Wextra -Werror -pedantic编译运行通过；main内断言覆盖空队列Front/Rear=-1、isEmpty/isFull、满队拒绝、出队后复用、容量1变式。validate_lessons.py新增lc622动画帧数及完整API静态回归检查；GitHub Actions运行42322349620对33道备用题全部C程序编译运行成功。",
     "commit_history": [
       "3da63b267ff9f703714b70d59e92eba34dc5553a",
       "b3d7646ed5766108a7864c8839e5c1c72f7a32af",
