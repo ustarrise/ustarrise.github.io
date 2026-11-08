@@ -1,4 +1,4 @@
-name: 408 Daily Publish and Pages
+name: 408 Daily Publish and Validate
 
 on:
   schedule:
@@ -76,36 +76,6 @@ jobs:
             exit 1
           fi
 
-      - name: Configure GitHub Pages
-        uses: actions/configure-pages@v5
-
-      - name: Stage static site
-        shell: bash
-        run: |
-          mkdir -p _pages
-          rsync -a \
-            --exclude='.git/' \
-            --exclude='.github/' \
-            --exclude='_pages/' \
-            --exclude='node_modules/' \
-            --exclude='.idea/' \
-            ./ _pages/
-          test -f _pages/408-algorithm/index.html
-          test -f _pages/408-algorithm/lessons.json
-          test -f _pages/index.html
-
-      - name: Upload GitHub Pages artifact
-        uses: actions/upload-pages-artifact@v4
-        with:
-          path: _pages
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy GitHub Pages artifact
-        id: deployment
-        uses: actions/deploy-pages@v4
+      # GitHub Pages is deployed by the repository's existing branch-based
+      # Pages workflow after this job pushes to master. Do not deploy a second
+      # artifact here: parallel deployments race and GitHub rejects one.
