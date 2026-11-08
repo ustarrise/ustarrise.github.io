@@ -134,49 +134,57 @@
     {
       "date": "2026-11-08",
       "id": "lc53-20261108",
-      "scope": "复核非空子数组定义、全负数与单元素边界；补充变式代码对负前缀重启、最大值更新和正常结束的解释性注释。程序仍使用题面明确说明的内置示例数组。"
+      "scope": "复核非空子数组定义、全负数与单元素边界；补充变式代码对负前缀重启、最大值更新和正常结束的解释性注释。程序仍使用题面明确说明的内置示例数组。",
+      "commit": "9ee6fca7699a4748813bbf838f1d2e1deec6758a"
     },
     {
       "date": "2026-11-09",
       "id": "lc997-20261109",
-      "scope": "复核信任边方向、入度/出度条件、n=1且m=0及无候选法官边界；三种实现均有标准输入输出，原有确定性与随机图回归记录保留。"
+      "scope": "复核信任边方向、入度/出度条件、n=1且m=0及无候选法官边界；三种实现均有标准输入输出，原有确定性与随机图回归记录保留。",
+      "commit": "9ee6fca7699a4748813bbf838f1d2e1deec6758a"
     },
     {
       "date": "2026-11-10",
       "id": "lc994-20261110",
-      "scope": "逐帧对照多源BFS队列执行顺序，发现并修正optimal动画head/tail索引偏移；新增6帧head/tail精确回归断言，四邻域与八邻域变式保持区分。"
+      "scope": "逐帧对照多源BFS队列执行顺序，发现并修正optimal动画head/tail索引偏移；新增6帧head/tail精确回归断言，四邻域与八邻域变式保持区分。",
+      "commit": "9ee6fca7699a4748813bbf838f1d2e1deec6758a"
     },
     {
       "date": "2026-11-11",
       "id": "kmp-20261111",
-      "scope": "复核lps=[0,0,0,1,0]、主串i不回退及j按lps回退；补充变式代码各失配分支和首次匹配break/正常返回原因注释。"
+      "scope": "复核lps=[0,0,0,1,0]、主串i不回退及j按lps回退；补充变式代码各失配分支和首次匹配break/正常返回原因注释。",
+      "commit": "9ee6fca7699a4748813bbf838f1d2e1deec6758a"
     },
     {
       "date": "2026-11-12",
       "id": "prim-20261112",
-      "scope": "复核四条MST选边0-1、1-2、1-4、0-3及总权值16；为朴素/优化动画补充无向边、已选顶点、当前跨集合边和指针状态。"
+      "scope": "复核四条MST选边0-1、1-2、1-4、0-3及总权值16；为朴素/优化动画补充无向边、已选顶点、当前跨集合边和指针状态。",
+      "commit": "9ee6fca7699a4748813bbf838f1d2e1deec6758a"
     },
     {
       "date": "2026-11-13",
       "id": "huffman-20261113",
-      "scope": "复核合并序列14、25、30、55、100及WPL=224；为两种动画补充父子结点结构连线，补充变式堆上滤/下滤判断和返回原因注释。"
+      "scope": "复核合并序列14、25、30、55、100及WPL=224；为两种动画补充父子结点结构连线，补充变式堆上滤/下滤判断和返回原因注释。",
+      "commit": "9ee6fca7699a4748813bbf838f1d2e1deec6758a"
     },
     {
       "date": "2026-11-14",
       "id": "dijkstra-20261114",
-      "scope": "复核非负边约束、距离0/8/9/5/7及Bellman-Ford逐轮松弛状态；为朴素/优化动画补充有向边、松弛对象、已确定顶点和指针状态，澄清当前示例图固定输入。"
+      "scope": "复核非负边约束、距离0/8/9/5/7及Bellman-Ford逐轮松弛状态；为朴素/优化动画补充有向边、松弛对象、已确定顶点和指针状态，澄清当前示例图固定输入。",
+      "commit": "9ee6fca7699a4748813bbf838f1d2e1deec6758a"
     },
     {
       "date": "2026-11-15",
       "id": "aoe-critical-20261115",
-      "scope": "将AOE来源替换为直接讲解AOE网与关键路径的资料；补充唯一源汇、DAG、活动正工期及全事件位于源汇路径的约束；优化动画由4帧扩为9帧，逐步展示拓扑队列、ve正推、vl逆推和关键活动。"
+      "scope": "将AOE来源替换为直接讲解AOE网与关键路径的资料；补充唯一源汇、DAG、活动正工期及全事件位于源汇路径的约束；优化动画由4帧扩为9帧，逐步展示拓扑队列、ve正推、vl逆推和关键活动。",
+      "commit": "9ee6fca7699a4748813bbf838f1d2e1deec6758a"
     }
   ],
   "validation": {
-    "previous_actions_run_id": 42322349620,
-    "previous_result": "2026-11-07：408 Daily Publish and Pages 工作流42322349620在提交f8a501e4a05535ede9eec3a31ab2361749874752上完成；队列策略检查、33道备用题全部C程序编译运行、当天课程发布、Pages构建与部署均success。",
-    "new_commit_actions_result": "本轮修复提交后，等待对应GitHub Actions完成并回填实际run ID与结论。",
-    "local_modified_code": "本轮修改包含lc53变式注释、KMP/Prim/Huffman/Dijkstra变式注释；lc994 BFS动画指针修复；Prim/Huffman/Dijkstra/AOE图树动画补全。所有修改后的C程序须由validate_lessons.py在GitHub Actions中重新编译运行。",
+    "previous_actions_run_id": 42432519345,
+    "previous_result": "2026-11-08：408 Daily Publish and Validate 运行42432519345在提交9ee6fca7699a4748813bbf838f1d2e1deec6758a上完成，队列策略检查、34道备用题全部C程序编译运行、今日发布步骤均success；validate_lessons.py报告159次C程序编译运行测试通过。",
+    "new_commit_actions_result": "本轮先提交26ad009d383480dc84ff308a5bed236d4d3d9ba2，首次Actions发现新变式代码中的换行转义多了一层，测试正确报错；随后提交9ee6fca7699a4748813bbf838f1d2e1deec6758a修正5道变式代码的换行转义。最终运行42432519345全绿，验证34道备用题、159次C程序编译运行。",
+    "local_modified_code": "lc53、KMP、Prim、Huffman、Dijkstra变式代码的换行输出已修正为真正换行，并补充条件分支/return原因注释；lc994多源BFS动画head/tail修正为head=[0,1,2,3,5,6]、tail=[1,3,4,5,6,7]；Prim/Huffman/Dijkstra/AOE动画补充图边/树父子连线和状态指针；AOE优化动画9帧。GitHub Actions对34道备用题的朴素、优化、变式共159次C程序编译运行测试全部通过。",
     "commit_history": [
       "3da63b267ff9f703714b70d59e92eba34dc5553a",
       "b3d7646ed5766108a7864c8839e5c1c72f7a32af",
@@ -188,7 +196,9 @@
       "91827ec828fa9209f4d7f976e0a74a3691755cd9",
       "8824e6f1c94fa7b42635cf20b9fa012847fadedd",
       "28cf5a9bb426008966d2455eecd27467e7b7c00c",
-      "20a12f232585e32fde33ccfe35d3851c474ba373"
+      "20a12f232585e32fde33ccfe35d3851c474ba373",
+      "26ad009d383480dc84ff308a5bed236d4d3d9ba2",
+      "9ee6fca7699a4748813bbf838f1d2e1deec6758a"
     ]
   },
   "next_priorities": [
