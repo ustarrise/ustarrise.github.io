@@ -6618,5 +6618,133 @@
       "DFS枚举路径适合理解定义，路径数可能指数增长；拓扑DP才是考场主方法。",
       "邻接矩阵实现为O(V²)；稀疏图用邻接表可优化到O(V+E)。"
     ]
+  },
+  {
+    "id": "lc-hash-linear-20261116",
+    "date": "2026-11-16",
+    "year": "408",
+    "number": "查找",
+    "category": "查找 · 散列表 · 开放定址",
+    "title": "散列表查找：从顺序扫描到线性探测",
+    "difficulty": "中等",
+    "time": "20–25分钟",
+    "source": "https://oi-wiki.org/ds/hash/",
+    "question": "给定n个互不相同的整数关键字，随后有q次查询。对每个查询关键字x，若它存在于表中，输出它最初输入时的1-based位置；否则输出-1。请先用顺序查找实现，再用散列表的开放定址法（线性探测）优化。输入格式：第一行n q；第二行n个关键字；接下来q行或q个整数，每个为一次查询。输出q行，每行一个答案。",
+    "constraint": "1≤n,q≤1000；关键字为[-10^9,10^9]内的整数且互不相同；查询值也在该范围内。采用容量M=20011的散列表，M>n；本题不涉及删除操作。负数取模后必须规范化到[0,M-1]。",
+    "sample": "输入：\n7 5\n5 20016 40027 17 20028 -3 8\n40027\n5\n99\n-3\n20028\n输出：\n3\n1\n-1\n6\n5\n说明：5、20016、40027的初始散列地址相同，线性探测依次占用后续空槽；查询99不存在。",
+    "brute": {
+      "tag": "保底方法",
+      "title": "每次查询都从头顺序扫描",
+      "idea": "将n个关键字按输入顺序存入数组。每次查询都从第一个元素开始逐个比较，找到后返回下标加1；扫描到末尾仍未找到则返回-1。",
+      "complexity": "时间O(nq)，额外空间O(n)。",
+      "risk": "方法直接、容易保证正确；查询次数较多时会重复比较同一批关键字。",
+      "code": "#include <stdio.h>\n#define MAXN 1000\n\nint main(void) {\n    int a[MAXN];\n    int n, q;\n    if (scanf(\"%d%d\", &n, &q) != 2) return 1;\n\n    // 保留原始输入顺序，答案要求输出的就是这个位置。\n    for (int i = 0; i < n; i++) {\n        if (scanf(\"%d\", &a[i]) != 1) return 1;\n    }\n\n    // 每个查询都从头检查，最坏要比较n次。\n    for (int k = 0; k < q; k++) {\n        int x, answer = -1;\n        if (scanf(\"%d\", &x) != 1) return 1;\n        for (int i = 0; i < n; i++) {\n            if (a[i] == x) {\n                answer = i + 1; // 题目位置从1开始编号。\n                break;\n            }\n        }\n        printf(\"%d\\n\", answer);\n    }\n    return 0;\n}\n",
+      "explain": [
+        "先保存原数组，才能在找到关键字时返回其原始位置。",
+        "每次查询独立扫描n个元素，q次查询最坏进行nq次比较。"
+      ]
+    },
+    "optimal": {
+      "tag": "空间换时间",
+      "title": "开放定址：线性探测",
+      "idea": "用散列函数h(x)=((x mod M)+M) mod M计算初始槽位。若槽位已被占用且关键字不同，就向后探测；插入时把关键字和原始位置一起存入槽位。查询沿相同探测序列前进，遇到目标则返回原位置，遇到第一个空槽即可判定不存在。",
+      "complexity": "平均时间O(n+q)，最坏时间O(nq)；额外空间O(M)，M=20011。",
+      "risk": "必须使用与插入完全相同的探测规则；负数模值要修正。本题无删除操作，因此查找遇到第一个空槽即可停止。",
+      "code": "#include <stdio.h>\n#define MOD 20011\nstatic int key[MOD], originalPos[MOD];\nstatic int used[MOD];\n\n// C语言负数取模可能为负，修正到合法槽位范围。\nint hashKey(int x) {\n    int h = x % MOD;\n    if (h < 0) h += MOD;\n    return h;\n}\n\nint main(void) {\n    int n, q;\n    if (scanf(\"%d%d\", &n, &q) != 2) return 1;\n\n    // 插入：冲突时向后找第一个空槽，并同时保存原始位置。\n    for (int i = 0; i < n; i++) {\n        int x;\n        if (scanf(\"%d\", &x) != 1) return 1;\n        int pos = hashKey(x);\n        while (used[pos]) pos = (pos + 1) % MOD;\n        used[pos] = 1;\n        key[pos] = x;\n        originalPos[pos] = i + 1;\n    }\n\n    // 查询：必须沿着插入时相同的线性探测序列查找。\n    for (int k = 0; k < q; k++) {\n        int x, answer = -1;\n        if (scanf(\"%d\", &x) != 1) return 1;\n        int pos = hashKey(x);\n        int start = pos;\n        while (used[pos]) {\n            if (key[pos] == x) {\n                answer = originalPos[pos];\n                break;\n            }\n            pos = (pos + 1) % MOD;\n            if (pos == start) break; // 防止表满时无限循环。\n        }\n        printf(\"%d\\n\", answer);\n    }\n    return 0;\n}\n",
+      "explain": [
+        "散列函数先给出初始地址；发生冲突时，线性探测依次检查下一个槽位。",
+        "槽位中保存原始位置，查找成功就能返回题目要求的输入序号。",
+        "本题没有删除操作，所以探测过程中遇到第一个空槽，就能确定关键字不存在。"
+      ]
+    },
+    "variation": {
+      "question": "沿用同一组关键字和查询，但改为输出每次查询检查过的槽位数。每检查一个槽位计数一次；查找失败时，最后检查到的第一个空槽也计入次数。",
+      "idea": "在线性探测中累加检查次数。命中时返回命中槽位的探测次数；未命中时，检查到第一个空槽后返回当前次数。",
+      "code": "#include <stdio.h>\n#define MOD 20011\nstatic int key[MOD], used[MOD];\n\nint hashKey(int x) {\n    int h = x % MOD;\n    if (h < 0) h += MOD;\n    return h;\n}\n\nint probeCount(int x) {\n    int pos = hashKey(x);\n    int count = 0;\n    // 每检查一个槽位就计数，空槽也是确认查找失败的一次检查。\n    while (count < MOD) {\n        count++;\n        if (!used[pos] || key[pos] == x) return count;\n        pos = (pos + 1) % MOD;\n    }\n    return count; // 防御性处理：本题n远小于MOD，不会走满整张表。\n}\n\nint main(void) {\n    int n, q;\n    if (scanf(\"%d%d\", &n, &q) != 2) return 1;\n    for (int i = 0; i < n; i++) {\n        int x;\n        if (scanf(\"%d\", &x) != 1) return 1;\n        int pos = hashKey(x);\n        while (used[pos]) pos = (pos + 1) % MOD;\n        used[pos] = 1;\n        key[pos] = x;\n    }\n    for (int k = 0; k < q; k++) {\n        int x;\n        if (scanf(\"%d\", &x) != 1) return 1;\n        printf(\"%d\\n\", probeCount(x));\n    }\n    return 0;\n}\n"
+    },
+    "animation": {
+      "layout": "diagram",
+      "brute": [
+        {
+          "diagram": "原数组（位置从1开始）\n[5, 20016, 40027, 17, 20028, -3, 8]\n查询：40027",
+          "text": "朴素查找从位置1开始，逐个比较。"
+        },
+        {
+          "diagram": "位置1：5 ≠ 40027\n位置2：20016 ≠ 40027",
+          "text": "前两个关键字都不匹配，继续向后。"
+        },
+        {
+          "diagram": "位置3：40027 = 40027\n返回3",
+          "text": "在第三个位置命中，输出原始位置3。"
+        },
+        {
+          "diagram": "查询：99\n依次检查位置1、2、3、4、5、6、7",
+          "text": "不存在的关键字必须扫描完整个数组。"
+        },
+        {
+          "diagram": "位置7检查完毕\n仍未命中 → 输出-1",
+          "text": "扫描到末尾仍未找到，答案为-1。"
+        }
+      ],
+      "optimal": [
+        {
+          "diagram": "散列表容量M=20011\n初始状态：所有槽位均为空",
+          "text": "先初始化散列表。"
+        },
+        {
+          "diagram": "插入5：h(5)=5\n槽位5 ← 5",
+          "text": "第一个关键字直接进入初始槽位5。"
+        },
+        {
+          "diagram": "插入20016：h(20016)=5\n槽位5冲突 → 槽位6 ← 20016",
+          "text": "发生冲突，线性探测到下一个空槽6。"
+        },
+        {
+          "diagram": "插入40027：h(40027)=5\n槽位5、6冲突 → 槽位7 ← 40027",
+          "text": "继续向后探测，第三个关键字落在槽位7。"
+        },
+        {
+          "diagram": "插入17：h(17)=17\n槽位17 ← 17\n插入20028：h(20028)=17\n槽位17冲突 → 槽位18 ← 20028",
+          "text": "第二组冲突也按同一规则向后放置。"
+        },
+        {
+          "diagram": "查询40027：从槽位5开始\n检查5、6、7 → 命中\n返回原始位置3",
+          "text": "查找沿着插入时的探测序列前进，命中后返回保存的原始位置。"
+        },
+        {
+          "diagram": "查询99：槽位99为空\n立即停止 → 输出-1",
+          "text": "无删除操作时，探测遇到第一个空槽即可判定不存在。"
+        }
+      ],
+      "variation": [
+        {
+          "diagram": "查询40027：检查槽位5、6、7\n探测次数=3",
+          "text": "同一初始地址发生连续冲突，检查三次才命中。"
+        },
+        {
+          "diagram": "查询5：检查槽位5\n探测次数=1",
+          "text": "初始槽位直接命中，只检查一次。"
+        },
+        {
+          "diagram": "查询99：槽位99为空\n探测次数=1",
+          "text": "失败查询也要把用于确认失败的空槽计入。"
+        },
+        {
+          "diagram": "查询-3：h(-3)=20008\n槽位20008命中\n探测次数=1",
+          "text": "负数散列地址已规范化到合法下标。"
+        },
+        {
+          "diagram": "查询20028：检查槽位17、18\n探测次数=2",
+          "text": "先遇到冲突关键字，再在下一槽位命中。"
+        }
+      ]
+    },
+    "tips": [
+      "散列函数只确定初始地址，不能保证不同关键字地址不同。",
+      "线性探测公式为(pos+1)%M；插入与查找必须使用相同规则。",
+      "C语言负数取模可能为负，需将结果修正到[0,M-1]。",
+      "本题没有删除操作；若加入删除，不能简单把已用槽位清空，否则可能截断后续探测链。",
+      "考场性价比：顺序查找容易拿基础分；散列表需掌握冲突处理、负数取模和平均/最坏复杂度。"
+    ]
   }
 ]
