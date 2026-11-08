@@ -5678,5 +5678,105 @@
       "优化法只维护cur和best，O(n)时间、O(1)空间。",
       "全负数是关键边界：不能用0初始化best。"
     ]
+  },
+  {
+    "id": "lc997-20261109",
+    "date": "2026-11-09",
+    "year": "LeetCode",
+    "number": "997",
+    "category": "图 · 入度与出度 · 查找",
+    "title": "寻找小镇法官：从重复扫描到入度出度统计",
+    "difficulty": "简单",
+    "time": "20分钟",
+    "source": "https://leetcode.cn/problems/find-the-town-judge/",
+    "question": "小镇有n个人，编号1至n；每条有向关系[a,b]表示a信任b。法官必须不信任任何人，且其他n-1人都信任法官。若存在唯一符合定义的人，输出其编号，否则输出-1。C标准输入：第一行n m（m为关系数），接下来m行每行a b；标准输出：一行一个整数。注意边的方向a→b，n=1且m=0时法官是1。",
+    "constraint": "1≤n≤1000；0≤m≤10000；信任关系两两不同，无自环；1≤a,b≤n且a≠b。输入保证符合约束。",
+    "sample": "正例输入：\n3 2\n1 3\n2 3\n输出：3。\n反例输入：\n3 3\n1 3\n2 3\n3 1\n输出：-1（3虽然被两人信任，但也信任了1）。\n边界输入：\n1 0\n输出：1。\n边界输入：\n3 0\n输出：-1。",
+    "brute": {
+      "tag": "朴素枚举",
+      "title": "对每位候选人重新扫描全部关系",
+      "idea": "逐个候选人，重复扫描m条边统计该人的入度和出度。",
+      "complexity": "时间O(n(m+1))，额外空间O(m)存储边表。",
+      "risk": "m=0且n=1时应输出1；入度最大并不意味着一定是法官。",
+      "code": "#include <stdio.h>\n#define MAX_M 10000\nstatic int from[MAX_M], to[MAX_M];\nint main(void) {\n    int n, m;\n    if (scanf(\"%d%d\", &n, &m) != 2) return 1;\n    for (int k = 0; k < m; k++) {\n        if (scanf(\"%d%d\", &from[k], &to[k]) != 2) return 1;\n    }\n    for (int person = 1; person <= n; person++) {\n        int incoming = 0, outgoing = 0;\n        // 每换一个候选人就重新检查全部信任关系。\n        for (int k = 0; k < m; k++) {\n            if (to[k] == person) incoming++;\n            if (from[k] == person) outgoing++;\n        }\n        // 法官必须被其余n-1人信任，自己却不信任任何人。\n        if (outgoing == 0 && incoming == n - 1) {\n            printf(\"%d\\n\", person);\n            return 0; // 满足条件的法官至多一个。\n        }\n    }\n    puts(\"-1\"); // 所有人都不符合条件。\n    return 0;\n}\n",
+      "explain": [
+        "每次重新扫描全部边，统计当前候选人的入度、出度。",
+        "入度n-1且出度0才满足法官定义；否则继续枚举。"
+      ]
+    },
+    "optimal": {
+      "tag": "一次扫描",
+      "title": "入度出度统计",
+      "idea": "读取每条边时只更新对应端点的入度和出度，再扫描n个顶点。",
+      "complexity": "时间O(n+m)，额外空间O(n)。",
+      "risk": "顶点从1编号，数组开n+1；信任a→b不能反向。",
+      "code": "#include <stdio.h>\n#define MAX_N 1000\nstatic int indegree[MAX_N + 1], outdegree[MAX_N + 1];\nint main(void) {\n    int n, m;\n    if (scanf(\"%d%d\", &n, &m) != 2) return 1;\n    for (int k = 0; k < m; k++) {\n        int a, b;\n        if (scanf(\"%d%d\", &a, &b) != 2) return 1;\n        // 有向边a→b：a出度+1，b入度+1。\n        outdegree[a]++;\n        indegree[b]++;\n    }\n    for (int person = 1; person <= n; person++) {\n        // 出度0且入度n-1，两项定义必须同时满足。\n        if (outdegree[person] == 0 && indegree[person] == n - 1) {\n            printf(\"%d\\n\", person);\n            return 0;\n        }\n    }\n    puts(\"-1\");\n    return 0;\n}\n",
+      "explain": [
+        "每条a→b令outdegree[a]++、indegree[b]++。",
+        "同时检查入度n-1和出度0，缺一不可。"
+      ]
+    },
+    "variation": {
+      "question": "只维护score=入度-出度能否判断法官？对于输入3 3 / 1 3 / 2 3 / 3 1，输出什么？",
+      "idea": "无自环且关系不重复，入度最多n-1；score=n-1必有入度n-1、出度0。此例3有出边，因此输出-1。",
+      "code": "#include <stdio.h>\n#define MAX_N 1000\nstatic int score[MAX_N + 1];\nint main(void) {\n    int n, m;\n    if (scanf(\"%d%d\", &n, &m) != 2) return 1;\n    for (int k = 0; k < m; k++) {\n        int a, b;\n        if (scanf(\"%d%d\", &a, &b) != 2) return 1;\n        // score=入度-出度；信任别人减1，被信任加1。\n        score[a]--;\n        score[b]++;\n    }\n    for (int person = 1; person <= n; person++) {\n        // 入度最多n-1，故score=n-1只能由入度n-1且出度0产生。\n        if (score[person] == n - 1) {\n            printf(\"%d\\n\", person);\n            return 0;\n        }\n    }\n    puts(\"-1\");\n    return 0;\n}\n"
+    },
+    "animation": {
+      "layout": "diagram",
+      "brute": [
+        {
+          "diagram": "边表：1→3，2→3\n候选人1；扫描1→3",
+          "text": "1的出度变为1，入度为0。"
+        },
+        {
+          "diagram": "候选人1；扫描2→3\n入度0、出度1",
+          "text": "1不符合出度为0。"
+        },
+        {
+          "diagram": "候选人2；重新扫描两条边\n入度0、出度1",
+          "text": "2同样不符合。"
+        },
+        {
+          "diagram": "候选人3；扫描1→3\n入度1、出度0",
+          "text": "3获得一条入边。"
+        },
+        {
+          "diagram": "候选人3；扫描2→3\n入度2、出度0；输出3",
+          "text": "3同时满足入度n-1=2、出度0。"
+        }
+      ],
+      "optimal": [
+        {
+          "diagram": "顶点1、2、3\n入度[0,0,0]；出度[0,0,0]",
+          "text": "初始化入度、出度数组。"
+        },
+        {
+          "diagram": "高亮有向边1→3\n出度1=1，入度3=1",
+          "text": "处理第一条关系。"
+        },
+        {
+          "diagram": "高亮有向边2→3\n出度2=1，入度3=2",
+          "text": "处理第二条关系。"
+        },
+        {
+          "diagram": "检查顶点1：入度0，出度1",
+          "text": "出度不为0，排除1。"
+        },
+        {
+          "diagram": "检查顶点2：入度0，出度1",
+          "text": "出度不为0，排除2。"
+        },
+        {
+          "diagram": "检查顶点3：入度2，出度0\n输出3",
+          "text": "符合两个条件，立即返回。"
+        }
+      ]
+    },
+    "tips": [
+      "有向边a→b：a的出度+1，b的入度+1。",
+      "法官必须同时满足入度n-1和出度0。",
+      "n=1、m=0时法官是1。",
+      "朴素O(n(m+1))，优化O(n+m)，适合408图的度数训练。"
+    ]
   }
 ]
