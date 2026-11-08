@@ -5286,7 +5286,7 @@
     "variation": {
       "question": "数组改成[-3,-2,-5]，最大连续子数组和是多少？为什么不能把best初始化为0？",
       "idea": "答案是-2，选择单个元素-2。初始化为0会错误地选择不允许的空区间。",
-      "code": "#include <stdio.h>\nint main(void) {\n    int a[] = {-3,-2,-5};\n    int cur = a[0], best = a[0];\n    for (int i = 1; i < 3; i++) {\n        if (cur < 0) cur = a[i];\n        else cur += a[i];\n        if (cur > best) best = cur;\n    }\n    printf(\"%d\\n\", best); // -2\n    return 0;\n}"
+      "code": "#include <stdio.h>\n\nint main(void) {\n    int a[] = {-3, -2, -5};\n    int n = (int)(sizeof(a) / sizeof(a[0]));\n    int cur = a[0], best = a[0]; // 非空子数组，不能把初值设为0\n\n    for (int i = 1; i < n; i++) {\n        if (cur < 0) {\n            cur = a[i];          // 负前缀只会降低后续区间和，因此从当前元素重启\n        } else {\n            cur += a[i];         // 非负前缀值得保留，继续扩展连续区间\n        }\n        if (cur > best) {\n            best = cur;          // 只在找到更大的非空区间和时更新答案\n        }\n    }\n\n    printf(\"%d\\\\n\", best);       // 全负数时输出最大的单个元素：-2\n    return 0;                    // 正常完成计算\n}"
     },
     "animation": {
       "layout": "diagram",

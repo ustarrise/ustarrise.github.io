@@ -74,8 +74,42 @@ def main():
         "huffman-20261113": {"brute": 5, "optimal": 5},
         "kmp-20261111": {"brute": 12, "optimal": 17},
         "dijkstra-20261114": {"brute": 5, "optimal": 6},
+        "aoe-critical-20261115": {"brute": 5, "optimal": 9},
+    }
+    diagram_minimum = {
+        "prim-20261112": {"brute": 4, "optimal": 5},
+        "huffman-20261113": {"brute": 5, "optimal": 5},
+        "dijkstra-20261114": {"brute": 5, "optimal": 6},
+        "aoe-critical-20261115": {"brute": 5, "optimal": 9},
     }
     for lesson in queue:
+        for method, minimum in diagram_minimum.get(lesson["id"], {}).items():
+            frames = lesson.get("animation", {}).get(method, [])
+            if len(frames) < minimum:
+                raise ValueError(
+                    f"{lesson['id']}.{method}: 图/树动画帧数不足，至少需要{minimum}帧"
+                )
+            for index, frame in enumerate(frames):
+                if not frame.get("diagram") or not frame.get("text"):
+                    raise ValueError(
+                        f"{lesson['id']}.{method}: 第{index + 1}帧缺少图/树连线说明"
+                    )
+    for lesson in queue:
+        if lesson["id"] == "lc994-20261110":
+            frames = lesson.get("animation", {}).get("optimal", [])
+            expected_head = [0, 1, 2, 3, 5, 6]
+            expected_tail = [1, 3, 4, 5, 6, 7]
+            actual_head = [f.get("pointers", {}).get("head") for f in frames]
+            actual_tail = [f.get("pointers", {}).get("tail") for f in frames]
+            if actual_head != expected_head or actual_tail != expected_tail:
+                raise ValueError(
+                    f"{lesson['id']}: BFS动画head/tail与逐层出队、入队次数不符："
+                    f"head={actual_head}, tail={actual_tail}"
+                )
+        if lesson["id"] == "aoe-critical-20261115":
+            required = "每个事件都位于从源点1到汇点6的某条路径上"
+            if required not in lesson.get("constraint", ""):
+                raise ValueError(f"{lesson['id']}: 未说明ve/vl逆推所需的源汇可达约束")
         numeric_bounds = {
             "prim-20261112": "1≤w≤10^8",
             "huffman-20261113": "1≤w_i≤10^9",
