@@ -8,6 +8,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 CASES = {
     "aoe-critical-20261115": ("9\n1->3->4->6", "8\n1->2->4->6"),
+    "quick-sort-20261117": ("1 2 3 4 5 6 7 8", "-1 -1 0 2 3 3"),
     "kmp-20261111": ("5", "2"),
     "prim-20261112": ("16", "6"),
     "huffman-20261113": ("224", "38"),
@@ -78,6 +79,7 @@ def main():
         "kmp-20261111": {"brute": 12, "optimal": 17},
         "dijkstra-20261114": {"brute": 5, "optimal": 6},
         "aoe-critical-20261115": {"brute": 5, "optimal": 9},
+        "quick-sort-20261117": {"brute": 5, "optimal": 5},
     }
     diagram_minimum = {
         "lc997-20261109": {"brute": 6, "optimal": 6},
@@ -158,6 +160,7 @@ def main():
         "lc997-20261109": ("brute", "optimal"),
         "lc994-20261110": ("brute", "optimal"),
         "aoe-critical-20261115": ("brute", "optimal"),
+        "quick-sort-20261117": ("brute", "optimal"),
         "lc-hash-linear-20261116": ("brute", "optimal", "variation"),
     }
     reviewed_variations = {
@@ -189,11 +192,12 @@ def main():
         "lc-hash-linear-20261116": "7 5\n5 20016 40027 17 20028 -3 8\n40027 5 99 -3 20028\n",
         "lc994-20261110": "3 3\n2 1 1\n1 1 0\n0 1 1\n",
         "lc503-20261106": "3\n1 2 1\n",
+        "quick-sort-20261117": "8\n5 1 8 3 2 7 4 6\n",
     }
     variant_inputs = { "kmp-20261111": "aaaaab\naaab\n","lc-hash-linear-20261116": "7 5\n5 20016 40027 17 20028 -3 8\n40027 5 99 -3 20028\n",
                       "lc997-20261109": "3 3\n1 3\n2 3\n3 1\n",
                       "lc994-20261110": "2 2\n2 0\n0 1\n",
-                      "lc503-20261106": "5\n3 8 4 1 2\n"}
+                      "lc503-20261106": "5\n3 8 4 1 2\n", "quick-sort-20261117": "6\n3 -1 3 0 -1 2\n"}
     count = 0
     for x in queue:
         case = CASES.get(x["id"])
@@ -274,6 +278,18 @@ def main():
             for variant in ("brute", "optimal", "variation"):
                 for label, data, standard, eight in extra:
                     expected = eight if variant == "variation" else standard
+                    check_one(x[variant]["code"], expected,
+                              x["id"] + "." + variant + "." + label, data)
+                    count += 1
+        if x["id"] == "quick-sort-20261117":
+            extra = [
+                ("single", "1\n7\n", "7"),
+                ("already_sorted", "5\n1 2 3 4 5\n", "1 2 3 4 5"),
+                ("reverse", "5\n5 4 3 2 1\n", "1 2 3 4 5"),
+                ("all_equal", "5\n2 2 2 2 2\n", "2 2 2 2 2"),
+            ]
+            for variant in ("brute", "optimal", "variation"):
+                for label, data, expected in extra:
                     check_one(x[variant]["code"], expected,
                               x["id"] + "." + variant + "." + label, data)
                     count += 1
