@@ -1,17 +1,17 @@
 {
   "schema_version": 1,
-  "last_audit_date": "2026-11-08",
+  "last_audit_date": "2026-11-09",
   "scope": "408-algorithm only",
-  "status_note": "本轮逐题复核2026-11-08至2026-11-15共8题；记录静态复核与实际修复范围。C程序编译运行结果以本轮GitHub Actions完成状态为准，不把静态检查冒充运行测试。",
+  "status_note": "本轮确认11月9日课程已发布，未来11月10日至16日连续7天均有备用课；逐题复核这8天课程，补齐8道变式复杂度，修正KMP输入输出与三份C程序，增强小镇法官/BFS/AOE/散列表动画指针和高亮，修正散列表最坏复杂度，并同步扩展validate_lessons.py。",
   "published_today": {
-    "date": "2026-11-08",
-    "id": "lc53-20261108",
+    "date": "2026-11-09",
+    "id": "lc997-20261109",
     "present": true,
-    "review_note": "当天最大子数组课程已发布。复核题意要求非空连续子数组，样例覆盖正例、全负数和单元素；补充变式代码注释。"
+    "review_note": "当天课程已在正式题库中；复核信任边方向、入度/出度条件、n=1且m=0与无候选法官边界。朴素动画拆为6帧，逐帧标出候选人和当前边；优化动画逐帧标出边与候选顶点，并增加变式复杂度。"
   },
   "future_queue": {
-    "from": "2026-11-09",
-    "through": "2026-11-15",
+    "from": "2026-11-10",
+    "through": "2026-11-16",
     "continuous_days": 7,
     "shortfall_days": 0
   },
@@ -140,51 +140,57 @@
     {
       "date": "2026-11-09",
       "id": "lc997-20261109",
-      "scope": "复核信任边方向、入度/出度条件、n=1且m=0及无候选法官边界；三种实现均有标准输入输出，原有确定性与随机图回归记录保留。",
-      "commit": "9ee6fca7699a4748813bbf838f1d2e1deec6758a"
+      "scope": "对照力扣官方题意核对信任边方向、入度/出度、唯一性及n=1边界；朴素动画扩为6帧，加入candidate/edge指针和边高亮；优化动画逐帧标记边与候选顶点；补齐变式O(n+m)/O(n)复杂度。",
+      "commit": "6ff611f06c98710ba858a8dfe9db9feeb5cafb3f"
     },
     {
       "date": "2026-11-10",
       "id": "lc994-20261110",
-      "scope": "逐帧对照多源BFS队列执行顺序，发现并修正optimal动画head/tail索引偏移；新增6帧head/tail精确回归断言，四邻域与八邻域变式保持区分。",
-      "commit": "9ee6fca7699a4748813bbf838f1d2e1deec6758a"
+      "scope": "复核四邻域、同一分钟快照和多源BFS队列；给朴素同步扫描动画补minute/source指针，保留原有head/tail精确帧回归；补齐八邻域变式O(mn)复杂度。",
+      "commit": "6ff611f06c98710ba858a8dfe9db9feeb5cafb3f"
     },
     {
       "date": "2026-11-11",
       "id": "kmp-20261111",
-      "scope": "复核lps=[0,0,0,1,0]、主串i不回退及j按lps回退；补充变式代码各失配分支和首次匹配break/正常返回原因注释。",
-      "commit": "9ee6fca7699a4748813bbf838f1d2e1deec6758a"
+      "scope": "将朴素、KMP及变式三份C程序从硬编码字符串改为两行标准输入；题面补齐输入/输出格式、正反与单字符/模式串更长边界样例；更换为可访问的OI Wiki前缀函数/KMP来源；补齐变式复杂度。GCC严格模式编译并通过匹配、失配、单字符、模式串更长、重叠和重复前缀用例。",
+      "commit": "6ff611f06c98710ba858a8dfe9db9feeb5cafb3f"
     },
     {
       "date": "2026-11-12",
       "id": "prim-20261112",
-      "scope": "复核四条MST选边0-1、1-2、1-4、0-3及总权值16；为朴素/优化动画补充无向边、已选顶点、当前跨集合边和指针状态。",
-      "commit": "9ee6fca7699a4748813bbf838f1d2e1deec6758a"
+      "scope": "复核跨集合最小边选择与low更新逻辑；补充单顶点/不连通边界说明和变式邻接矩阵复杂度。",
+      "commit": "6ff611f06c98710ba858a8dfe9db9feeb5cafb3f"
     },
     {
       "date": "2026-11-13",
       "id": "huffman-20261113",
-      "scope": "复核合并序列14、25、30、55、100及WPL=224；为两种动画补充父子结点结构连线，补充变式堆上滤/下滤判断和返回原因注释。",
-      "commit": "9ee6fca7699a4748813bbf838f1d2e1deec6758a"
+      "scope": "复核最小两权值合并序列与WPL=224；更新可访问OI Wiki哈夫曼树来源，补充n=2边界、错误取最大权值反例和变式O(n log n)/O(n)复杂度。",
+      "commit": "6ff611f06c98710ba858a8dfe9db9feeb5cafb3f"
     },
     {
       "date": "2026-11-14",
       "id": "dijkstra-20261114",
-      "scope": "复核非负边约束、距离0/8/9/5/7及Bellman-Ford逐轮松弛状态；为朴素/优化动画补充有向边、松弛对象、已确定顶点和指针状态，澄清当前示例图固定输入。",
-      "commit": "9ee6fca7699a4748813bbf838f1d2e1deec6758a"
+      "scope": "复核非负权约束、距离数组和不可达输出；补充源点距离0边界、负权反例及变式邻接矩阵复杂度。",
+      "commit": "6ff611f06c98710ba858a8dfe9db9feeb5cafb3f"
     },
     {
       "date": "2026-11-15",
       "id": "aoe-critical-20261115",
-      "scope": "将AOE来源替换为直接讲解AOE网与关键路径的资料；补充唯一源汇、DAG、活动正工期及全事件位于源汇路径的约束；优化动画由4帧扩为9帧，逐步展示拓扑队列、ve正推、vl逆推和关键活动。",
-      "commit": "9ee6fca7699a4748813bbf838f1d2e1deec6758a"
+      "scope": "复核DFS四条路径工期、ve/vl正逆推与关键活动条件；为DFS动画增加当前事件/路径指针及活动边高亮；补充单活动边界、环反例和变式复杂度。",
+      "commit": "6ff611f06c98710ba858a8dfe9db9feeb5cafb3f"
+    },
+    {
+      "date": "2026-11-16",
+      "id": "lc-hash-linear-20261116",
+      "scope": "核对线性探测、负数模规范化、保存原始位置及无删除时遇空槽终止；将最坏总复杂度纠正为O(n²+nq)，补齐变式复杂度；重做朴素/散列表/探测次数动画，逐帧加入查询指针和槽位高亮；增加单元素和负数碰撞回归。",
+      "commit": "6ff611f06c98710ba858a8dfe9db9feeb5cafb3f"
     }
   ],
   "validation": {
-    "previous_actions_run_id": 42432519345,
-    "previous_result": "2026-11-08：408 Daily Publish and Validate 运行42432519345在提交9ee6fca7699a4748813bbf838f1d2e1deec6758a上完成，队列策略检查、34道备用题全部C程序编译运行、今日发布步骤均success；validate_lessons.py报告159次C程序编译运行测试通过。",
+    "previous_actions_run_id": 42544228034,
+    "previous_result": "首次验证运行发现KMP回归输入中的换行被多转义，测试正确失败并阻止发布步骤；未把该次失败计为成功。",
     "new_commit_actions_result": "本轮先提交26ad009d383480dc84ff308a5bed236d4d3d9ba2，首次Actions发现新变式代码中的换行转义多了一层，测试正确报错；随后提交9ee6fca7699a4748813bbf838f1d2e1deec6758a修正5道变式代码的换行转义。最终运行42432519345全绿，验证34道备用题、159次C程序编译运行。",
-    "local_modified_code": "lc53、KMP、Prim、Huffman、Dijkstra变式代码的换行输出已修正为真正换行，并补充条件分支/return原因注释；lc994多源BFS动画head/tail修正为head=[0,1,2,3,5,6]、tail=[1,3,4,5,6,7]；Prim/Huffman/Dijkstra/AOE动画补充图边/树父子连线和状态指针；AOE优化动画9帧。GitHub Actions对34道备用题的朴素、优化、变式共159次C程序编译运行测试全部通过。",
+    "local_modified_code": "KMP三份程序改为scanf读取主串和模式串；Town Judge、Rotting Oranges朴素动画、AOE DFS动画、散列表三组动画补充指针和active高亮；散列表最坏复杂度由O(nq)修正为O(n²+nq)。",
     "commit_history": [
       "3da63b267ff9f703714b70d59e92eba34dc5553a",
       "b3d7646ed5766108a7864c8839e5c1c72f7a32af",
@@ -199,12 +205,35 @@
       "20a12f232585e32fde33ccfe35d3851c474ba373",
       "26ad009d383480dc84ff308a5bed236d4d3d9ba2",
       "9ee6fca7699a4748813bbf838f1d2e1deec6758a"
-    ]
+    ],
+    "code_commit": "ed44e87806e732cd2318e19ba0a7b0907749d6e1",
+    "validator_fix_commit": "6ff611f06c98710ba858a8dfe9db9feeb5cafb3f",
+    "latest_actions_run_id": 42544293016,
+    "latest_result": "成功：选题策略/备用队列检查通过；35道备用题共183次C程序编译运行测试通过；今日课程已存在，发布脚本确认无需重复提交。",
+    "pages_run_id": 42544292249,
+    "pages_result": "success：GitHub Pages构建与部署完成。"
   },
   "next_priorities": [
-    "11月9日发布后立即补入11月16日备用题，维持滚动7天；题型避免连续堆叠图题，优先排序/查找/栈队列。",
-    "继续逐题核查11月16日以后课程的来源、输入输出、边界样例、C代码、复杂度和动画。",
-    "逐步回溯历史正式题库，优先检查固定样例代码未说明输入输出、注释空泛和动画状态与代码不一致的问题。",
-    "按67天复习计划维持45%经典、35%综合变式、20%补盲的长期选题比例，减少链表重复。"
+    "11月10日发布后补入11月17日备用课，维持未来连续7天；下一批优先排序、栈、队列、稀疏矩阵，减少链表和连续堆叠图题。",
+    "按67天计划单独跟踪未来课程的45%经典、35%综合变式、20%补盲；pending文件包含历史回归题，不应把其简单计数误当作未来排课比例。",
+    "继续逐题复核11月17日以后课程的来源、题意、输入输出、约束、边界样例、C程序、复杂度和动画。",
+    "逐步回溯历史正式题库，优先检查缺少输入输出、变式复杂度、代码注释空泛及动画状态与程序执行不一致的问题。"
+  ],
+  "commit_history": [
+    "3da63b267ff9f703714b70d59e92eba34dc5553a",
+    "b3d7646ed5766108a7864c8839e5c1c72f7a32af",
+    "1162c97df2e79a691bb55d39f2f946385e3cdb71",
+    "89b419f7c95445c17590476f1a70de462856c7c4",
+    "d93436c93290ac563775bb55cfe4f7e67e03faad",
+    "5477b62fbaeb06991ddef0dcad88c22138284128",
+    "0fa733f061c01c56c73f6e7d352e70ebc3a1a553",
+    "91827ec828fa9209f4d7f976e0a74a3691755cd9",
+    "8824e6f1c94fa7b42635cf20b9fa012847fadedd",
+    "28cf5a9bb426008966d2455eecd27467e7b7c00c",
+    "20a12f232585e32fde33ccfe35d3851c474ba373",
+    "26ad009d383480dc84ff308a5bed236d4d3d9ba2",
+    "9ee6fca7699a4748813bbf838f1d2e1deec6758a",
+    "ed44e87806e732cd2318e19ba0a7b0907749d6e1",
+    "6ff611f06c98710ba858a8dfe9db9feeb5cafb3f"
   ]
 }
