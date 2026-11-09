@@ -4968,56 +4968,142 @@
     "variation": {
       "question": "只维护score=入度-出度能否判断法官？对于输入3 3 / 1 3 / 2 3 / 3 1，输出什么？",
       "idea": "无自环且关系不重复，入度最多n-1；score=n-1必有入度n-1、出度0。此例3有出边，因此输出-1。",
-      "code": "#include <stdio.h>\n#define MAX_N 1000\nstatic int score[MAX_N + 1];\nint main(void) {\n    int n, m;\n    if (scanf(\"%d%d\", &n, &m) != 2) return 1;\n    for (int k = 0; k < m; k++) {\n        int a, b;\n        if (scanf(\"%d%d\", &a, &b) != 2) return 1;\n        // score=入度-出度；信任别人减1，被信任加1。\n        score[a]--;\n        score[b]++;\n    }\n    for (int person = 1; person <= n; person++) {\n        // 入度最多n-1，故score=n-1只能由入度n-1且出度0产生。\n        if (score[person] == n - 1) {\n            printf(\"%d\\n\", person);\n            return 0;\n        }\n    }\n    puts(\"-1\");\n    return 0;\n}\n"
+      "code": "#include <stdio.h>\n#define MAX_N 1000\nstatic int score[MAX_N + 1];\nint main(void) {\n    int n, m;\n    if (scanf(\"%d%d\", &n, &m) != 2) return 1;\n    for (int k = 0; k < m; k++) {\n        int a, b;\n        if (scanf(\"%d%d\", &a, &b) != 2) return 1;\n        // score=入度-出度；信任别人减1，被信任加1。\n        score[a]--;\n        score[b]++;\n    }\n    for (int person = 1; person <= n; person++) {\n        // 入度最多n-1，故score=n-1只能由入度n-1且出度0产生。\n        if (score[person] == n - 1) {\n            printf(\"%d\\n\", person);\n            return 0;\n        }\n    }\n    puts(\"-1\");\n    return 0;\n}\n",
+      "complexity": "时间 O(n+m)，额外空间 O(n)。"
     },
     "animation": {
       "layout": "diagram",
       "brute": [
         {
-          "diagram": "边表：1→3，2→3\n候选人1；扫描1→3",
-          "text": "1的出度变为1，入度为0。"
+          "diagram": "候选人1；当前扫描边#0：1→3\n入度0、出度1",
+          "pointers": {
+            "candidate": 1,
+            "edge": 0
+          },
+          "active": [
+            0
+          ],
+          "text": "扫描第1条关系1→3：它是1的出边，不是1的入边。"
         },
         {
-          "diagram": "候选人1；扫描2→3\n入度0、出度1",
-          "text": "1不符合出度为0。"
+          "diagram": "候选人1；当前扫描边#1：2→3\n入度0、出度1",
+          "pointers": {
+            "candidate": 1,
+            "edge": 1
+          },
+          "active": [
+            1
+          ],
+          "text": "扫描第2条关系2→3后，1仍然有出边，排除候选人1。"
         },
         {
-          "diagram": "候选人2；重新扫描两条边\n入度0、出度1",
-          "text": "2同样不符合。"
+          "diagram": "候选人2；当前扫描边#0：1→3\n入度0、出度1",
+          "pointers": {
+            "candidate": 2,
+            "edge": 0
+          },
+          "active": [
+            0
+          ],
+          "text": "换候选人2，重新从边表开头扫描。"
         },
         {
-          "diagram": "候选人3；扫描1→3\n入度1、出度0",
-          "text": "3获得一条入边。"
+          "diagram": "候选人2；当前扫描边#1：2→3\n入度0、出度1",
+          "pointers": {
+            "candidate": 2,
+            "edge": 1
+          },
+          "active": [
+            1
+          ],
+          "text": "边2→3是2的出边，因此2也不满足法官条件。"
         },
         {
-          "diagram": "候选人3；扫描2→3\n入度2、出度0；输出3",
-          "text": "3同时满足入度n-1=2、出度0。"
+          "diagram": "候选人3；当前扫描边#0：1→3\n入度1、出度0",
+          "pointers": {
+            "candidate": 3,
+            "edge": 0
+          },
+          "active": [
+            0
+          ],
+          "text": "候选人3收到来自1的一条入边，继续检查另一条关系。"
+        },
+        {
+          "diagram": "候选人3；当前扫描边#1：2→3\n入度2、出度0\n输出3",
+          "pointers": {
+            "candidate": 3,
+            "edge": 1
+          },
+          "active": [
+            1
+          ],
+          "text": "3的入度达到n−1=2且出度为0，两个条件同时成立，返回3。"
         }
       ],
       "optimal": [
         {
           "diagram": "顶点1、2、3\n入度[0,0,0]；出度[0,0,0]",
-          "text": "初始化入度、出度数组。"
+          "pointers": {
+            "candidate": 1,
+            "edge": -1
+          },
+          "active": [],
+          "text": "初始化入度、出度数组；候选人编号从1开始。"
         },
         {
-          "diagram": "高亮有向边1→3\n出度1=1，入度3=1",
-          "text": "处理第一条关系。"
+          "diagram": "高亮边#0：1→3\n出度1=1，入度3=1",
+          "pointers": {
+            "edge": 0,
+            "from": 1,
+            "to": 3
+          },
+          "active": [
+            0
+          ],
+          "text": "处理第一条有向边：起点1出度加1，终点3入度加1。"
         },
         {
-          "diagram": "高亮有向边2→3\n出度2=1，入度3=2",
-          "text": "处理第二条关系。"
+          "diagram": "高亮边#1：2→3\n出度2=1，入度3=2",
+          "pointers": {
+            "edge": 1,
+            "from": 2,
+            "to": 3
+          },
+          "active": [
+            1
+          ],
+          "text": "处理第二条有向边：起点2出度加1，终点3入度加1。"
         },
         {
-          "diagram": "检查顶点1：入度0，出度1",
-          "text": "出度不为0，排除1。"
+          "diagram": "检查顶点1：入度0，出度1\n不满足出度为0",
+          "pointers": {
+            "candidate": 1
+          },
+          "active": [
+            0
+          ],
+          "text": "扫描候选人1：出度为1，立即排除。"
         },
         {
-          "diagram": "检查顶点2：入度0，出度1",
-          "text": "出度不为0，排除2。"
+          "diagram": "检查顶点2：入度0，出度1\n不满足出度为0",
+          "pointers": {
+            "candidate": 2
+          },
+          "active": [
+            1
+          ],
+          "text": "扫描候选人2：出度仍为1，不可能是法官。"
         },
         {
           "diagram": "检查顶点3：入度2，出度0\n输出3",
-          "text": "符合两个条件，立即返回。"
+          "pointers": {
+            "candidate": 3
+          },
+          "active": [
+            2
+          ],
+          "text": "3的入度为n−1且出度为0，输出3并结束。"
         }
       ]
     },
@@ -5071,7 +5157,8 @@
     "variation": {
       "question": "改成八邻域：对角线也能传播。输入2×2网格[[2,0],[0,1]]时，原题输出-1，八邻域输出多少？请运行完整C程序验证。",
       "idea": "把方向数组从4组扩展为8组，仍然多源BFS按层传播。对角位置(1,1)在第一分钟腐烂，因此输出1。此为拓展变式，不是力扣994原题规则。",
-      "code": "#include <stdio.h>\n#define MAX 10\n#define CAP (MAX * MAX)\n\nint grid[MAX][MAX];\nint qr[CAP], qc[CAP];\nconst int dr[8] = {-1, -1, -1, 0, 0, 1, 1, 1};\nconst int dc[8] = {-1, 0, 1, -1, 1, -1, 0, 1};\n\nint main(void) {\n    int m, n, fresh = 0, head = 0, tail = 0, minutes = 0;\n    if (scanf(\"%d%d\", &m, &n) != 2 || m < 1 || m > MAX || n < 1 || n > MAX) return 1;\n    for (int r = 0; r < m; r++) {\n        for (int c = 0; c < n; c++) {\n            if (scanf(\"%d\", &grid[r][c]) != 1 || grid[r][c] < 0 || grid[r][c] > 2) return 1;\n            if (grid[r][c] == 1) fresh++;\n            if (grid[r][c] == 2) { qr[tail] = r; qc[tail++] = c; }\n        }\n    }\n    while (head < tail && fresh > 0) {\n        int level = tail - head, changed = 0;\n        // 八邻域包含对角方向，故传播范围比原题的四邻域更广。\n        for (int i = 0; i < level; i++) {\n            int r = qr[head], c = qc[head++];\n            for (int d = 0; d < 8; d++) {\n                int nr = r + dr[d], nc = c + dc[d];\n                if (nr < 0 || nr >= m || nc < 0 || nc >= n || grid[nr][nc] != 1) continue;\n                grid[nr][nc] = 2; // 首次发现即标记，避免重复入队。\n                fresh--;\n                changed++;\n                qr[tail] = nr;\n                qc[tail++] = nc;\n            }\n        }\n        if (changed > 0) minutes++;\n    }\n    printf(\"%d\\n\", fresh == 0 ? minutes : -1);\n    return 0;\n}\n"
+      "code": "#include <stdio.h>\n#define MAX 10\n#define CAP (MAX * MAX)\n\nint grid[MAX][MAX];\nint qr[CAP], qc[CAP];\nconst int dr[8] = {-1, -1, -1, 0, 0, 1, 1, 1};\nconst int dc[8] = {-1, 0, 1, -1, 1, -1, 0, 1};\n\nint main(void) {\n    int m, n, fresh = 0, head = 0, tail = 0, minutes = 0;\n    if (scanf(\"%d%d\", &m, &n) != 2 || m < 1 || m > MAX || n < 1 || n > MAX) return 1;\n    for (int r = 0; r < m; r++) {\n        for (int c = 0; c < n; c++) {\n            if (scanf(\"%d\", &grid[r][c]) != 1 || grid[r][c] < 0 || grid[r][c] > 2) return 1;\n            if (grid[r][c] == 1) fresh++;\n            if (grid[r][c] == 2) { qr[tail] = r; qc[tail++] = c; }\n        }\n    }\n    while (head < tail && fresh > 0) {\n        int level = tail - head, changed = 0;\n        // 八邻域包含对角方向，故传播范围比原题的四邻域更广。\n        for (int i = 0; i < level; i++) {\n            int r = qr[head], c = qc[head++];\n            for (int d = 0; d < 8; d++) {\n                int nr = r + dr[d], nc = c + dc[d];\n                if (nr < 0 || nr >= m || nc < 0 || nc >= n || grid[nr][nc] != 1) continue;\n                grid[nr][nc] = 2; // 首次发现即标记，避免重复入队。\n                fresh--;\n                changed++;\n                qr[tail] = nr;\n                qc[tail++] = nc;\n            }\n        }\n        if (changed > 0) minutes++;\n    }\n    printf(\"%d\\n\", fresh == 0 ? minutes : -1);\n    return 0;\n}\n",
+      "complexity": "时间 O(mn)，额外空间 O(mn)（网格与队列）。"
     },
     "animation": {
       "layout": "array",
@@ -5092,7 +5179,8 @@
             0
           ],
           "pointers": {
-            "source": 0
+            "minute": 0,
+            "sources": 0
           },
           "text": "分钟0：只有(0,0)腐烂，fresh=6；本轮先复制grid到nextGrid。"
         },
@@ -5112,7 +5200,11 @@
             1,
             3
           ],
-          "text": "分钟1：旧(0,0)使(0,1)、(1,0)腐烂；同时写入nextGrid，fresh=4。"
+          "text": "分钟1：旧(0,0)使(0,1)、(1,0)腐烂；同时写入nextGrid，fresh=4。",
+          "pointers": {
+            "minute": 1,
+            "sources": 0
+          }
         },
         {
           "array": [
@@ -5130,7 +5222,14 @@
             2,
             4
           ],
-          "text": "分钟2：旧(0,1)→(0,2)，旧(1,0)→(1,1)；fresh=2。"
+          "text": "分钟2：旧(0,1)→(0,2)，旧(1,0)→(1,1)；fresh=2。",
+          "pointers": {
+            "minute": 2,
+            "sources": [
+              1,
+              3
+            ]
+          }
         },
         {
           "array": [
@@ -5147,7 +5246,11 @@
           "active": [
             7
           ],
-          "text": "分钟3：旧(1,1)→(2,1)，fresh=1；本轮没有让新腐烂(2,1)立即继续传播。"
+          "text": "分钟3：旧(1,1)→(2,1)，fresh=1；本轮没有让新腐烂(2,1)立即继续传播。",
+          "pointers": {
+            "minute": 3,
+            "sources": 4
+          }
         },
         {
           "array": [
@@ -5164,7 +5267,11 @@
           "active": [
             8
           ],
-          "text": "分钟4：旧(2,1)→(2,2)，fresh=0；输出4。"
+          "text": "分钟4：旧(2,1)→(2,2)，fresh=0；输出4。",
+          "pointers": {
+            "minute": 4,
+            "sources": 7
+          }
         }
       ],
       "optimal": [
@@ -5313,17 +5420,17 @@
     "title": "模式匹配：从逐位比较到KMP",
     "difficulty": "中等",
     "time": "20–25分钟",
-    "source": "https://oi-wiki.org/string/kmp/",
-    "question": "给定主串T和模式串P，返回P在T中第一次出现的起始下标（从0开始）；若不存在则返回-1。分别实现逐位朴素匹配和KMP算法。",
-    "constraint": "1≤|T|≤1000，1≤|P|≤1000；字符区分大小写。本站C程序使用内置字符串，无须键盘输入。lps[i]表示P[0..i]的最长相等真前缀与真后缀长度。",
-    "sample": "主串 T = \"ababcabcac\"\n模式串 P = \"abcac\"\n输出：5\n解释：T[5..9]恰好为\"abcac\"。若模式串不存在，输出-1。",
+    "source": "https://oiwiki.net/string/kmp/",
+    "question": "给定主串T和模式串P，返回P在T中第一次出现的起始下标（从0开始）；若不存在则返回-1。输入格式：第一行输入主串T，第二行输入模式串P（均不含空白字符）。输出格式：输出第一次匹配的起始下标；若不存在输出-1。分别实现逐位朴素匹配和KMP算法。",
+    "constraint": "1≤|T|≤1000，1≤|P|≤1000；T和P均为非空、不含空白字符的字符串，字符区分大小写。lps[i]表示P[0..i]的最长相等真前缀与真后缀长度。",
+    "sample": "正例输入：\nababcabcac\nabcac\n输出：5\n\n反例输入：\nabcdef\ngh\n输出：-1\n\n边界输入（单字符完全匹配）：\na\na\n输出：0\n\n边界输入（模式串长于主串）：\na\naa\n输出：-1",
     "brute": {
       "title": "逐位枚举起点",
       "tag": "最直观保底",
       "idea": "枚举主串中每个可能的起点i，从模式串首字符开始逐位比较；全部匹配才返回i，否则换下一个起点。",
       "complexity": "时间 O((n-m+1)m)，最坏 O(nm)；额外空间 O(1)。",
       "risk": "正确但会重复比较已经匹配过的字符；注意i最多只能到n-m。",
-      "code": "/*\n * 朴素模式匹配：枚举主串中的每一个合法起点。\n * j记录当前已经匹配的模式串字符数。\n * 一旦失配，就放弃当前起点，从下一个起点重新比较。\n */\n#include <stdio.h>\n#include <string.h>\n\nint main(void) {\n    char text[] = \"ababcabcac\";\n    char pattern[] = \"abcac\";\n    int n = (int)strlen(text);\n    int m = (int)strlen(pattern);\n    int answer = -1;\n\n    // 最后一个合法起点是 n-m，不能越界\n    for (int i = 0; i <= n - m; i++) {\n        int j = 0;\n        while (j < m && text[i + j] == pattern[j])\n            j++;\n\n        if (j == m) { // 模式串全部匹配\n            answer = i;\n            break;\n        }\n    }\n\n    printf(\"%d\\n\", answer); // 5\n    return 0;\n}",
+      "code": "/*\n * 朴素模式匹配：枚举主串中的每一个合法起点。\n * j记录当前已经匹配的模式串字符数。\n * 失配后放弃当前起点，从下一个起点重新比较。\n */\n#include <stdio.h>\n#include <string.h>\n\nint main(void) {\n    char text[1005], pattern[1005];\n    if (scanf(\"%1000s %1000s\", text, pattern) != 2) return 1;\n    int n = (int)strlen(text);\n    int m = (int)strlen(pattern);\n    int answer = -1;\n\n    // 最后一个合法起点是n-m；m>n时循环自然不会执行。\n    for (int i = 0; i <= n - m; i++) {\n        int j = 0;\n        while (j < m && text[i + j] == pattern[j]) j++;\n        if (j == m) {\n            answer = i;\n            break; // 只需返回第一次出现的位置。\n        }\n    }\n    printf(\"%d\\n\", answer);\n    return 0;\n}",
       "explain": [
         "i枚举主串中的候选起点，j表示当前匹配长度。",
         "失配后i右移一位，j从0重新开始，因此会重复比较。",
@@ -5336,7 +5443,7 @@
       "idea": "先计算模式串每个前缀的lps值。失配时令j=lps[j-1]，保留已匹配部分中仍可能成立的前后缀；主串指针i不回退。",
       "complexity": "时间 O(n+m)；辅助空间 O(m)。",
       "risk": "lps是最长相等真前缀与真后缀的长度；失配回退的是模式串指针j，不是主串指针i。",
-      "code": "/*\n * KMP：利用模式串自身的前后缀信息避免主串回退。\n * lps[i]表示pattern[0..i]的最长相等真前缀、\n * 真后缀的长度。\n */\n#include <stdio.h>\n#include <string.h>\n\nint main(void) {\n    char text[] = \"ababcabcac\";\n    char pattern[] = \"abcac\";\n    int n = (int)strlen(text);\n    int m = (int)strlen(pattern);\n    int lps[1005] = {0};\n    int answer = -1;\n\n    // 第一步：计算模式串的lps数组\n    for (int i = 1, len = 0; i < m; ) {\n        if (pattern[i] == pattern[len]) {\n            lps[i++] = ++len;\n        } else if (len > 0) {\n            len = lps[len - 1]; // 缩短候选前后缀\n        } else {\n            lps[i++] = 0;\n        }\n    }\n\n    // 第二步：扫描主串，i只向右移动\n    for (int i = 0, j = 0; i < n; ) {\n        if (text[i] == pattern[j]) {\n            i++;\n            j++;\n            if (j == m) {\n                answer = i - m;\n                break;\n            }\n        } else if (j > 0) {\n            j = lps[j - 1]; // 主串i不回退\n        } else {\n            i++;\n        }\n    }\n\n    printf(\"%d\\n\", answer); // 5\n    return 0;\n}",
+      "code": "/*\n * KMP：利用模式串自身的前后缀信息避免主串回退。\n * lps[i]表示pattern[0..i]的最长相等真前缀、真后缀长度。\n */\n#include <stdio.h>\n#include <string.h>\n\nint main(void) {\n    char text[1005], pattern[1005];\n    if (scanf(\"%1000s %1000s\", text, pattern) != 2) return 1;\n    int n = (int)strlen(text);\n    int m = (int)strlen(pattern);\n    int lps[1005] = {0};\n    int answer = -1;\n\n    // 第一步：计算模式串的lps数组。\n    for (int i = 1, len = 0; i < m; ) {\n        if (pattern[i] == pattern[len]) {\n            lps[i++] = ++len;\n        } else if (len > 0) {\n            len = lps[len - 1]; // 缩短候选前后缀，i不回退。\n        } else {\n            lps[i++] = 0; // 无可复用前缀时，当前位置的lps为0。\n        }\n    }\n\n    // 第二步：扫描主串，i只向右移动。\n    for (int i = 0, j = 0; i < n; ) {\n        if (text[i] == pattern[j]) {\n            i++;\n            j++;\n            if (j == m) {\n                answer = i - m;\n                break; // 已找到第一次完整匹配。\n            }\n        } else if (j > 0) {\n            j = lps[j - 1]; // 保留可复用后缀，主串i保持不变。\n        } else {\n            i++; // j为0仍失配，当前主串字符不能作为匹配起点。\n        }\n    }\n    printf(\"%d\\n\", answer);\n    return 0;\n}",
       "explain": [
         "先求lps：失配时，已匹配前缀中有多长的后缀还能复用。",
         "比较成功时i、j同时右移；失配且j>0时只回退j。",
@@ -5349,9 +5456,10 @@
       "若j=0仍失配，主串指针i才前进一步。"
     ],
     "variation": {
-      "question": "巩固题：主串T=\"aaaaab\"，模式串P=\"aaab\"。分别用朴素法或KMP求第一次匹配位置，并写出完整C程序。",
+      "question": "巩固题：主串T=\"aaaaab\"，模式串P=\"aaab\"，按主题输入格式分别输入两行字符串，使用KMP求第一次匹配位置，并说明lps数组为[0,1,2,0]。输出：2。",
       "idea": "输出2。KMP计算lps=[0,1,2,0]；前面连续的a失配时可复用前缀信息，不必让主串指针回退。",
-      "code": "#include <stdio.h>\n#include <string.h>\n\nint main(void) {\n    char text[] = \"aaaaab\";\n    char pattern[] = \"aaab\";\n    int n = (int)strlen(text);\n    int m = (int)strlen(pattern);\n    int lps[1005] = {0};\n    int answer = -1;\n\n    // 先构造lps：记录模式串前缀与后缀可复用的最长长度。\n    for (int i = 1, len = 0; i < m; ) {\n        if (pattern[i] == pattern[len]) {\n            lps[i++] = ++len;       // 字符相同，公共前后缀再延长一位\n        } else if (len > 0) {\n            len = lps[len - 1];     // 缩短候选前后缀，i不动以便继续比较\n        } else {\n            lps[i++] = 0;           // len已为0仍失配，不存在非空公共前后缀\n        }\n    }\n\n    // 扫描主串：失配时优先回退模式串下标，不回退主串下标。\n    for (int i = 0, j = 0; i < n; ) {\n        if (text[i] == pattern[j]) {\n            i++;\n            j++;\n            if (j == m) {\n                answer = i - m;     // 已匹配m个字符，当前起点为i-m\n                break;              // 题目只要求第一次出现的位置\n            }\n        } else if (j > 0) {\n            j = lps[j - 1];         // 保留已匹配前后缀，继续比较当前text[i]\n        } else {\n            i++;                    // j为0仍失配，当前主串字符不可能作为匹配起点\n        }\n    }\n\n    printf(\"%d\\n\", answer);       // 输出第一次匹配位置2；不存在时为-1\n    return 0;                        // 正常完成匹配过程\n}"
+      "code": "#include <stdio.h>\n#include <string.h>\n\nint main(void) {\n    char text[1005], pattern[1005];\n    if (scanf(\"%1000s %1000s\", text, pattern) != 2) return 1;\n    int n = (int)strlen(text);\n    int m = (int)strlen(pattern);\n    int lps[1005] = {0};\n    int answer = -1;\n\n    // 先计算模式串前缀函数，记录可复用的公共前后缀长度。\n    for (int i = 1, len = 0; i < m; ) {\n        if (pattern[i] == pattern[len]) {\n            lps[i++] = ++len;       // 字符相同，公共前后缀再延长一位。\n        } else if (len > 0) {\n            len = lps[len - 1];     // 缩短候选前后缀，i不动以便重试。\n        } else {\n            lps[i++] = 0;           // len为0仍失配，不存在非空公共前后缀。\n        }\n    }\n\n    // 扫描主串：失配时优先回退模式串下标，不回退主串下标。\n    for (int i = 0, j = 0; i < n; ) {\n        if (text[i] == pattern[j]) {\n            i++;\n            j++;\n            if (j == m) {\n                answer = i - m;     // 已匹配m个字符，起点为i-m。\n                break;              // 题目只要求第一次出现的位置。\n            }\n        } else if (j > 0) {\n            j = lps[j - 1];         // 保留已匹配前后缀，继续比较当前text[i]。\n        } else {\n            i++;                    // j为0仍失配，当前主串字符不可能作为匹配起点。\n        }\n    }\n    printf(\"%d\\n\", answer);\n    return 0;                       // 正常完成匹配过程。\n}",
+      "complexity": "时间 O(n+m)，辅助空间 O(m)（lps数组）。"
     },
     "animation": {
       "layout": "array",
@@ -5710,7 +5818,7 @@
     "source": "https://cp-algorithms.com/graph/mst_prim.html",
     "question": "给定一个连通无向带权图，顶点编号为0至4。求最小生成树的总权值。先实现朴素Prim：每轮扫描全部边，找一条连接已选与未选顶点的最小边；再实现优化Prim：用low[v]维护未选顶点v连接已选集合的最小边权。 本站程序内置上述5顶点、7条边的示例图，不读取键盘输入；输出一行最小生成树总权值，不连通时输出-1。",
     "constraint": "本题演示图有V=5个顶点、E=7条无向边，顶点编号0至4；边权为整数且1≤w≤10^8。INF取10^9，严格大于任意边权；生成树总权值最多4×10^8，可用int保存。图保证连通；若推广到不连通图，代码会输出-1。",
-    "sample": "边及权值：\n(0,1,2) (0,3,6) (1,2,3) (1,3,8)\n(1,4,5) (2,4,7) (3,4,9)\n输出：16\n一种最小生成树：0-1、1-2、1-4、0-3，总权值2+3+5+6=16。",
+    "sample": "边及权值：\n(0,1,2) (0,3,6) (1,2,3) (1,3,8)\n(1,4,5) (2,4,7) (3,4,9)\n输出：16\n一种最小生成树：0-1、1-2、1-4、0-3，总权值2+3+5+6=16。\n\n边界：只有1个顶点且无边时，最小生成树总权值为0。\n反例：若图不连通，无法选出V−1条跨集合边，应输出-1。",
     "brute": {
       "title": "每轮扫描全部边",
       "tag": "朴素Prim",
@@ -5745,7 +5853,8 @@
     "variation": {
       "question": "巩固题：无向连通图有4个顶点，边为(0,1,1)、(0,2,4)、(1,2,2)、(1,3,5)、(2,3,3)。求最小生成树总权值，并写出完整Prim程序。",
       "idea": "输出6。依次选边0-1（1）、1-2（2）、2-3（3），三条边连接全部四个顶点。",
-      "code": "#include <stdio.h>\n#define INF 1000000000\n\nint main(void) {\n    int g[4][4] = {\n        {0,   1,   4,   INF},\n        {1,   0,   2,   5},\n        {4,   2,   0,   3},\n        {INF, 5,   3,   0}\n    };\n    int low[4];\n    int used[4] = {1, 0, 0, 0};\n    int total = 0;\n\n    // 从顶点0开始，记录它到各未选顶点的最小连接边权。\n    for (int i = 0; i < 4; i++)\n        low[i] = g[0][i];\n\n    for (int step = 1; step < 4; step++) {\n        int v = -1;\n        for (int i = 0; i < 4; i++) {\n            // 只在未选顶点中找low最小者；v==-1表示尚无候选顶点。\n            if (!used[i] && (v == -1 || low[i] < low[v]))\n                v = i;\n        }\n        // 没有候选顶点或最小连接代价仍为INF，说明图不连通。\n        if (v == -1 || low[v] == INF) {\n            printf(\"-1\\n\");\n            return 0;               // 无法生成覆盖所有顶点的生成树\n        }\n\n        used[v] = 1;\n        total += low[v];\n\n        // 新顶点加入后，只保留更小的跨集合边权。\n        for (int i = 0; i < 4; i++) {\n            if (!used[i] && g[v][i] < low[i])\n                low[i] = g[v][i];\n        }\n    }\n\n    printf(\"%d\\n\", total);        // 示例最小生成树权值为6\n    return 0;                        // 所有顶点已加入生成树\n}"
+      "code": "#include <stdio.h>\n#define INF 1000000000\n\nint main(void) {\n    int g[4][4] = {\n        {0,   1,   4,   INF},\n        {1,   0,   2,   5},\n        {4,   2,   0,   3},\n        {INF, 5,   3,   0}\n    };\n    int low[4];\n    int used[4] = {1, 0, 0, 0};\n    int total = 0;\n\n    // 从顶点0开始，记录它到各未选顶点的最小连接边权。\n    for (int i = 0; i < 4; i++)\n        low[i] = g[0][i];\n\n    for (int step = 1; step < 4; step++) {\n        int v = -1;\n        for (int i = 0; i < 4; i++) {\n            // 只在未选顶点中找low最小者；v==-1表示尚无候选顶点。\n            if (!used[i] && (v == -1 || low[i] < low[v]))\n                v = i;\n        }\n        // 没有候选顶点或最小连接代价仍为INF，说明图不连通。\n        if (v == -1 || low[v] == INF) {\n            printf(\"-1\\n\");\n            return 0;               // 无法生成覆盖所有顶点的生成树\n        }\n\n        used[v] = 1;\n        total += low[v];\n\n        // 新顶点加入后，只保留更小的跨集合边权。\n        for (int i = 0; i < 4; i++) {\n            if (!used[i] && g[v][i] < low[i])\n                low[i] = g[v][i];\n        }\n    }\n\n    printf(\"%d\\n\", total);        // 示例最小生成树权值为6\n    return 0;                        // 所有顶点已加入生成树\n}",
+      "complexity": "邻接矩阵版时间 O(V²)，空间 O(V²)。"
     },
     "animation": {
       "layout": "array",
@@ -5932,10 +6041,10 @@
     "title": "哈夫曼树：从反复扫描到小根堆",
     "difficulty": "中等",
     "time": "20–25分钟",
-    "source": "https://oi-wiki.org/ds/huffman-tree/",
+    "source": "https://oi-wiki.net/ds/huffman-tree/",
     "question": "给定n个正整数作为叶结点权值，每次选取当前最小的两个权值合并为新结点，新结点权值为两者之和。重复直到只剩一个结点，输出所得哈夫曼树的带权路径长度WPL。可用所有合并权值之和计算WPL。 本站程序内置示例权值数组，不读取键盘输入；输出一行WPL。",
     "constraint": "2≤n≤1000；每个叶结点权值为正整数且1≤w_i≤10^9；WPL及合并权值使用long long。n个叶结点最多创建2n-1个树结点，朴素数组容量2×MAXN足够；小根堆最多同时存放n个活动权值。本站示例使用内置权值数组，无须键盘输入；题目只要求WPL，不要求输出具体编码。",
-    "sample": "叶结点权值：[5,9,12,13,16,45]\n合并过程：5+9=14，12+13=25，14+16=30，25+30=55，45+55=100。\n输出：224\n解释：WPL等于所有新合并结点权值之和14+25+30+55+100。",
+    "sample": "叶结点权值：[5,9,12,13,16,45]\n合并过程：5+9=14，12+13=25，14+16=30，25+30=55，45+55=100。\n输出：224\n解释：WPL等于所有新合并结点权值之和14+25+30+55+100。\n\n边界：n=2、权值[4,7]时只合并一次，WPL=11。\n反例：若错误地反复合并最大两个权值，本例不会得到最优WPL=224。",
     "brute": {
       "title": "每轮扫描找两个最小值",
       "tag": "朴素贪心",
@@ -5970,7 +6079,8 @@
     "variation": {
       "question": "巩固题：叶结点权值为[2,3,7,9]，按哈夫曼算法构造，求WPL。请写出使用小根堆的完整C程序。",
       "idea": "合并2+3=5，5+7=12，9+12=21，因此WPL=5+12+21=38。",
-      "code": "#include <stdio.h>\n#define MAXN 1000\n\nlong long heap[2 * MAXN];\nint heapSize = 0;\n\nvoid push(long long x) {\n    int i = ++heapSize;\n    // 只有父结点比新值大时才上滤，维持小根堆性质。\n    while (i > 1 && heap[i / 2] > x) {\n        heap[i] = heap[i / 2];\n        i /= 2;\n    }\n    heap[i] = x;\n}\n\nlong long popMin(void) {\n    long long result = heap[1];\n    long long last = heap[heapSize--];\n    int i = 1;\n\n    while (i * 2 <= heapSize) {\n        int child = i * 2;\n        // 先选较小孩子；若右孩子更小，应该沿右侧下滤。\n        if (child + 1 <= heapSize && heap[child + 1] < heap[child])\n            child++;\n        // 末尾元素已不大于较小孩子，堆序恢复，可以停止下滤。\n        if (heap[child] >= last)\n            break;\n        heap[i] = heap[child];\n        i = child;\n    }\n    heap[i] = last;\n    return result;                  // 返回原堆顶，即当前最小权值\n}\n\nint main(void) {\n    int weight[4] = {2, 3, 7, 9};\n    long long wpl = 0;\n\n    for (int i = 0; i < 4; i++)\n        push(weight[i]);\n\n    // 只剩一个根结点时，哈夫曼树构造完成。\n    while (heapSize > 1) {\n        long long a = popMin();\n        long long b = popMin();\n        long long sum = a + b;\n        wpl += sum;\n        push(sum);                  // 合并结点重新加入森林\n    }\n\n    printf(\"%lld\\n\", wpl);       // 2+3=5，5+7=12，9+12=21，总和38\n    return 0;                        // 所有叶结点已合并为一棵树\n}"
+      "code": "#include <stdio.h>\n#define MAXN 1000\n\nlong long heap[2 * MAXN];\nint heapSize = 0;\n\nvoid push(long long x) {\n    int i = ++heapSize;\n    // 只有父结点比新值大时才上滤，维持小根堆性质。\n    while (i > 1 && heap[i / 2] > x) {\n        heap[i] = heap[i / 2];\n        i /= 2;\n    }\n    heap[i] = x;\n}\n\nlong long popMin(void) {\n    long long result = heap[1];\n    long long last = heap[heapSize--];\n    int i = 1;\n\n    while (i * 2 <= heapSize) {\n        int child = i * 2;\n        // 先选较小孩子；若右孩子更小，应该沿右侧下滤。\n        if (child + 1 <= heapSize && heap[child + 1] < heap[child])\n            child++;\n        // 末尾元素已不大于较小孩子，堆序恢复，可以停止下滤。\n        if (heap[child] >= last)\n            break;\n        heap[i] = heap[child];\n        i = child;\n    }\n    heap[i] = last;\n    return result;                  // 返回原堆顶，即当前最小权值\n}\n\nint main(void) {\n    int weight[4] = {2, 3, 7, 9};\n    long long wpl = 0;\n\n    for (int i = 0; i < 4; i++)\n        push(weight[i]);\n\n    // 只剩一个根结点时，哈夫曼树构造完成。\n    while (heapSize > 1) {\n        long long a = popMin();\n        long long b = popMin();\n        long long sum = a + b;\n        wpl += sum;\n        push(sum);                  // 合并结点重新加入森林\n    }\n\n    printf(\"%lld\\n\", wpl);       // 2+3=5，5+7=12，9+12=21，总和38\n    return 0;                        // 所有叶结点已合并为一棵树\n}",
+      "complexity": "时间 O(n log n)，额外空间 O(n)。"
     },
     "animation": {
       "layout": "array",
@@ -6182,7 +6292,7 @@
     "source": "https://cp-algorithms.com/graph/dijkstra.html",
     "question": "给定一个有向带权图，边权均为非负数，源点为0。求源点0到其他各顶点的最短距离。先用重复松弛法：每轮扫描全部边，尝试更新终点距离；再用Dijkstra：每轮选取当前未确定且距离最小的顶点，并用它松弛出边。请说明为什么Dijkstra要求边权非负。 本站程序内置上述5顶点有向图，不读取键盘输入；按顶点0至4输出距离，顶点不可达时输出-1。",
     "constraint": "本题演示图有V=5个顶点，顶点编号0至4；边权为非负整数且0≤w≤10^8。简单路径最多经过V-1=4条边，路径长度不超过4×10^8，因此INF取10^9安全且dist可用int保存。输出按顶点0至4排列，不可达顶点输出-1；当前内置示例图均可达。Dijkstra要求所有边权非负。",
-    "sample": "有向边及权值：\n0→1(10)，0→3(5)，1→2(1)，1→3(2)，2→4(4)，\n3→1(3)，3→2(9)，3→4(2)，4→0(7)，4→2(6)。\n源点：0\n输出：0 8 9 5 7\n含义：dist[0]=0，dist[1]=8，dist[2]=9，dist[3]=5，dist[4]=7。",
+    "sample": "有向边及权值：\n0→1(10)，0→3(5)，1→2(1)，1→3(2)，2→4(4)，\n3→1(3)，3→2(9)，3→4(2)，4→0(7)，4→2(6)。\n源点：0\n输出：0 8 9 5 7\n含义：dist[0]=0，dist[1]=8，dist[2]=9，dist[3]=5，dist[4]=7。\n\n边界：源点到自身的距离始终为0；不可达顶点应输出-1。\n反例：若加入负边0→1(2)、0→2(5)、2→1(-10)，真实dist[1]=-5，而Dijkstra可能先确定2，因此负权图不能使用Dijkstra。",
     "brute": {
       "tag": "重复松弛法",
       "title": "Bellman-Ford：反复扫描边集",
@@ -6220,7 +6330,8 @@
     "variation": {
       "question": "巩固题：有向图顶点为0、1、2、3，边为0→1(4)、0→2(1)、2→1(2)、1→3(1)、2→3(5)。以0为源点，求所有顶点的最短距离，并写出完整Dijkstra程序。",
       "idea": "先确定顶点0，得到dist=[0,4,1,INF]；再确定顶点2，将dist[1]更新为3、dist[3]更新为6；确定顶点1后将dist[3]更新为4；最后确定顶点3。输出0 3 1 4。",
-      "code": "#include <stdio.h>\n#define INF 1000000000\n\nint main(void) {\n    int g[4][4] = {\n        {0,   4,   1,   INF},\n        {INF, 0,   INF, 1},\n        {INF, 2,   0,   5},\n        {INF, INF, INF, 0}\n    };\n    int dist[4];\n    int visited[4] = {0};\n\n    for (int i = 0; i < 4; i++)\n        dist[i] = INF;\n    dist[0] = 0;                    // 源点0到自身距离为0\n\n    for (int step = 0; step < 4; step++) {\n        int u = -1;\n        for (int i = 0; i < 4; i++) {\n            // 只在未确定顶点中选距离最小者；u==-1表示还没有候选。\n            if (!visited[i] && (u == -1 || dist[i] < dist[u]))\n                u = i;\n        }\n\n        // 最小候选仍为INF，剩余顶点都不可达，无须继续。\n        if (u == -1 || dist[u] == INF)\n            break;\n\n        visited[u] = 1;             // 非负边权保证该顶点的最短距离已确定\n\n        for (int v = 0; v < 4; v++) {\n            // 只松弛未确定且存在的边；更短时才更新dist[v]。\n            if (!visited[v] && g[u][v] != INF &&\n                dist[u] + g[u][v] < dist[v]) {\n                dist[v] = dist[u] + g[u][v];\n            }\n        }\n    }\n\n    for (int i = 0; i < 4; i++) {\n        if (i > 0)\n            printf(\" \");\n        if (dist[i] == INF)\n            printf(\"-1\");\n        else\n            printf(\"%d\", dist[i]);\n    }\n    printf(\"\\n\");                 // 示例结果：0 3 1 4\n    return 0;                        // 所有可达顶点均已确定\n}"
+      "code": "#include <stdio.h>\n#define INF 1000000000\n\nint main(void) {\n    int g[4][4] = {\n        {0,   4,   1,   INF},\n        {INF, 0,   INF, 1},\n        {INF, 2,   0,   5},\n        {INF, INF, INF, 0}\n    };\n    int dist[4];\n    int visited[4] = {0};\n\n    for (int i = 0; i < 4; i++)\n        dist[i] = INF;\n    dist[0] = 0;                    // 源点0到自身距离为0\n\n    for (int step = 0; step < 4; step++) {\n        int u = -1;\n        for (int i = 0; i < 4; i++) {\n            // 只在未确定顶点中选距离最小者；u==-1表示还没有候选。\n            if (!visited[i] && (u == -1 || dist[i] < dist[u]))\n                u = i;\n        }\n\n        // 最小候选仍为INF，剩余顶点都不可达，无须继续。\n        if (u == -1 || dist[u] == INF)\n            break;\n\n        visited[u] = 1;             // 非负边权保证该顶点的最短距离已确定\n\n        for (int v = 0; v < 4; v++) {\n            // 只松弛未确定且存在的边；更短时才更新dist[v]。\n            if (!visited[v] && g[u][v] != INF &&\n                dist[u] + g[u][v] < dist[v]) {\n                dist[v] = dist[u] + g[u][v];\n            }\n        }\n    }\n\n    for (int i = 0; i < 4; i++) {\n        if (i > 0)\n            printf(\" \");\n        if (dist[i] == INF)\n            printf(\"-1\");\n        else\n            printf(\"%d\", dist[i]);\n    }\n    printf(\"\\n\");                 // 示例结果：0 3 1 4\n    return 0;                        // 所有可达顶点均已确定\n}",
+      "complexity": "邻接矩阵版时间 O(V²)，空间 O(V²)。"
     },
     "animation": {
       "layout": "array",
@@ -6442,7 +6553,7 @@
     "source": "https://www.oi-ol.com/graph/topo/",
     "question": "一个AOE网有6个事件，事件1为源点、事件6为汇点。每条有向边表示一项活动，括号内是活动持续时间：1→2(3)、1→3(2)、2→4(2)、2→5(3)、3→4(4)、3→5(2)、4→6(3)、5→6(2)。求整个工程的最短完成时间，并给出一条关键路径。请先用DFS枚举源点到汇点的路径，再用拓扑排序计算ve和vl，比较两种方法。 本站程序内置该6事件、8活动示例网，不读取键盘输入；输出第一行为项目工期，第二行为一条关键路径。",
     "constraint": "图必须是有向无环图，只有一个源点1和一个汇点6；每个事件都位于从源点1到汇点6的某条路径上。顶点表示事件、边表示活动，活动持续时间为正整数且1≤w≤10^6。源点ve=0；ve按拓扑序取前驱最大值，vl按逆拓扑序取后继最小值。关键活动满足ve[u]=vl[v]-w(u,v)，即活动总时差为0。",
-    "sample": "活动（起点→终点，工期）：\n1→2(3)  1→3(2)\n2→4(2)  2→5(3)\n3→4(4)  3→5(2)\n4→6(3)  5→6(2)\n\n输出：\n9\n1->3->4->6\n说明：项目工期为9，关键路径为1→3→4→6。",
+    "sample": "活动（起点→终点，工期）：\n1→2(3)  1→3(2)\n2→4(2)  2→5(3)\n3→4(4)  3→5(2)\n4→6(3)  5→6(2)\n\n输出：\n9\n1->3->4->6\n说明：项目工期为9，关键路径为1→3→4→6。\n\n边界：仅有活动1→2(1)时，项目工期为1，关键路径为1→2。\n反例：若活动网存在有向环，则不满足AOE网定义，拓扑排序不能覆盖全部事件；DFS枚举也不应在该输入上运行。",
     "brute": {
       "title": "DFS枚举所有完整路径",
       "tag": "保底思路",
@@ -6475,30 +6586,99 @@
     "variation": {
       "question": "巩固题：若活动3→4的持续时间从4缩短为3，其余活动不变，新的项目工期是多少？请给出一条新的关键路径。",
       "idea": "重新计算后，三条路径1→2→4→6、1→2→5→6、1→3→4→6的工期都为8；项目工期变为8。程序按顶点编号优先输出其中一条：1→2→4→6。",
-      "code": "/*\n * 巩固题：把活动3->4的工期由4改成3，重新求项目工期和一条关键路径。\n * 其余活动不变；重新执行拓扑正向与逆向计算。\n */\n#include <stdio.h>\n#define N 6\n#define M 8\n\nint main(void) {\n    int from[M] = {0, 0, 1, 1, 2, 2, 3, 4};\n    int to[M]   = {1, 2, 3, 4, 3, 4, 5, 5};\n    int dur[M]  = {3, 2, 2, 3, 3, 2, 3, 2}; // 第5条边3->4改为3\n    int w[N][N] = {0}, indeg[N] = {0};\n\n    for (int e = 0; e < M; e++) {\n        w[from[e]][to[e]] = dur[e];\n        indeg[to[e]]++;\n    }\n\n    int q[N], topo[N], front = 0, rear = 0, k = 0;\n    int ve[N] = {0};\n    for (int i = 0; i < N; i++)\n        if (indeg[i] == 0) q[rear++] = i;\n\n    while (front < rear) {\n        int u = q[front++];\n        topo[k++] = u;\n        for (int v = 0; v < N; v++) {\n            if (w[u][v] > 0) {\n                if (ve[v] < ve[u] + w[u][v])\n                    ve[v] = ve[u] + w[u][v];\n                indeg[v]--;\n                if (indeg[v] == 0) q[rear++] = v;\n            }\n        }\n    }\n    if (k != N) return 1;\n\n    int vl[N];\n    for (int i = 0; i < N; i++) vl[i] = ve[N - 1];\n    for (int i = k - 1; i >= 0; i--) {\n        int u = topo[i];\n        for (int v = 0; v < N; v++)\n            if (w[u][v] > 0 && vl[u] > vl[v] - w[u][v])\n                vl[u] = vl[v] - w[u][v];\n    }\n\n    printf(\"%d\\n\", ve[N - 1]);\n    int u = 0;\n    printf(\"%d\", u + 1);\n    while (u != N - 1) {\n        int found = 0;\n        for (int v = 0; v < N; v++) {\n            if (w[u][v] > 0 &&\n                ve[u] == vl[v] - w[u][v] &&\n                ve[v] == ve[u] + w[u][v]) {\n                u = v;\n                printf(\"->%d\", u + 1);\n                found = 1;\n                break;\n            }\n        }\n        if (!found) return 1;\n    }\n    printf(\"\\n\");\n    return 0;\n}"
+      "code": "/*\n * 巩固题：把活动3->4的工期由4改成3，重新求项目工期和一条关键路径。\n * 其余活动不变；重新执行拓扑正向与逆向计算。\n */\n#include <stdio.h>\n#define N 6\n#define M 8\n\nint main(void) {\n    int from[M] = {0, 0, 1, 1, 2, 2, 3, 4};\n    int to[M]   = {1, 2, 3, 4, 3, 4, 5, 5};\n    int dur[M]  = {3, 2, 2, 3, 3, 2, 3, 2}; // 第5条边3->4改为3\n    int w[N][N] = {0}, indeg[N] = {0};\n\n    for (int e = 0; e < M; e++) {\n        w[from[e]][to[e]] = dur[e];\n        indeg[to[e]]++;\n    }\n\n    int q[N], topo[N], front = 0, rear = 0, k = 0;\n    int ve[N] = {0};\n    for (int i = 0; i < N; i++)\n        if (indeg[i] == 0) q[rear++] = i;\n\n    while (front < rear) {\n        int u = q[front++];\n        topo[k++] = u;\n        for (int v = 0; v < N; v++) {\n            if (w[u][v] > 0) {\n                if (ve[v] < ve[u] + w[u][v])\n                    ve[v] = ve[u] + w[u][v];\n                indeg[v]--;\n                if (indeg[v] == 0) q[rear++] = v;\n            }\n        }\n    }\n    if (k != N) return 1;\n\n    int vl[N];\n    for (int i = 0; i < N; i++) vl[i] = ve[N - 1];\n    for (int i = k - 1; i >= 0; i--) {\n        int u = topo[i];\n        for (int v = 0; v < N; v++)\n            if (w[u][v] > 0 && vl[u] > vl[v] - w[u][v])\n                vl[u] = vl[v] - w[u][v];\n    }\n\n    printf(\"%d\\n\", ve[N - 1]);\n    int u = 0;\n    printf(\"%d\", u + 1);\n    while (u != N - 1) {\n        int found = 0;\n        for (int v = 0; v < N; v++) {\n            if (w[u][v] > 0 &&\n                ve[u] == vl[v] - w[u][v] &&\n                ve[v] == ve[u] + w[u][v]) {\n                u = v;\n                printf(\"->%d\", u + 1);\n                found = 1;\n                break;\n            }\n        }\n        if (!found) return 1;\n    }\n    printf(\"\\n\");\n    return 0;\n}",
+      "complexity": "邻接矩阵版时间 O(V²)，空间 O(V²)。"
     },
     "animation": {
       "layout": "diagram",
       "brute": [
         {
-          "diagram": "AOE网：\n1→2(3)  1→3(2)\n2→4(2)  2→5(3)\n3→4(4)  3→5(2)\n4→6(3)  5→6(2)",
-          "text": "从源点1开始DFS。每条从1到6的完整路径代表一种工程活动安排。"
+          "diagram": "AOE网活动边编号：\n#0 1→2(3)  #1 1→3(2)\n#2 2→4(2)  #3 2→5(3)\n#4 3→4(4)  #5 3→5(2)\n#6 4→6(3)  #7 5→6(2)",
+          "pointers": {
+            "u": 1,
+            "depth": 0,
+            "path": [
+              1
+            ]
+          },
+          "active": [],
+          "text": "从源点1开始DFS；活动边按数组下标编号，沿边递归搜索。"
         },
         {
-          "diagram": "路径：1→2→4→6\n工期：3+2+3=8\n当前最大值：8",
-          "text": "第一条完整路径的工期为8，暂时记录为best=8。"
+          "diagram": "当前路径：1→2→4→6\n活动边：#0、#2、#6\n工期：3+2+3=8；best=8",
+          "pointers": {
+            "u": 6,
+            "depth": 3,
+            "path": [
+              1,
+              2,
+              4,
+              6
+            ]
+          },
+          "active": [
+            0,
+            2,
+            6
+          ],
+          "text": "第一条完整路径到达汇点6，累加工期8并保存路径。"
         },
         {
-          "diagram": "路径：1→2→5→6\n工期：3+3+2=8\n当前最大值：8",
-          "text": "第二条路径同样为8，没有超过当前最大值。"
+          "diagram": "当前路径：1→2→5→6\n活动边：#0、#3、#7\n工期：3+3+2=8；best仍为8",
+          "pointers": {
+            "u": 6,
+            "depth": 3,
+            "path": [
+              1,
+              2,
+              5,
+              6
+            ]
+          },
+          "active": [
+            0,
+            3,
+            7
+          ],
+          "text": "第二条完整路径工期也是8，没有超过当前最大值。"
         },
         {
-          "diagram": "路径：1→3→4→6\n工期：2+4+3=9\n当前最大值：9",
-          "text": "第三条路径达到9，更新best，并保存这条路径。"
+          "diagram": "当前路径：1→3→4→6\n活动边：#1、#4、#6\n工期：2+4+3=9；best=9",
+          "pointers": {
+            "u": 6,
+            "depth": 3,
+            "path": [
+              1,
+              3,
+              4,
+              6
+            ]
+          },
+          "active": [
+            1,
+            4,
+            6
+          ],
+          "text": "第三条路径工期达到9，更新best并复制当前路径。"
         },
         {
-          "diagram": "路径：1→3→5→6\n工期：2+2+2=6\n最终best：9\n关键路径：1→3→4→6",
-          "text": "最后一条路径只有6。枚举结束，最长路径长度就是项目工期9。"
+          "diagram": "当前路径：1→3→5→6\n活动边：#1、#5、#7\n工期：2+2+2=6\n最终工期：9；关键路径：1→3→4→6",
+          "pointers": {
+            "u": 6,
+            "depth": 3,
+            "path": [
+              1,
+              3,
+              5,
+              6
+            ]
+          },
+          "active": [
+            1,
+            5,
+            7
+          ],
+          "text": "最后一条路径工期6；DFS结束，最长路径工期9。"
         }
       ],
       "optimal": [
@@ -6628,10 +6808,10 @@
     "title": "散列表查找：从顺序扫描到线性探测",
     "difficulty": "中等",
     "time": "20–25分钟",
-    "source": "https://oi-wiki.org/ds/hash/",
+    "source": "https://oiwiki.net/ds/hash/",
     "question": "给定n个互不相同的整数关键字，随后有q次查询。对每个查询关键字x，若它存在于表中，输出它最初输入时的1-based位置；否则输出-1。请先用顺序查找实现，再用散列表的开放定址法（线性探测）优化。输入格式：第一行n q；第二行n个关键字；接下来q行或q个整数，每个为一次查询。输出q行，每行一个答案。",
     "constraint": "1≤n,q≤1000；关键字为[-10^9,10^9]内的整数且互不相同；查询值也在该范围内。采用容量M=20011的散列表，M>n；本题不涉及删除操作。负数取模后必须规范化到[0,M-1]。",
-    "sample": "输入：\n7 5\n5 20016 40027 17 20028 -3 8\n40027\n5\n99\n-3\n20028\n输出：\n3\n1\n-1\n6\n5\n说明：5、20016、40027的初始散列地址相同，线性探测依次占用后续空槽；查询99不存在。",
+    "sample": "输入：\n7 5\n5 20016 40027 17 20028 -3 8\n40027\n5\n99\n-3\n20028\n输出：\n3\n1\n-1\n6\n5\n说明：5、20016、40027的初始散列地址相同，线性探测依次占用后续空槽；查询99不存在。\n\n边界：n=1、关键字为0，查询0输出1，查询1输出-1。\n负数边界：-3的初始地址为-3 mod 20011，规范化后为20008。",
     "brute": {
       "tag": "保底方法",
       "title": "每次查询都从头顺序扫描",
@@ -6648,7 +6828,7 @@
       "tag": "空间换时间",
       "title": "开放定址：线性探测",
       "idea": "用散列函数h(x)=((x mod M)+M) mod M计算初始槽位。若槽位已被占用且关键字不同，就向后探测；插入时把关键字和原始位置一起存入槽位。查询沿相同探测序列前进，遇到目标则返回原位置，遇到第一个空槽即可判定不存在。",
-      "complexity": "平均时间O(n+q)，最坏时间O(nq)；额外空间O(M)，M=20011。",
+      "complexity": "期望时间 O(n+q)（均匀散列且负载因子较低）；最坏时间 O(n²+nq)（插入最坏O(n²)，q次查询最坏O(nq)）；额外空间 O(M)。",
       "risk": "必须使用与插入完全相同的探测规则；负数模值要修正。本题无删除操作，因此查找遇到第一个空槽即可停止。",
       "code": "#include <stdio.h>\n#define MOD 20011\nstatic int key[MOD], originalPos[MOD];\nstatic int used[MOD];\n\n// C语言负数取模可能为负，修正到合法槽位范围。\nint hashKey(int x) {\n    int h = x % MOD;\n    if (h < 0) h += MOD;\n    return h;\n}\n\nint main(void) {\n    int n, q;\n    if (scanf(\"%d%d\", &n, &q) != 2) return 1;\n\n    // 插入：冲突时向后找第一个空槽，并同时保存原始位置。\n    for (int i = 0; i < n; i++) {\n        int x;\n        if (scanf(\"%d\", &x) != 1) return 1;\n        int pos = hashKey(x);\n        while (used[pos]) pos = (pos + 1) % MOD;\n        used[pos] = 1;\n        key[pos] = x;\n        originalPos[pos] = i + 1;\n    }\n\n    // 查询：必须沿着插入时相同的线性探测序列查找。\n    for (int k = 0; k < q; k++) {\n        int x, answer = -1;\n        if (scanf(\"%d\", &x) != 1) return 1;\n        int pos = hashKey(x);\n        int start = pos;\n        while (used[pos]) {\n            if (key[pos] == x) {\n                answer = originalPos[pos];\n                break;\n            }\n            pos = (pos + 1) % MOD;\n            if (pos == start) break; // 防止表满时无限循环。\n        }\n        printf(\"%d\\n\", answer);\n    }\n    return 0;\n}\n",
       "explain": [
@@ -6660,82 +6840,301 @@
     "variation": {
       "question": "沿用同一组关键字和查询，但改为输出每次查询检查过的槽位数。每检查一个槽位计数一次；查找失败时，最后检查到的第一个空槽也计入次数。",
       "idea": "在线性探测中累加检查次数。命中时返回命中槽位的探测次数；未命中时，检查到第一个空槽后返回当前次数。",
-      "code": "#include <stdio.h>\n#define MOD 20011\nstatic int key[MOD], used[MOD];\n\nint hashKey(int x) {\n    int h = x % MOD;\n    if (h < 0) h += MOD;\n    return h;\n}\n\nint probeCount(int x) {\n    int pos = hashKey(x);\n    int count = 0;\n    // 每检查一个槽位就计数，空槽也是确认查找失败的一次检查。\n    while (count < MOD) {\n        count++;\n        if (!used[pos] || key[pos] == x) return count;\n        pos = (pos + 1) % MOD;\n    }\n    return count; // 防御性处理：本题n远小于MOD，不会走满整张表。\n}\n\nint main(void) {\n    int n, q;\n    if (scanf(\"%d%d\", &n, &q) != 2) return 1;\n    for (int i = 0; i < n; i++) {\n        int x;\n        if (scanf(\"%d\", &x) != 1) return 1;\n        int pos = hashKey(x);\n        while (used[pos]) pos = (pos + 1) % MOD;\n        used[pos] = 1;\n        key[pos] = x;\n    }\n    for (int k = 0; k < q; k++) {\n        int x;\n        if (scanf(\"%d\", &x) != 1) return 1;\n        printf(\"%d\\n\", probeCount(x));\n    }\n    return 0;\n}\n"
+      "code": "#include <stdio.h>\n#define MOD 20011\nstatic int key[MOD], used[MOD];\n\nint hashKey(int x) {\n    int h = x % MOD;\n    if (h < 0) h += MOD;\n    return h;\n}\n\nint probeCount(int x) {\n    int pos = hashKey(x);\n    int count = 0;\n    // 每检查一个槽位就计数，空槽也是确认查找失败的一次检查。\n    while (count < MOD) {\n        count++;\n        if (!used[pos] || key[pos] == x) return count;\n        pos = (pos + 1) % MOD;\n    }\n    return count; // 防御性处理：本题n远小于MOD，不会走满整张表。\n}\n\nint main(void) {\n    int n, q;\n    if (scanf(\"%d%d\", &n, &q) != 2) return 1;\n    for (int i = 0; i < n; i++) {\n        int x;\n        if (scanf(\"%d\", &x) != 1) return 1;\n        int pos = hashKey(x);\n        while (used[pos]) pos = (pos + 1) % MOD;\n        used[pos] = 1;\n        key[pos] = x;\n    }\n    for (int k = 0; k < q; k++) {\n        int x;\n        if (scanf(\"%d\", &x) != 1) return 1;\n        printf(\"%d\\n\", probeCount(x));\n    }\n    return 0;\n}\n",
+      "complexity": "期望时间 O(n+q)；最坏时间 O(n²+nq)；额外空间 O(M)。"
     },
     "animation": {
       "layout": "diagram",
       "brute": [
         {
-          "diagram": "原数组（位置从1开始）\n[5, 20016, 40027, 17, 20028, -3, 8]\n查询：40027",
-          "text": "朴素查找从位置1开始，逐个比较。"
+          "diagram": "原数组（位置从1开始）\n[5, 20016, 40027, 17, 20028, -3, 8]\n查询40027；检查位置1：5",
+          "pointers": {
+            "query": 40027,
+            "i": 0
+          },
+          "active": [
+            0
+          ],
+          "text": "从原数组第1个位置开始，当前关键字5与40027不同。"
         },
         {
-          "diagram": "位置1：5 ≠ 40027\n位置2：20016 ≠ 40027",
-          "text": "前两个关键字都不匹配，继续向后。"
+          "diagram": "查询40027；检查位置2：20016",
+          "pointers": {
+            "query": 40027,
+            "i": 1
+          },
+          "active": [
+            1
+          ],
+          "text": "位置2仍不匹配，i向右移动一格。"
         },
         {
-          "diagram": "位置3：40027 = 40027\n返回3",
-          "text": "在第三个位置命中，输出原始位置3。"
+          "diagram": "查询40027；检查位置3：40027\n命中，返回3",
+          "pointers": {
+            "query": 40027,
+            "i": 2
+          },
+          "active": [
+            2
+          ],
+          "text": "位置3命中，返回原始1-based位置3。"
         },
         {
-          "diagram": "查询：99\n依次检查位置1、2、3、4、5、6、7",
-          "text": "不存在的关键字必须扫描完整个数组。"
+          "diagram": "查询99；检查位置1：5",
+          "pointers": {
+            "query": 99,
+            "i": 0
+          },
+          "active": [
+            0
+          ],
+          "text": "失败查询重新从位置1开始扫描。"
         },
         {
-          "diagram": "位置7检查完毕\n仍未命中 → 输出-1",
-          "text": "扫描到末尾仍未找到，答案为-1。"
+          "diagram": "查询99；检查位置2：20016",
+          "pointers": {
+            "query": 99,
+            "i": 1
+          },
+          "active": [
+            1
+          ],
+          "text": "位置2不匹配，继续扫描。"
+        },
+        {
+          "diagram": "查询99；检查位置3：40027",
+          "pointers": {
+            "query": 99,
+            "i": 2
+          },
+          "active": [
+            2
+          ],
+          "text": "位置3不匹配，继续扫描。"
+        },
+        {
+          "diagram": "查询99；检查位置4：17",
+          "pointers": {
+            "query": 99,
+            "i": 3
+          },
+          "active": [
+            3
+          ],
+          "text": "位置4不匹配，继续扫描。"
+        },
+        {
+          "diagram": "查询99；检查位置5：20028",
+          "pointers": {
+            "query": 99,
+            "i": 4
+          },
+          "active": [
+            4
+          ],
+          "text": "位置5不匹配，继续扫描。"
+        },
+        {
+          "diagram": "查询99；检查位置6：-3",
+          "pointers": {
+            "query": 99,
+            "i": 5
+          },
+          "active": [
+            5
+          ],
+          "text": "位置6不匹配，继续扫描。"
+        },
+        {
+          "diagram": "查询99；检查位置7：8\n数组扫描结束，输出-1",
+          "pointers": {
+            "query": 99,
+            "i": 6
+          },
+          "active": [
+            6
+          ],
+          "text": "位置7仍不匹配；检查完整个数组后输出-1。"
         }
       ],
       "optimal": [
         {
-          "diagram": "散列表容量M=20011\n初始状态：所有槽位均为空",
-          "text": "先初始化散列表。"
+          "diagram": "散列表容量M=20011\n所有槽位初始为空",
+          "pointers": {
+            "pos": -1
+          },
+          "active": [],
+          "text": "初始化散列表；used数组全部为0。"
         },
         {
           "diagram": "插入5：h(5)=5\n槽位5 ← 5",
-          "text": "第一个关键字直接进入初始槽位5。"
+          "pointers": {
+            "key": 5,
+            "pos": 5
+          },
+          "active": [
+            5
+          ],
+          "text": "5直接放入初始地址5。"
         },
         {
-          "diagram": "插入20016：h(20016)=5\n槽位5冲突 → 槽位6 ← 20016",
-          "text": "发生冲突，线性探测到下一个空槽6。"
+          "diagram": "插入20016：h=5\n槽位5冲突 → 槽位6 ← 20016",
+          "pointers": {
+            "key": 20016,
+            "pos": 6
+          },
+          "active": [
+            5,
+            6
+          ],
+          "text": "槽位5已有不同关键字，线性探测到下一个空槽6。"
         },
         {
-          "diagram": "插入40027：h(40027)=5\n槽位5、6冲突 → 槽位7 ← 40027",
-          "text": "继续向后探测，第三个关键字落在槽位7。"
+          "diagram": "插入40027：h=5\n检查5、6后放入槽位7",
+          "pointers": {
+            "key": 40027,
+            "pos": 7
+          },
+          "active": [
+            5,
+            6,
+            7
+          ],
+          "text": "槽位5、6连续冲突，继续探测到槽位7。"
         },
         {
-          "diagram": "插入17：h(17)=17\n槽位17 ← 17\n插入20028：h(20028)=17\n槽位17冲突 → 槽位18 ← 20028",
-          "text": "第二组冲突也按同一规则向后放置。"
+          "diagram": "插入17：h(17)=17\n槽位17 ← 17",
+          "pointers": {
+            "key": 17,
+            "pos": 17
+          },
+          "active": [
+            17
+          ],
+          "text": "17的初始地址17为空，直接插入。"
         },
         {
-          "diagram": "查询40027：从槽位5开始\n检查5、6、7 → 命中\n返回原始位置3",
-          "text": "查找沿着插入时的探测序列前进，命中后返回保存的原始位置。"
+          "diagram": "插入20028：h=17\n槽位17冲突 → 槽位18 ← 20028",
+          "pointers": {
+            "key": 20028,
+            "pos": 18
+          },
+          "active": [
+            17,
+            18
+          ],
+          "text": "20028与17初始地址相同，冲突后放入18。"
         },
         {
-          "diagram": "查询99：槽位99为空\n立即停止 → 输出-1",
-          "text": "无删除操作时，探测遇到第一个空槽即可判定不存在。"
+          "diagram": "插入-3：h(-3)=20008\n槽位20008 ← -3",
+          "pointers": {
+            "key": -3,
+            "pos": 20008
+          },
+          "active": [
+            20008
+          ],
+          "text": "负数取模先加M规范化，得到合法地址20008。"
+        },
+        {
+          "diagram": "插入8：h(8)=8\n槽位8 ← 8",
+          "pointers": {
+            "key": 8,
+            "pos": 8
+          },
+          "active": [
+            8
+          ],
+          "text": "8直接放入槽位8，插入完成。"
+        },
+        {
+          "diagram": "查询40027：检查槽位5、6、7\n在槽位7命中，返回原始位置3",
+          "pointers": {
+            "query": 40027,
+            "pos": 7
+          },
+          "active": [
+            5,
+            6,
+            7
+          ],
+          "text": "沿插入时相同的探测序列前进，命中后返回保存的原始位置3。"
+        },
+        {
+          "diagram": "查询99：槽位99为空\n立即停止，输出-1",
+          "pointers": {
+            "query": 99,
+            "pos": 99
+          },
+          "active": [
+            99
+          ],
+          "text": "没有删除操作，探测遇到第一个空槽即可判定关键字不存在。"
         }
       ],
       "variation": [
         {
           "diagram": "查询40027：检查槽位5、6、7\n探测次数=3",
-          "text": "同一初始地址发生连续冲突，检查三次才命中。"
+          "pointers": {
+            "query": 40027,
+            "pos": 7,
+            "count": 3
+          },
+          "active": [
+            5,
+            6,
+            7
+          ],
+          "text": "同一初始地址连续冲突，检查三次后命中。"
         },
         {
           "diagram": "查询5：检查槽位5\n探测次数=1",
+          "pointers": {
+            "query": 5,
+            "pos": 5,
+            "count": 1
+          },
+          "active": [
+            5
+          ],
           "text": "初始槽位直接命中，只检查一次。"
         },
         {
           "diagram": "查询99：槽位99为空\n探测次数=1",
-          "text": "失败查询也要把用于确认失败的空槽计入。"
+          "pointers": {
+            "query": 99,
+            "pos": 99,
+            "count": 1
+          },
+          "active": [
+            99
+          ],
+          "text": "失败查询把用于确认失败的第一个空槽也计入一次检查。"
         },
         {
-          "diagram": "查询-3：h(-3)=20008\n槽位20008命中\n探测次数=1",
-          "text": "负数散列地址已规范化到合法下标。"
+          "diagram": "查询-3：h(-3)=20008\n槽位20008命中，探测次数=1",
+          "pointers": {
+            "query": -3,
+            "pos": 20008,
+            "count": 1
+          },
+          "active": [
+            20008
+          ],
+          "text": "负数地址规范化后直接命中。"
         },
         {
           "diagram": "查询20028：检查槽位17、18\n探测次数=2",
-          "text": "先遇到冲突关键字，再在下一槽位命中。"
+          "pointers": {
+            "query": 20028,
+            "pos": 18,
+            "count": 2
+          },
+          "active": [
+            17,
+            18
+          ],
+          "text": "先检查冲突槽位17，再在18命中，累计两次。"
         }
       ]
     },

@@ -70,6 +70,8 @@ def main():
     # 关键课程的逐帧动画回归：避免只有结论、缺少指针/状态的粗略动画。
     animation_minimum = {
         "lc53-20261108": {"brute": 8, "optimal": 9},
+        "lc997-20261109": {"brute": 6, "optimal": 6},
+        "lc-hash-linear-20261116": {"brute": 10, "optimal": 10, "variation": 5},
         "lc622-20261107": {"brute": 5, "optimal": 7},
         "prim-20261112": {"brute": 4, "optimal": 5},
         "huffman-20261113": {"brute": 5, "optimal": 5},
@@ -78,6 +80,8 @@ def main():
         "aoe-critical-20261115": {"brute": 5, "optimal": 9},
     }
     diagram_minimum = {
+        "lc997-20261109": {"brute": 6, "optimal": 6},
+        "lc-hash-linear-20261116": {"brute": 10, "optimal": 10, "variation": 5},
         "prim-20261112": {"brute": 4, "optimal": 5},
         "huffman-20261113": {"brute": 5, "optimal": 5},
         "dijkstra-20261114": {"brute": 5, "optimal": 6},
@@ -149,14 +153,44 @@ def main():
                     raise ValueError(
                         f"{lesson['id']}.{method}: 第{index + 1}帧缺少说明或状态/指针"
                     )
+    # 本轮重点题目的逐帧动画必须同时保留指针位置与操作高亮。
+    controlled_animation = {
+        "lc997-20261109": ("brute", "optimal"),
+        "lc994-20261110": ("brute", "optimal"),
+        "aoe-critical-20261115": ("brute", "optimal"),
+        "lc-hash-linear-20261116": ("brute", "optimal", "variation"),
+    }
+    reviewed_variations = {
+        "lc997-20261109", "lc994-20261110", "kmp-20261111",
+        "prim-20261112", "huffman-20261113", "dijkstra-20261114",
+        "aoe-critical-20261115", "lc-hash-linear-20261116",
+    }
+    for lesson in queue:
+        if lesson["id"] in reviewed_variations and not lesson.get("variation", {}).get("complexity"):
+            raise ValueError(f"{lesson['id']}: 变式缺少时间/空间复杂度")
+        for method in controlled_animation.get(lesson["id"], ()):
+            frames = lesson.get("animation", {}).get(method, [])
+            for index, frame in enumerate(frames):
+                if not isinstance(frame.get("pointers"), dict) or not isinstance(frame.get("active"), list):
+                    raise ValueError(
+                        f"{lesson['id']}.{method}: 第{index + 1}帧缺少指针或操作高亮"
+                    )
+    kmp_lesson = next((x for x in queue if x["id"] == "kmp-20261111"), None)
+    if kmp_lesson is None or "输入格式" not in kmp_lesson.get("question", "") or "输出格式" not in kmp_lesson.get("question", ""):
+        raise ValueError("kmp-20261111: 缺少明确输入/输出格式")
+    for method in ("brute", "optimal", "variation"):
+        code = kmp_lesson[method]["code"]
+        if 'scanf("%1000s %1000s"' not in code:
+            raise ValueError(f"kmp-20261111.{method}: 必须从标准输入读取主串和模式串")
     inputs = {
+        "kmp-20261111": "ababcabcac\\nabcac\\n",
         "lc217-20261027": "4\n1 2 3 1\n",
         "lc997-20261109": "3 2\n1 3\n2 3\n",
         "lc-hash-linear-20261116": "7 5\n5 20016 40027 17 20028 -3 8\n40027 5 99 -3 20028\n",
         "lc994-20261110": "3 3\n2 1 1\n1 1 0\n0 1 1\n",
         "lc503-20261106": "3\n1 2 1\n",
     }
-    variant_inputs = {"lc-hash-linear-20261116": "7 5\n5 20016 40027 17 20028 -3 8\n40027 5 99 -3 20028\n",
+    variant_inputs = { "kmp-20261111": "aaaaab\\naaab\\n","lc-hash-linear-20261116": "7 5\n5 20016 40027 17 20028 -3 8\n40027 5 99 -3 20028\n",
                       "lc997-20261109": "3 3\n1 3\n2 3\n3 1\n",
                       "lc994-20261110": "2 2\n2 0\n0 1\n",
                       "lc503-20261106": "5\n3 8 4 1 2\n"}
@@ -181,6 +215,31 @@ def main():
             ]
             for variant in ("brute", "optimal", "variation"):
                 for label, data, expected in extra:
+                    check_one(x[variant]["code"], expected,
+                              x["id"] + "." + variant + "." + label, data)
+                    count += 1
+        if x["id"] == "kmp-20261111":
+            extra = [
+                ("single", "a\na\n", "0"),
+                ("pattern_longer", "a\naa\n", "-1"),
+                ("not_found", "abcdef\ngh\n", "-1"),
+                ("overlap", "abababa\nababa\n", "0"),
+                ("repeated_prefix", "aaaaab\naaab\n", "2"),
+            ]
+            for variant in ("brute", "optimal", "variation"):
+                for label, data, expected in extra:
+                    check_one(x[variant]["code"], expected,
+                              x["id"] + "." + variant + "." + label, data)
+                    count += 1
+        if x["id"] == "lc-hash-linear-20261116":
+            extra = [
+                ("single_zero", "1 2\n0\n0\n1\n", "1\n-1", "1\n1"),
+                ("negative_collision", "3 2\n-3 20008 40019\n-3\n40019\n",
+                 "1\n3", "1\n3"),
+            ]
+            for variant in ("brute", "optimal", "variation"):
+                for label, data, standard, probe_count in extra:
+                    expected = probe_count if variant == "variation" else standard
                     check_one(x[variant]["code"], expected,
                               x["id"] + "." + variant + "." + label, data)
                     count += 1

@@ -5719,56 +5719,142 @@
     "variation": {
       "question": "只维护score=入度-出度能否判断法官？对于输入3 3 / 1 3 / 2 3 / 3 1，输出什么？",
       "idea": "无自环且关系不重复，入度最多n-1；score=n-1必有入度n-1、出度0。此例3有出边，因此输出-1。",
-      "code": "#include <stdio.h>\n#define MAX_N 1000\nstatic int score[MAX_N + 1];\nint main(void) {\n    int n, m;\n    if (scanf(\"%d%d\", &n, &m) != 2) return 1;\n    for (int k = 0; k < m; k++) {\n        int a, b;\n        if (scanf(\"%d%d\", &a, &b) != 2) return 1;\n        // score=入度-出度；信任别人减1，被信任加1。\n        score[a]--;\n        score[b]++;\n    }\n    for (int person = 1; person <= n; person++) {\n        // 入度最多n-1，故score=n-1只能由入度n-1且出度0产生。\n        if (score[person] == n - 1) {\n            printf(\"%d\\n\", person);\n            return 0;\n        }\n    }\n    puts(\"-1\");\n    return 0;\n}\n"
+      "code": "#include <stdio.h>\n#define MAX_N 1000\nstatic int score[MAX_N + 1];\nint main(void) {\n    int n, m;\n    if (scanf(\"%d%d\", &n, &m) != 2) return 1;\n    for (int k = 0; k < m; k++) {\n        int a, b;\n        if (scanf(\"%d%d\", &a, &b) != 2) return 1;\n        // score=入度-出度；信任别人减1，被信任加1。\n        score[a]--;\n        score[b]++;\n    }\n    for (int person = 1; person <= n; person++) {\n        // 入度最多n-1，故score=n-1只能由入度n-1且出度0产生。\n        if (score[person] == n - 1) {\n            printf(\"%d\\n\", person);\n            return 0;\n        }\n    }\n    puts(\"-1\");\n    return 0;\n}\n",
+      "complexity": "时间 O(n+m)，额外空间 O(n)。"
     },
     "animation": {
       "layout": "diagram",
       "brute": [
         {
-          "diagram": "边表：1→3，2→3\n候选人1；扫描1→3",
-          "text": "1的出度变为1，入度为0。"
+          "diagram": "候选人1；当前扫描边#0：1→3\n入度0、出度1",
+          "pointers": {
+            "candidate": 1,
+            "edge": 0
+          },
+          "active": [
+            0
+          ],
+          "text": "扫描第1条关系1→3：它是1的出边，不是1的入边。"
         },
         {
-          "diagram": "候选人1；扫描2→3\n入度0、出度1",
-          "text": "1不符合出度为0。"
+          "diagram": "候选人1；当前扫描边#1：2→3\n入度0、出度1",
+          "pointers": {
+            "candidate": 1,
+            "edge": 1
+          },
+          "active": [
+            1
+          ],
+          "text": "扫描第2条关系2→3后，1仍然有出边，排除候选人1。"
         },
         {
-          "diagram": "候选人2；重新扫描两条边\n入度0、出度1",
-          "text": "2同样不符合。"
+          "diagram": "候选人2；当前扫描边#0：1→3\n入度0、出度1",
+          "pointers": {
+            "candidate": 2,
+            "edge": 0
+          },
+          "active": [
+            0
+          ],
+          "text": "换候选人2，重新从边表开头扫描。"
         },
         {
-          "diagram": "候选人3；扫描1→3\n入度1、出度0",
-          "text": "3获得一条入边。"
+          "diagram": "候选人2；当前扫描边#1：2→3\n入度0、出度1",
+          "pointers": {
+            "candidate": 2,
+            "edge": 1
+          },
+          "active": [
+            1
+          ],
+          "text": "边2→3是2的出边，因此2也不满足法官条件。"
         },
         {
-          "diagram": "候选人3；扫描2→3\n入度2、出度0；输出3",
-          "text": "3同时满足入度n-1=2、出度0。"
+          "diagram": "候选人3；当前扫描边#0：1→3\n入度1、出度0",
+          "pointers": {
+            "candidate": 3,
+            "edge": 0
+          },
+          "active": [
+            0
+          ],
+          "text": "候选人3收到来自1的一条入边，继续检查另一条关系。"
+        },
+        {
+          "diagram": "候选人3；当前扫描边#1：2→3\n入度2、出度0\n输出3",
+          "pointers": {
+            "candidate": 3,
+            "edge": 1
+          },
+          "active": [
+            1
+          ],
+          "text": "3的入度达到n−1=2且出度为0，两个条件同时成立，返回3。"
         }
       ],
       "optimal": [
         {
           "diagram": "顶点1、2、3\n入度[0,0,0]；出度[0,0,0]",
-          "text": "初始化入度、出度数组。"
+          "pointers": {
+            "candidate": 1,
+            "edge": -1
+          },
+          "active": [],
+          "text": "初始化入度、出度数组；候选人编号从1开始。"
         },
         {
-          "diagram": "高亮有向边1→3\n出度1=1，入度3=1",
-          "text": "处理第一条关系。"
+          "diagram": "高亮边#0：1→3\n出度1=1，入度3=1",
+          "pointers": {
+            "edge": 0,
+            "from": 1,
+            "to": 3
+          },
+          "active": [
+            0
+          ],
+          "text": "处理第一条有向边：起点1出度加1，终点3入度加1。"
         },
         {
-          "diagram": "高亮有向边2→3\n出度2=1，入度3=2",
-          "text": "处理第二条关系。"
+          "diagram": "高亮边#1：2→3\n出度2=1，入度3=2",
+          "pointers": {
+            "edge": 1,
+            "from": 2,
+            "to": 3
+          },
+          "active": [
+            1
+          ],
+          "text": "处理第二条有向边：起点2出度加1，终点3入度加1。"
         },
         {
-          "diagram": "检查顶点1：入度0，出度1",
-          "text": "出度不为0，排除1。"
+          "diagram": "检查顶点1：入度0，出度1\n不满足出度为0",
+          "pointers": {
+            "candidate": 1
+          },
+          "active": [
+            0
+          ],
+          "text": "扫描候选人1：出度为1，立即排除。"
         },
         {
-          "diagram": "检查顶点2：入度0，出度1",
-          "text": "出度不为0，排除2。"
+          "diagram": "检查顶点2：入度0，出度1\n不满足出度为0",
+          "pointers": {
+            "candidate": 2
+          },
+          "active": [
+            1
+          ],
+          "text": "扫描候选人2：出度仍为1，不可能是法官。"
         },
         {
           "diagram": "检查顶点3：入度2，出度0\n输出3",
-          "text": "符合两个条件，立即返回。"
+          "pointers": {
+            "candidate": 3
+          },
+          "active": [
+            2
+          ],
+          "text": "3的入度为n−1且出度为0，输出3并结束。"
         }
       ]
     },
