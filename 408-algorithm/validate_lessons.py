@@ -183,14 +183,14 @@ def main():
         if 'scanf("%1000s %1000s"' not in code:
             raise ValueError(f"kmp-20261111.{method}: 必须从标准输入读取主串和模式串")
     inputs = {
-        "kmp-20261111": "ababcabcac\\nabcac\\n",
+        "kmp-20261111": "ababcabcac\nabcac\n",
         "lc217-20261027": "4\n1 2 3 1\n",
         "lc997-20261109": "3 2\n1 3\n2 3\n",
         "lc-hash-linear-20261116": "7 5\n5 20016 40027 17 20028 -3 8\n40027 5 99 -3 20028\n",
         "lc994-20261110": "3 3\n2 1 1\n1 1 0\n0 1 1\n",
         "lc503-20261106": "3\n1 2 1\n",
     }
-    variant_inputs = { "kmp-20261111": "aaaaab\\naaab\\n","lc-hash-linear-20261116": "7 5\n5 20016 40027 17 20028 -3 8\n40027 5 99 -3 20028\n",
+    variant_inputs = { "kmp-20261111": "aaaaab\naaab\n","lc-hash-linear-20261116": "7 5\n5 20016 40027 17 20028 -3 8\n40027 5 99 -3 20028\n",
                       "lc997-20261109": "3 3\n1 3\n2 3\n3 1\n",
                       "lc994-20261110": "2 2\n2 0\n0 1\n",
                       "lc503-20261106": "5\n3 8 4 1 2\n"}
