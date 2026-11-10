@@ -216,6 +216,9 @@ def main():
         for required in ("if (low >= high)", "pivot", "相等", "i++;", "j--;"):
             if required not in code:
                 raise ValueError(f"quick-sort-20261117.{method}: 缺少关键边界/重复值解释 {required!r}")
+    aoe_lesson = next((x for x in queue if x["id"] == "aoe-critical-20261115"), None)
+    if aoe_lesson is None or aoe_lesson.get("source") != "https://m.biancheng.net/view/3417.html":
+        raise ValueError("aoe-critical-20261115: 来源必须直达AOE网与关键路径讲解")
     kmp_lesson = next((x for x in queue if x["id"] == "kmp-20261111"), None)
     if kmp_lesson is None or "输入格式" not in kmp_lesson.get("question", "") or "输出格式" not in kmp_lesson.get("question", ""):
         raise ValueError("kmp-20261111: 缺少明确输入/输出格式")
