@@ -328,7 +328,7 @@ def main():
                 ("extreme", "4\n1000000000 -1000000000 0 -1000000000\n",
                  "-1000000000 -1000000000 0 1000000000"),
                 ("max_n", "100\n" + " ".join(map(str, range(100, 0, -1))) + "\n",
-                 " ".join(map(str, range(1, 101))),
+                 " ".join(map(str, range(1, 101)))),
             ]
             for variant in ("brute", "optimal", "variation"):
                 for label, data, expected in extra:
