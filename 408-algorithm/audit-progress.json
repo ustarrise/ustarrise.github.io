@@ -1,17 +1,17 @@
 {
   "schema_version": 1,
-  "last_audit_date": "2026-11-09",
+  "last_audit_date": "2026-11-10",
   "scope": "408-algorithm only",
-  "status_note": "本轮确认11月9日课程已发布，未来11月10日至16日连续7天均有备用课；逐题复核这8天课程，补齐8道变式复杂度，修正KMP输入输出与三份C程序，增强小镇法官/BFS/AOE/散列表动画指针和高亮，修正散列表最坏复杂度，并同步扩展validate_lessons.py。",
+  "status_note": "本轮确认11月10日课程已发布且正式题库与备用副本完全一致；未来11月11日至17日连续7天均有备用课。逐题复核当天腐烂橘子与未来课程，发现11月17日快速排序动画的pivot和i/j指针状态与Hoare代码不一致，重做朴素冒泡和优化快排动画，补充三份C程序的边界/重复值解释注释及严格回归测试。",
   "published_today": {
-    "date": "2026-11-09",
-    "id": "lc997-20261109",
+    "date": "2026-11-10",
+    "id": "lc994-20261110",
     "present": true,
-    "review_note": "当天课程已在正式题库中；复核信任边方向、入度/出度条件、n=1且m=0与无候选法官边界。朴素动画拆为6帧，逐帧标出候选人和当前边；优化动画逐帧标出边与候选顶点，并增加变式复杂度。"
+    "review_note": "正式题库已含当天课程；与pending副本逐字段比较完全一致。对照LeetCode 994官方题意核对四方向、同一分钟开始时腐烂源同步传播、不可达新鲜橘子返回-1、无新鲜橘子返回0；复核朴素快照和多源BFS分层动画及边界用例。"
   },
   "future_queue": {
-    "from": "2026-11-10",
-    "through": "2026-11-16",
+    "from": "2026-11-11",
+    "through": "2026-11-17",
     "continuous_days": 7,
     "shortfall_days": 0
   },
@@ -184,13 +184,31 @@
       "id": "lc-hash-linear-20261116",
       "scope": "核对线性探测、负数模规范化、保存原始位置及无删除时遇空槽终止；将最坏总复杂度纠正为O(n²+nq)，补齐变式复杂度；重做朴素/散列表/探测次数动画，逐帧加入查询指针和槽位高亮；增加单元素和负数碰撞回归。",
       "commit": "6ff611f06c98710ba858a8dfe9db9feeb5cafb3f"
+    },
+    {
+      "date": "2026-11-10",
+      "id": "lc994-20261110",
+      "scope": "当天课程复核：与正式题库副本完全一致；核对LeetCode 994官方四邻域定义、同一分钟快照语义、多源BFS层次、不可达/无新鲜/八邻域变式边界；未发现需改动的题面或程序。",
+      "source": "https://leetcode.com/problems/rotting-oranges/description/"
+    },
+    {
+      "date": "2026-11-17",
+      "id": "quick-sort-20261117",
+      "scope": "对照NIST DADS quicksort资料复核Hoare双向划分；发现原动画pivot字段混入递归区间下标、i/j和冒泡end/j指针不对应代码，重做为6帧冒泡+10帧Hoare逐次交换动画；补充Hoare pivot不保证最终下标、重复值推进指针、递归边界与main输入失败return原因注释；新增动画精确状态断言和单元素/升序/降序/全相等/极值/n=100测试。",
+      "source": "https://xlinux.nist.gov/dads/HTML/quicksort.html",
+      "commit": "27e691771e768c27cd094ec8db974d27f71f27d1",
+      "local_c_tests": [
+        "冒泡、快速排序、重复值变式均以gcc -std=c11 -Wall -Wextra -Werror -pedantic严格编译",
+        "单元素、升序、降序、全相等、负数/INT边界值、n=100六类回归测试通过",
+        "Hoare样例逐次交换轨迹用独立模拟核对，动画数组、pivot、i/j与每帧高亮下标一致"
+      ]
     }
   ],
   "validation": {
-    "previous_actions_run_id": 42544228034,
-    "previous_result": "首次验证运行发现KMP回归输入中的换行被多转义，测试正确失败并阻止发布步骤；未把该次失败计为成功。",
+    "previous_actions_run_id": 42733107324,
+    "previous_result": "第一次新Actions运行因validate_lessons.py中max_n回归用例元组少一个右括号而触发SyntaxError；C编译测试未执行，发布步骤被跳过。已记录该失败，不计为验证成功。",
     "new_commit_actions_result": "本轮先提交26ad009d383480dc84ff308a5bed236d4d3d9ba2，首次Actions发现新变式代码中的换行转义多了一层，测试正确报错；随后提交9ee6fca7699a4748813bbf838f1d2e1deec6758a修正5道变式代码的换行转义。最终运行42432519345全绿，验证34道备用题、159次C程序编译运行。",
-    "local_modified_code": "KMP三份程序改为scanf读取主串和模式串；Town Judge、Rotting Oranges朴素动画、AOE DFS动画、散列表三组动画补充指针和active高亮；散列表最坏复杂度由O(nq)修正为O(n²+nq)。",
+    "local_modified_code": "只修复pending中的quick-sort-20261117三份C代码注释、题面和样例、6帧冒泡/10帧Hoare动画；validate_lessons.py新增精确动画状态断言和极值、n=100测试。当天已发布的lc994-20261110未改动。",
     "commit_history": [
       "3da63b267ff9f703714b70d59e92eba34dc5553a",
       "b3d7646ed5766108a7864c8839e5c1c72f7a32af",
@@ -206,18 +224,17 @@
       "26ad009d383480dc84ff308a5bed236d4d3d9ba2",
       "9ee6fca7699a4748813bbf838f1d2e1deec6758a"
     ],
-    "code_commit": "ed44e87806e732cd2318e19ba0a7b0907749d6e1",
-    "validator_fix_commit": "6ff611f06c98710ba858a8dfe9db9feeb5cafb3f",
-    "latest_actions_run_id": 42544293016,
-    "latest_result": "成功：选题策略/备用队列检查通过；35道备用题共183次C程序编译运行测试通过；今日课程已存在，发布脚本确认无需重复提交。",
-    "pages_run_id": 42544292249,
-    "pages_result": "success：GitHub Pages构建与部署完成。"
+    "code_commit": "27e691771e768c27cd094ec8db974d27f71f27d1",
+    "validator_fix_commit": "490b3e3ac9290792e47eaf10f7e126ade2f24676",
+    "latest_actions_run_id": 42733232793,
+    "latest_result": "成功：选题策略/队列dry-run通过；36道备用题共204次C程序编译运行测试全部通过；确认北京时间2026-11-10课程已存在、未来11/11至11/17连续7天备用覆盖；发布步骤确认无需重复发布。",
+    "pages_run_id": 42733232192,
+    "pages_result": "构建与部署运行中，待最终状态确认。"
   },
   "next_priorities": [
-    "11月10日发布后补入11月17日备用课，维持未来连续7天；下一批优先排序、栈、队列、稀疏矩阵，减少链表和连续堆叠图题。",
-    "按67天计划单独跟踪未来课程的45%经典、35%综合变式、20%补盲；pending文件包含历史回归题，不应把其简单计数误当作未来排课比例。",
-    "继续逐题复核11月17日以后课程的来源、题意、输入输出、约束、边界样例、C程序、复杂度和动画。",
-    "逐步回溯历史正式题库，优先检查缺少输入输出、变式复杂度、代码注释空泛及动画状态与程序执行不一致的问题。"
+    "11月18日起优先安排栈、队列、排序、查找及稀疏矩阵补盲，减少连续图题与链表题；保持未来至少7天备用。",
+    "当前36道备用/回归题的策略分组为18经典、13综合变式、5预测补盲；补盲占比低于20%目标，后续排课逐步拉回45/35/20，不为凑比例错标既有题目。",
+    "继续按67天计划逐题审核后续课程，并回溯正式历史题库中的题意、输入输出、样例、复杂度、注释和动画。"
   ],
   "commit_history": [
     "3da63b267ff9f703714b70d59e92eba34dc5553a",
@@ -234,6 +251,8 @@
     "26ad009d383480dc84ff308a5bed236d4d3d9ba2",
     "9ee6fca7699a4748813bbf838f1d2e1deec6758a",
     "ed44e87806e732cd2318e19ba0a7b0907749d6e1",
-    "6ff611f06c98710ba858a8dfe9db9feeb5cafb3f"
+    "6ff611f06c98710ba858a8dfe9db9feeb5cafb3f",
+    "27e691771e768c27cd094ec8db974d27f71f27d1",
+    "490b3e3ac9290792e47eaf10f7e126ade2f24676"
   ]
 }
