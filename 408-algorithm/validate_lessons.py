@@ -79,7 +79,7 @@ def main():
         "kmp-20261111": {"brute": 12, "optimal": 17},
         "dijkstra-20261114": {"brute": 5, "optimal": 6},
         "aoe-critical-20261115": {"brute": 5, "optimal": 9},
-        "quick-sort-20261117": {"brute": 5, "optimal": 5},
+        "quick-sort-20261117": {"brute": 6, "optimal": 10},
     }
     diagram_minimum = {
         "lc997-20261109": {"brute": 6, "optimal": 6},
@@ -178,6 +178,44 @@ def main():
                     raise ValueError(
                         f"{lesson['id']}.{method}: 第{index + 1}帧缺少指针或操作高亮"
                     )
+    quick_lesson = next((x for x in queue if x["id"] == "quick-sort-20261117"), None)
+    if quick_lesson is None:
+        raise ValueError("缺少quick-sort-20261117，无法审核快速排序动画")
+    expected_quick_brute = [
+        {"array": [5,1,8,3,2,7,4,6], "pointers": {"end":7,"j":0,"swapped":False}},
+        {"array": [1,5,3,2,7,4,6,8], "pointers": {"end":7,"j":6,"swapped":True}},
+        {"array": [1,3,2,5,4,6,7,8], "pointers": {"end":6,"j":5,"swapped":True}},
+        {"array": [1,2,3,4,5,6,7,8], "pointers": {"end":5,"j":4,"swapped":True}},
+        {"array": [1,2,3,4,5,6,7,8], "pointers": {"end":4,"j":3,"swapped":False}},
+        {"array": [1,2,3,4,5,6,7,8], "pointers": {"end":4,"j":3,"swapped":False}},
+    ]
+    expected_quick_optimal = [
+        {"array": [5,1,8,3,2,7,4,6], "pointers": {"low":0,"high":7,"pivot":3,"i":0,"j":4}},
+        {"array": [2,1,8,3,5,7,4,6], "pointers": {"low":0,"high":7,"pivot":3,"i":1,"j":3}},
+        {"array": [2,1,3,8,5,7,4,6], "pointers": {"low":0,"high":7,"pivot":3,"i":3,"j":2}},
+        {"array": [1,2,3,8,5,7,4,6], "pointers": {"low":0,"high":2,"pivot":1,"i":1,"j":0}},
+        {"array": [1,2,3,8,5,7,4,6], "pointers": {"low":1,"high":2,"pivot":2,"i":2,"j":0}},
+        {"array": [1,2,3,6,5,7,4,8], "pointers": {"low":3,"high":7,"pivot":7,"i":4,"j":6}},
+        {"array": [1,2,3,6,5,4,7,8], "pointers": {"low":3,"high":7,"pivot":7,"i":6,"j":5}},
+        {"array": [1,2,3,4,5,6,7,8], "pointers": {"low":3,"high":5,"pivot":5,"i":4,"j":4}},
+        {"array": [1,2,3,4,5,6,7,8], "pointers": {"low":3,"high":5,"pivot":5,"i":5,"j":3}},
+        {"array": [1,2,3,4,5,6,7,8], "pointers": {"low":6,"high":7,"pivot":7,"i":7,"j":5}},
+    ]
+    for method, expected in (("brute", expected_quick_brute), ("optimal", expected_quick_optimal)):
+        frames = quick_lesson.get("animation", {}).get(method, [])
+        actual = [{"array": frame.get("array"), "pointers": frame.get("pointers")} for frame in frames]
+        if actual != expected:
+            raise ValueError(f"quick-sort-20261117.{method}: 动画数组或指针与真实排序步骤不一致")
+        for index, frame in enumerate(frames):
+            if not frame.get("text") or not isinstance(frame.get("active"), list):
+                raise ValueError(f"quick-sort-20261117.{method}: 第{index + 1}帧缺少说明或操作高亮")
+            if any(pos < 0 or pos >= len(frame["array"]) for pos in frame["active"]):
+                raise ValueError(f"quick-sort-20261117.{method}: 第{index + 1}帧高亮下标越界")
+    for method in ("optimal", "variation"):
+        code = quick_lesson[method]["code"]
+        for required in ("if (low >= high)", "pivot", "相等", "i++;", "j--;"):
+            if required not in code:
+                raise ValueError(f"quick-sort-20261117.{method}: 缺少关键边界/重复值解释 {required!r}")
     kmp_lesson = next((x for x in queue if x["id"] == "kmp-20261111"), None)
     if kmp_lesson is None or "输入格式" not in kmp_lesson.get("question", "") or "输出格式" not in kmp_lesson.get("question", ""):
         raise ValueError("kmp-20261111: 缺少明确输入/输出格式")
@@ -287,6 +325,10 @@ def main():
                 ("already_sorted", "5\n1 2 3 4 5\n", "1 2 3 4 5"),
                 ("reverse", "5\n5 4 3 2 1\n", "1 2 3 4 5"),
                 ("all_equal", "5\n2 2 2 2 2\n", "2 2 2 2 2"),
+                ("extreme", "4\n1000000000 -1000000000 0 -1000000000\n",
+                 "-1000000000 -1000000000 0 1000000000"),
+                ("max_n", "100\n" + " ".join(map(str, range(100, 0, -1))) + "\n",
+                 " ".join(map(str, range(1, 101))),
             ]
             for variant in ("brute", "optimal", "variation"):
                 for label, data, expected in extra:
