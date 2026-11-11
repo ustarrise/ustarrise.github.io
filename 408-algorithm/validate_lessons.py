@@ -12,6 +12,7 @@ CASES = {
     "floyd-20261118": ("0 5 8 9\n-1 0 3 4\n-1 -1 0 1\n-1 -1 -1 0", "0 4 2\n-1 0 -2\n-1 -1 0"),
     "kmp-20261111": ("5", "2"),
     "prim-20261112": ("16", "6"),
+    "tree-level-order-20261119": ("A B C D E F", "3"),
     "huffman-20261113": ("224", "38"),
     "dijkstra-20261114": ("0 8 9 5 7", "0 3 1 4"),
     "lc994-20261110": ("4", "1"),
@@ -76,6 +77,8 @@ def main():
         "lc-hash-linear-20261116": {"brute": 10, "optimal": 10, "variation": 5},
         "lc622-20261107": {"brute": 5, "optimal": 7},
         "prim-20261112": {"brute": 4, "optimal": 5},
+        "tree-level-order-20261119": {"brute": 4, "optimal": 5},
+        "tree-level-order-20261119": {"brute": 4, "optimal": 5},
         "huffman-20261113": {"brute": 5, "optimal": 5},
         "kmp-20261111": {"brute": 12, "optimal": 17},
         "dijkstra-20261114": {"brute": 5, "optimal": 6},
@@ -162,11 +165,13 @@ def main():
         "lc994-20261110": ("brute", "optimal"),
         "aoe-critical-20261115": ("brute", "optimal"),
         "quick-sort-20261117": ("brute", "optimal"),
+        "tree-level-order-20261119": ("brute", "optimal"),
         "lc-hash-linear-20261116": ("brute", "optimal", "variation"),
     }
     reviewed_variations = {
         "lc997-20261109", "lc994-20261110", "kmp-20261111",
         "prim-20261112", "huffman-20261113", "dijkstra-20261114",
+        "tree-level-order-20261119",
         "aoe-critical-20261115", "lc-hash-linear-20261116",
     }
     for lesson in queue:
