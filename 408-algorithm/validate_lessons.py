@@ -45,7 +45,7 @@ CASES = {
     "lc160-20261103": ("8", "8"),
     "lc912-merge-20261102": ("1 2 3 4 5", "5 4 3 2 1"),
     "lc48-20261024": ("7 4 1\n8 5 2\n9 6 3", "3 6 9\n2 5 8\n1 4 7"),
-    "two-stacks-one-array-20261120": ("固定分区：栈1溢出，但栈2一侧仍有空位\ntop1=3, top2=4, mid=4", "数组：10 20 30 40 50 70 80 90\ntop1=4, top2=5\n共享空间：两个栈顶相邻，整个数组已满"), "Pop2=9\nPop1=3\nPop2=8\n栈1自底向顶：1 2\n栈2为空：是");
+    "two-stacks-one-array-20261120": ("固定分区：栈1溢出，但栈2一侧仍有空位\ntop1=3, top2=4, mid=4", "数组：10 20 30 40 50 70 80 90\ntop1=4, top2=5\n共享空间：两个栈顶相邻，整个数组已满", "Pop2=9\nPop1=3\nPop2=8\n栈1自底向顶：1 2\n栈2为空：是"),
 }
 
 
@@ -287,11 +287,19 @@ def main():
         case = CASES.get(x["id"])
         if not case:
             raise ValueError(f"未给题目 {x['id']} 配置预期输出，请先审核")
-        for variant in ("brute", "optimal"):
-            check_one(x[variant]["code"], case[0], x["id"] + "." + variant,
-                      inputs.get(x["id"], ""))
-            count += 1
-        check_one(x["variation"]["code"], case[1], x["id"] + ".variation",
+        if len(case) >= 3:
+            expected_brute, expected_optimal, expected_variation = case[:3]
+        else:
+            # 旧题的朴素解与优化解输出相同，沿用二元组配置。
+            expected_brute = expected_optimal = case[0]
+            expected_variation = case[1]
+        check_one(x["brute"]["code"], expected_brute, x["id"] + ".brute",
+                  inputs.get(x["id"], ""))
+        count += 1
+        check_one(x["optimal"]["code"], expected_optimal, x["id"] + ".optimal",
+                  inputs.get(x["id"], ""))
+        count += 1
+        check_one(x["variation"]["code"], expected_variation, x["id"] + ".variation",
                   variant_inputs.get(x["id"], ""))
         count += 1
         if x["id"] == "tree-level-order-20261119":
