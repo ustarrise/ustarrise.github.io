@@ -45,6 +45,7 @@ CASES = {
     "lc160-20261103": ("8", "8"),
     "lc912-merge-20261102": ("1 2 3 4 5", "5 4 3 2 1"),
     "lc48-20261024": ("7 4 1\n8 5 2\n9 6 3", "3 6 9\n2 5 8\n1 4 7"),
+    "two-stacks-one-array-20261120": ("固定分区：栈1溢出，但栈2一侧仍有空位\ntop1=3, top2=4, mid=4", "数组：10 20 30 40 50 70 80 90\ntop1=4, top2=5\n共享空间：两个栈顶相邻，整个数组已满"), "Pop2=9\nPop1=3\nPop2=8\n栈1自底向顶：1 2\n栈2为空：是");
 }
 
 
@@ -84,6 +85,7 @@ def main():
         "aoe-critical-20261115": {"brute": 5, "optimal": 9},
         "tree-level-order-20261119": {"brute": 4, "optimal": 5, "variation": 4},
         "quick-sort-20261117": {"brute": 6, "optimal": 10},
+        "two-stacks-one-array-20261120": {"brute": 4, "optimal": 5},
     }
     diagram_minimum = {
         "lc997-20261109": {"brute": 6, "optimal": 6},
@@ -92,6 +94,7 @@ def main():
         "huffman-20261113": {"brute": 5, "optimal": 5},
         "dijkstra-20261114": {"brute": 5, "optimal": 6},
         "aoe-critical-20261115": {"brute": 5, "optimal": 9},
+        "two-stacks-one-array-20261120": {"brute": 4, "optimal": 5},
     }
     for lesson in queue:
         for method, minimum in diagram_minimum.get(lesson["id"], {}).items():
