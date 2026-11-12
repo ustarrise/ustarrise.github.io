@@ -8043,5 +8043,268 @@
         }
       ]
     }
+  },
+  {
+    "id": "two-stacks-one-array-20261120",
+    "date": "2026-11-20",
+    "year": "原创408练习",
+    "number": "05",
+    "category": "栈 · 共享栈 · 数组存储",
+    "title": "两个栈共享一个数组：从固定分区到相向生长",
+    "difficulty": "简单",
+    "time": "15–20分钟",
+    "source": "https://www.geeksforgeeks.org/dsa/implement-two-stacks-in-an-array/",
+    "question": "设有一个长度为n的顺序存储空间，要求同时存放两个栈，并支持Push1、Push2、Pop1、Pop2。先实现固定分区方案，再设计让两个栈共享全部空闲单元的方案。说明两种方案的栈空、栈满条件，并分析每次操作的时间复杂度。",
+    "constraint": "采用0到n-1的数组下标，2≤n≤100。固定分区时令mid=n/2，栈1使用[0,mid-1]，栈2使用[mid,n-1]；优化方案中栈1从左向右增长，栈2从右向左增长。入栈遇到溢出、出栈遇到下溢时，函数返回0；操作成功返回1。",
+    "sample": "数组长度n=8。\\n固定分区：栈1连续压入10、20、30、40后已满；栈2只压入90，此时栈2所在区域仍有3个空位，但栈1再压入50仍会溢出。\\n相向生长：栈1压入10、20、30、40，栈2压入90、80、70，再将50压入栈1成功；此时两个栈顶相邻，整个数组才真正用满。\\n结论：优化方案不会把空闲位置永久分配给某一个栈。",
+    "brute": {
+      "title": "固定分区：每个栈预留一半",
+      "tag": "朴素方案",
+      "idea": "把数组固定切成左右两段。栈1只能在左半段增长，栈2只能在右半段增长。实现简单，但两栈的容量在初始化时就被锁定，某个栈即使溢出，也不能借用另一个栈尚未使用的空间。",
+      "complexity": "每次入栈、出栈均为 O(1)；数组空间 O(n)。但空间利用率可能因两栈负载不均而明显下降。",
+      "risk": "栈1栈满条件是top1==mid-1；栈2栈满条件是top2==n-1。不能把整个数组的末端当成栈1的边界，也不能让两个栈越过固定分界点。",
+      "code": "/*\n * 朴素方案：一个数组固定分成左右两段，分别存放两个栈。\n * 栈1占[0, mid-1]，栈2占[mid, n-1]。\n */\n#include <stdio.h>\n#define MAXN 100\n\ntypedef struct {\n    int data[MAXN];\n    int n;\n    int mid;\n    int top1;  // 栈1为空时为-1\n    int top2;  // 栈2为空时为mid-1\n} FixedStacks;\n\nvoid initFixed(FixedStacks *s, int n) {\n    s->n = n;\n    s->mid = n / 2;\n    s->top1 = -1;\n    s->top2 = s->mid - 1;\n}\n\nint push1(FixedStacks *s, int x) {\n    if (s->top1 == s->mid - 1) return 0; // 左半区已满\n    s->data[++s->top1] = x;\n    return 1;\n}\n\nint push2(FixedStacks *s, int x) {\n    if (s->top2 == s->n - 1) return 0;   // 右半区已满\n    s->data[++s->top2] = x;\n    return 1;\n}\n\nint pop1(FixedStacks *s, int *x) {\n    if (s->top1 == -1) return 0;         // 栈1为空\n    *x = s->data[s->top1--];\n    return 1;\n}\n\nint pop2(FixedStacks *s, int *x) {\n    if (s->top2 == s->mid - 1) return 0; // 栈2为空\n    *x = s->data[s->top2--];\n    return 1;\n}\n\nint main(void) {\n    FixedStacks s;\n    int n = 8;\n\n    initFixed(&s, n);                    // 左右各分配4个位置\n\n    push1(&s, 10);\n    push1(&s, 20);\n    push1(&s, 30);\n    push1(&s, 40);                       // 栈1的4个位置全部占满\n    push2(&s, 90);                       // 栈2只使用了右半区的第1个位置\n\n    if (!push1(&s, 50))\n        puts(\"固定分区：栈1溢出，但栈2一侧仍有空位\");\n\n    printf(\"top1=%d, top2=%d, mid=%d\\n\",\n           s.top1, s.top2, s.mid);\n    return 0;                            // 演示固定分区的空间浪费\n}",
+      "explain": [
+        "mid=n/2，数组被固定切为[0,mid-1]和[mid,n-1]两段。",
+        "栈1的top1初值为-1，栈2的top2初值为mid-1；两者分别向右增长。",
+        "栈1达到mid-1就不能再入栈，即使右半区仍有空位也无法借用。"
+      ]
+    },
+    "optimal": {
+      "title": "两端相向生长：共享全部空闲位置",
+      "tag": "考场推荐",
+      "idea": "栈1从数组左端向右增长，栈2从数组右端向左增长。两个栈共用同一段连续空间，只有当top1+1==top2时才表示整个数组已满；任何一侧都可以使用尚未被另一侧占据的位置。",
+      "complexity": "每次Push和Pop均为 O(1)；两个栈共用长度为n的数组，辅助空间 O(1)，存储空间 O(n)。",
+      "risk": "初始化必须是top1=-1、top2=n。栈2入栈时先执行--top2；出栈时再执行top2++。栈满条件是top1+1==top2，而不是某一个栈顶到达数组端点。",
+      "code": "/*\n * 优化方案：两个栈从数组两端向中间生长，共享全部空闲单元。\n * 栈1入栈时top1右移；栈2入栈时top2左移。\n */\n#include <stdio.h>\n#define MAXN 100\n\ntypedef struct {\n    int data[MAXN];\n    int n;\n    int top1;  // 栈1为空时为-1\n    int top2;  // 栈2为空时为n\n} SharedStacks;\n\nvoid initShared(SharedStacks *s, int n) {\n    s->n = n;\n    s->top1 = -1;\n    s->top2 = n;\n}\n\nint push1(SharedStacks *s, int x) {\n    if (s->top1 + 1 == s->top2) return 0; // 两栈顶相邻，数组已满\n    s->data[++s->top1] = x;\n    return 1;\n}\n\nint push2(SharedStacks *s, int x) {\n    if (s->top1 + 1 == s->top2) return 0; // 两栈顶相邻，数组已满\n    s->data[--s->top2] = x;\n    return 1;\n}\n\nint pop1(SharedStacks *s, int *x) {\n    if (s->top1 == -1) return 0;           // 栈1为空\n    *x = s->data[s->top1--];\n    return 1;\n}\n\nint pop2(SharedStacks *s, int *x) {\n    if (s->top2 == s->n) return 0;         // 栈2为空\n    *x = s->data[s->top2++];\n    return 1;\n}\n\nvoid showArray(const SharedStacks *s) {\n    for (int i = 0; i < s->n; i++) {\n        if (i > s->top1 && i < s->top2)\n            printf(\"_ \");                  // 下划线表示尚未使用的位置\n        else\n            printf(\"%d \", s->data[i]);\n    }\n    putchar('\\n');\n}\n\nint main(void) {\n    SharedStacks s;\n    int n = 8;\n\n    initShared(&s, n);                     // 两栈分别从数组两端开始\n\n    push1(&s, 10);\n    push1(&s, 20);\n    push1(&s, 30);\n    push1(&s, 40);\n    push2(&s, 90);\n    push2(&s, 80);\n    push2(&s, 70);                         // 两栈共占7个位置\n    push1(&s, 50);                         // 使用最后一个空位，成功\n\n    printf(\"数组：\");\n    showArray(&s);\n    printf(\"top1=%d, top2=%d\\n\", s.top1, s.top2);\n\n    if (!push2(&s, 60))\n        puts(\"共享空间：两个栈顶相邻，整个数组已满\");\n\n    return 0;                              // 每个空闲位置都可被任一栈使用\n}",
+      "explain": [
+        "初始化top1=-1、top2=n，分别表示栈1和栈2为空。",
+        "栈1入栈先top1++，栈2入栈先top2--；两栈都向中间推进。",
+        "当top1+1==top2时两栈顶相邻，整个数组恰好用满。",
+        "栈1为空的条件是top1==-1，栈2为空的条件是top2==n。"
+      ]
+    },
+    "tips": [
+      "共享栈的核心是两个栈底位于数组两端，两个栈顶相向移动。",
+      "栈满判断：top1+1==top2；栈空判断：栈1看top1==-1，栈2看top2==n。",
+      "固定分区与相向生长的单次操作时间复杂度都是O(1)，优化点在于消除固定容量分配造成的空间浪费。",
+      "考场性价比：高。记住两个初值、两种移动方向和一个栈满条件，就能写出四个基本操作。"
+    ],
+    "variation": {
+      "question": "巩固题：长度为6的共享栈依次执行Push1(1)、Push2(9)、Push1(2)、Pop2()、Push2(8)、Push1(3)、Pop1()、Pop2()。写出两次出栈及最后两个栈中的元素。",
+      "idea": "栈1从左端存放1、2、3；栈2从右端先存放9，弹出后再压入8。两次Pop1和Pop2分别输出3和8；题目中第一次Pop2输出9。最终栈1自底向顶为1、2，栈2为空。所有操作均未溢出或下溢。",
+      "complexity": "每次入栈或出栈 O(1)，总时间 O(k)，其中k为操作数；数组空间 O(n)。",
+      "code": "/*\n * 巩固题：按给定顺序执行两个共享栈的操作并输出出栈结果。\n */\n#include <stdio.h>\n#define MAXN 100\n\ntypedef struct {\n    int data[MAXN];\n    int n;\n    int top1;\n    int top2;\n} SharedStacks;\n\nvoid init(SharedStacks *s, int n) {\n    s->n = n;\n    s->top1 = -1;\n    s->top2 = n;\n}\n\nint push1(SharedStacks *s, int x) {\n    if (s->top1 + 1 == s->top2) return 0;\n    s->data[++s->top1] = x;\n    return 1;\n}\n\nint push2(SharedStacks *s, int x) {\n    if (s->top1 + 1 == s->top2) return 0;\n    s->data[--s->top2] = x;\n    return 1;\n}\n\nint pop1(SharedStacks *s, int *x) {\n    if (s->top1 == -1) return 0;\n    *x = s->data[s->top1--];\n    return 1;\n}\n\nint pop2(SharedStacks *s, int *x) {\n    if (s->top2 == s->n) return 0;\n    *x = s->data[s->top2++];\n    return 1;\n}\n\nint main(void) {\n    SharedStacks s;\n    int x;\n\n    init(&s, 6);                           // 两个栈共用6个位置\n    push1(&s, 1);\n    push2(&s, 9);\n    push1(&s, 2);\n\n    if (pop2(&s, &x)) printf(\"Pop2=%d\\n\", x); // 输出9\n    push2(&s, 8);\n    push1(&s, 3);\n\n    if (pop1(&s, &x)) printf(\"Pop1=%d\\n\", x); // 输出3\n    if (pop2(&s, &x)) printf(\"Pop2=%d\\n\", x); // 输出8\n\n    printf(\"栈1自底向顶：\");\n    for (int i = 0; i <= s.top1; i++)\n        printf(\"%d \", s.data[i]);\n    putchar('\\n');\n\n    printf(\"栈2为空：%s\\n\", s.top2 == s.n ? \"是\" : \"否\");\n    return 0;                              // 最终栈1为[1,2]，栈2为空\n}"
+    },
+    "animation": {
+      "layout": "array",
+      "brute": [
+        {
+          "array": [
+            "_",
+            "_",
+            "_",
+            "_",
+            "_",
+            "_",
+            "_",
+            "_"
+          ],
+          "active": [],
+          "text": "长度为8，固定把0~3号位置分给栈1，把4~7号位置分给栈2。",
+          "diagram": "下标： 0  1  2  3 | 4  5  6  7\n分区： [栈1区域]   | [栈2区域]\ntop1=-1，top2=3",
+          "pointers": {
+            "top1": -1,
+            "top2": 3,
+            "mid": 4
+          }
+        },
+        {
+          "array": [
+            "10",
+            "20",
+            "30",
+            "40",
+            "_",
+            "_",
+            "_",
+            "_"
+          ],
+          "active": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "text": "栈1依次压入10、20、30、40，左半区已经全部占满。",
+          "diagram": "栈1：底[10,20,30,40]顶 | 栈2：空\n栈1已满，右半区仍空闲。",
+          "pointers": {
+            "top1": 3,
+            "top2": 3,
+            "mid": 4
+          }
+        },
+        {
+          "array": [
+            "10",
+            "20",
+            "30",
+            "40",
+            "90",
+            "_",
+            "_",
+            "_"
+          ],
+          "active": [
+            4
+          ],
+          "text": "栈2压入90，只使用了右半区的第一个位置，右侧还有3个空位。",
+          "diagram": "数组：[10,20,30,40 | 90,_,_,_]\ntop1=3，top2=4",
+          "pointers": {
+            "top1": 3,
+            "top2": 4,
+            "mid": 4
+          }
+        },
+        {
+          "array": [
+            "10",
+            "20",
+            "30",
+            "40",
+            "90",
+            "_",
+            "_",
+            "_"
+          ],
+          "active": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "text": "再向栈1压入50仍然失败：栈1被固定分配的4个位置已满，不能借用栈2的空闲位置。",
+          "diagram": "Push1(50) → 溢出\n右半区仍有3个空位，却不能被栈1使用。",
+          "pointers": {
+            "top1": 3,
+            "top2": 4,
+            "mid": 4,
+            "overflow": 1
+          }
+        }
+      ],
+      "optimal": [
+        {
+          "array": [
+            "_",
+            "_",
+            "_",
+            "_",
+            "_",
+            "_",
+            "_",
+            "_"
+          ],
+          "active": [],
+          "text": "两个栈共用完整数组。栈1从左向右，栈2从右向左；初始top1=-1、top2=8。",
+          "diagram": "下标： 0  1  2  3  4  5  6  7\ntop1=-1                    top2=8",
+          "pointers": {
+            "top1": -1,
+            "top2": 8
+          }
+        },
+        {
+          "array": [
+            "10",
+            "20",
+            "30",
+            "40",
+            "_",
+            "_",
+            "_",
+            "_"
+          ],
+          "active": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "text": "栈1压入10、20、30、40，top1移动到3；栈2仍可从右侧使用空位。",
+          "diagram": "数组：[10,20,30,40,_,_,_,_]\ntop1=3，top2=8",
+          "pointers": {
+            "top1": 3,
+            "top2": 8
+          }
+        },
+        {
+          "array": [
+            "10",
+            "20",
+            "30",
+            "40",
+            "_",
+            "70",
+            "80",
+            "90"
+          ],
+          "active": [
+            5,
+            6,
+            7
+          ],
+          "text": "栈2依次压入90、80、70，位置从右向左占用，top2移动到5。",
+          "diagram": "数组：[10,20,30,40,_,70,80,90]\ntop1=3，top2=5",
+          "pointers": {
+            "top1": 3,
+            "top2": 5
+          }
+        },
+        {
+          "array": [
+            "10",
+            "20",
+            "30",
+            "40",
+            "50",
+            "70",
+            "80",
+            "90"
+          ],
+          "active": [
+            4
+          ],
+          "text": "栈1继续压入50，成功使用下标4；现在top1=4、top2=5，两栈顶相邻。",
+          "diagram": "数组：[10,20,30,40,50,70,80,90]\ntop1=4，top2=5\ntop1+1==top2，数组已满。",
+          "pointers": {
+            "top1": 4,
+            "top2": 5
+          }
+        },
+        {
+          "array": [
+            "10",
+            "20",
+            "30",
+            "40",
+            "50",
+            "70",
+            "80",
+            "90"
+          ],
+          "active": [
+            4,
+            5
+          ],
+          "text": "再执行Push2(60)失败，因为两个栈顶已经相邻；这次失败意味着整个数组确实没有空位。",
+          "diagram": "Push2(60) → 溢出\n所有8个位置都已被两个栈占用。",
+          "pointers": {
+            "top1": 4,
+            "top2": 5,
+            "overflow": 1
+          }
+        }
+      ]
+    }
   }
 ]
