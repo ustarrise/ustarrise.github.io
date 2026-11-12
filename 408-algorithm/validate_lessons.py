@@ -77,12 +77,12 @@ def main():
         "lc-hash-linear-20261116": {"brute": 10, "optimal": 10, "variation": 5},
         "lc622-20261107": {"brute": 5, "optimal": 7},
         "prim-20261112": {"brute": 4, "optimal": 5},
-        "tree-level-order-20261119": {"brute": 4, "optimal": 5},
-        "tree-level-order-20261119": {"brute": 4, "optimal": 5},
+        "tree-level-order-20261119": {"brute": 4, "optimal": 5, "variation": 4},
         "huffman-20261113": {"brute": 5, "optimal": 5},
         "kmp-20261111": {"brute": 12, "optimal": 17},
         "dijkstra-20261114": {"brute": 5, "optimal": 6},
         "aoe-critical-20261115": {"brute": 5, "optimal": 9},
+        "tree-level-order-20261119": {"brute": 4, "optimal": 5, "variation": 4},
         "quick-sort-20261117": {"brute": 6, "optimal": 10},
     }
     diagram_minimum = {
@@ -165,7 +165,7 @@ def main():
         "lc994-20261110": ("brute", "optimal"),
         "aoe-critical-20261115": ("brute", "optimal"),
         "quick-sort-20261117": ("brute", "optimal"),
-        "tree-level-order-20261119": ("brute", "optimal"),
+        "tree-level-order-20261119": ("brute", "optimal", "variation"),
         "lc-hash-linear-20261116": ("brute", "optimal", "variation"),
     }
     reviewed_variations = {
@@ -232,6 +232,39 @@ def main():
         code = kmp_lesson[method]["code"]
         if 'scanf("%1000s %1000s"' not in code:
             raise ValueError(f"kmp-20261111.{method}: 必须从标准输入读取主串和模式串")
+    # 近期静态演示题必须明确写出“无输入”和输出格式，不能只暗示数据内置。
+    for lesson_id in (
+        "prim-20261112", "huffman-20261113", "dijkstra-20261114",
+        "aoe-critical-20261115", "tree-level-order-20261119",
+    ):
+        item = next((x for x in queue if x["id"] == lesson_id), None)
+        if item is None or "输入格式：" not in item.get("question", "") or "输出格式：" not in item.get("question", ""):
+            raise ValueError(f"{lesson_id}: 缺少明确输入/输出格式")
+    tree_lesson = next((x for x in queue if x["id"] == "tree-level-order-20261119"), None)
+    if tree_lesson is None or tree_lesson.get("source") != "https://leetcode.cn/problems/binary-tree-level-order-traversal/description/":
+        raise ValueError("tree-level-order-20261119: 必须链接力扣102官方题面")
+    if "边界：" not in tree_lesson.get("sample", "") or "反例：" not in tree_lesson.get("sample", ""):
+        raise ValueError("tree-level-order-20261119: 缺少单结点/空树边界或DFS反例")
+    tree_animation = tree_lesson.get("animation", {})
+    expected_tree_pointers = {
+        "brute": [{"level": 1, "node": 0}, {"level": 2, "node": 1},
+                  {"level": 3, "node": 3}, {"height": 3, "level": 3}],
+        "optimal": [{"front": 0, "rear": 1}, {"front": 1, "rear": 3},
+                    {"front": 2, "rear": 5}, {"front": 3, "rear": 6},
+                    {"front": 6, "rear": 6}],
+        "variation": [{"front": 0, "rear": 1, "maxWidth": 1},
+                      {"front": 1, "rear": 3, "maxWidth": 2},
+                      {"front": 3, "rear": 6, "maxWidth": 3},
+                      {"front": 6, "rear": 6, "maxWidth": 3}],
+    }
+    for method, expected in expected_tree_pointers.items():
+        frames = tree_animation.get(method, [])
+        actual = [frame.get("pointers") for frame in frames]
+        if actual != expected:
+            raise ValueError(f"tree-level-order-20261119.{method}: 动画指针与递归/队列执行顺序不一致")
+        for index, frame in enumerate(frames):
+            if not frame.get("diagram") or not isinstance(frame.get("active"), list):
+                raise ValueError(f"tree-level-order-20261119.{method}: 第{index + 1}帧缺少树连线或操作高亮")
     inputs = {
         "kmp-20261111": "ababcabcac\nabcac\n",
         "lc217-20261027": "4\n1 2 3 1\n",
@@ -258,6 +291,30 @@ def main():
         check_one(x["variation"]["code"], case[1], x["id"] + ".variation",
                   variant_inputs.get(x["id"], ""))
         count += 1
+        if x["id"] == "tree-level-order-20261119":
+            sample_tree = """Node tree[] = {
+        {'A', 1, 2},
+        {'B', 3, 4},
+        {'C', -1, 5},
+        {'D', -1, -1},
+        {'E', -1, -1},
+        {'F', -1, -1}
+    };"""
+            single_tree = "Node tree[] = {{'A', -1, -1}};"
+            for method in ("brute", "optimal", "variation"):
+                code = x[method]["code"]
+                if sample_tree not in code:
+                    raise ValueError(f"{x['id']}.{method}: 示例树代码与验证模板不一致")
+                single_code = code.replace(sample_tree, single_tree, 1)
+                single_expected = "1" if method == "variation" else "A"
+                check_one(single_code, single_expected, x["id"] + "." + method + ".single_node")
+                count += 1
+                if "int root = 0;" not in code:
+                    raise ValueError(f"{x['id']}.{method}: 找不到root初始化，无法测试空树")
+                empty_code = code.replace("int root = 0;", "int root = -1;", 1)
+                empty_expected = "0" if method == "variation" else ""
+                check_one(empty_code, empty_expected, x["id"] + "." + method + ".empty_tree")
+                count += 1
         if x["id"] == "lc997-20261109":
             extra = [
                 ("single", "1 0\n", "1"),
