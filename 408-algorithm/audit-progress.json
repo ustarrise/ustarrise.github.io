@@ -1,17 +1,17 @@
 {
   "schema_version": 1,
-  "last_audit_date": "2026-11-11",
+  "last_audit_date": "2026-11-12",
   "scope": "408-algorithm only",
-  "status_note": "2026-11-11复核：北京时间当天KMP课程已发布，正式题库与备用副本逐字段一致；未来11/12—11/18连续7天均有未发布备用课。重新核验KMP、Prim、哈夫曼、Dijkstra、AOE、散列表、快速排序及Floyd的来源可访问性、题意/约束/样例、复杂度、C代码与动画；Floyd来源明确支持负边但无负环的前提，未发现需要修改课程JSON的问题。master最新Daily Actions成功：37道备用题、207次C程序编译运行测试通过。选题比例仍有差距：pending分类18/14/5，预测补盲13.5%；下一轮优先新增栈、单调双端队列、稀疏矩阵快速转置3道补盲课。",
+  "status_note": "2026-11-12复核：北京时间当天Prim课程已发布，正式题库与备用副本逐字段同步；未来11/13—11/19连续7天有备用课。对当天及未来7天逐题复核来源、题意、约束、样例、复杂度、代码和动画；发现Prim、哈夫曼、Dijkstra、AOE和11/19二叉树层序遍历题缺少明确的输入/输出格式标签，已补齐。AOE题面明确“最短工期=源点到汇点最长路径”。力扣102树题明确标注为C语言静态树改编，补齐单结点/空树边界、先序DFS反例和空树return注释；验证器新增输入输出、三组树动画精确指针及6个单结点/空树C测试。最终Actions通过38道备用题、216次C程序编译运行测试；Pages部署成功。",
   "published_today": {
-    "date": "2026-11-11",
-    "id": "kmp-20261111",
+    "date": "2026-11-12",
+    "id": "prim-20261112",
     "present": true,
-    "review_note": "今天课程已在lessons.json中；与pending-lessons.json中的同ID副本逐字段一致。复核OI Wiki KMP来源、首次匹配0-based定义、空格输入约束、m>n边界、失配回退lps[j-1]及主串指针不回退；动画中的lps计算与匹配指针轨迹和代码一致。最新Actions确认今天已发布，无需重复提交。"
+    "review_note": "今天课程已在lessons.json中；与pending-lessons.json同ID副本的题意保持一致。Actions运行43133111095确认今天已发布、发布步骤无重复提交。复核Prim跨集合最小边、low[v]更新、V-1条边、连通性和总权值16；补充明确的无输入/输出格式。"
   },
   "future_queue": {
-    "from": "2026-11-12",
-    "through": "2026-11-18",
+    "from": "2026-11-13",
+    "through": "2026-11-19",
     "continuous_days": 7,
     "shortfall_days": 0
   },
@@ -159,26 +159,27 @@
     {
       "date": "2026-11-12",
       "id": "prim-20261112",
-      "scope": "复核跨集合最小边选择与low更新逻辑；补充单顶点/不连通边界说明和变式邻接矩阵复杂度。",
-      "commit": "6ff611f06c98710ba858a8dfe9db9feeb5cafb3f"
+      "scope": "复核跨集合最小边选择、low更新、单顶点/不连通边界和变式邻接矩阵复杂度；补齐明确输入/输出格式，确认正式/备用题意一致。",
+      "commit": "68a5f798e9ff1f6648ce89b745a4ef5b28a8923f",
+      "source": "https://cp-algorithms.com/graph/mst_prim.html"
     },
     {
       "date": "2026-11-13",
       "id": "huffman-20261113",
-      "scope": "复核最小两权值合并序列与WPL=224；更新可访问OI Wiki哈夫曼树来源，补充n=2边界、错误取最大权值反例和变式O(n log n)/O(n)复杂度。",
-      "commit": "6ff611f06c98710ba858a8dfe9db9feeb5cafb3f"
+      "scope": "复核最小两权值合并序列与WPL=224；更新可访问OI Wiki哈夫曼树来源，补充n=2边界、错误取最大权值反例和变式O(n log n)/O(n)复杂度。；补齐明确输入/输出格式，保持内置权值数组与WPL输出定义一致。",
+      "commit": "68a5f798e9ff1f6648ce89b745a4ef5b28a8923f"
     },
     {
       "date": "2026-11-14",
       "id": "dijkstra-20261114",
-      "scope": "复核非负权约束、距离数组和不可达输出；补充源点距离0边界、负权反例及变式邻接矩阵复杂度。",
-      "commit": "6ff611f06c98710ba858a8dfe9db9feeb5cafb3f"
+      "scope": "复核非负权约束、距离数组和不可达输出；补充源点距离0边界、负权反例及变式邻接矩阵复杂度。；补齐明确输入/输出格式，标注重复松弛为Bellman-Ford式逐轮扫描。",
+      "commit": "68a5f798e9ff1f6648ce89b745a4ef5b28a8923f"
     },
     {
       "date": "2026-11-15",
       "id": "aoe-critical-20261115",
-      "scope": "复核DFS四条路径工期、ve/vl正逆推与关键活动条件；为DFS动画增加当前事件/路径指针及活动边高亮；补充单活动边界、环反例和变式复杂度。；再次核验发现原来源仅介绍拓扑排序，已更换为直接讲解AOE网、ve/vl、活动最早/最晚开始时间及关键活动的资料，并新增来源回归断言。",
-      "commit": "6ff611f06c98710ba858a8dfe9db9feeb5cafb3f",
+      "scope": "复核DFS四条路径工期、ve/vl正逆推与关键活动条件；为DFS动画增加当前事件/路径指针及活动边高亮；补充单活动边界、环反例和变式复杂度。；再次核验发现原来源仅介绍拓扑排序，已更换为直接讲解AOE网、ve/vl、活动最早/最晚开始时间及关键活动的资料，并新增来源回归断言。；补齐明确输入/输出格式，将“最短工期”明确为源点到汇点最长路径长度。",
+      "commit": "68a5f798e9ff1f6648ce89b745a4ef5b28a8923f",
       "source": "https://m.biancheng.net/view/3417.html",
       "related_commits": [
         "6ff611f06c98710ba858a8dfe9db9feeb5cafb3f",
@@ -217,6 +218,19 @@
       "local_c_tests": [
         "当前master Actions：37道备用题，207次C程序编译运行测试全部通过"
       ]
+    },
+    {
+      "date": "2026-11-19",
+      "id": "tree-level-order-20261119",
+      "scope": "逐层递归与队列BFS逐帧复核；将题目明确标注为力扣102的C语言静态树结构改编，补齐输入/输出格式、单结点/空树边界和先序DFS反例；为三个C程序补充空树/提前返回原因注释；验证器新增三种动画的精确指针轨迹及单结点、空树各3组运行测试。",
+      "source": "https://leetcode.cn/problems/binary-tree-level-order-traversal/description/",
+      "commit": "68a5f798e9ff1f6648ce89b745a4ef5b28a8923f",
+      "local_c_tests": [
+        "朴素层序、队列BFS、最大宽度三份C程序均以GCC C11严格警告模式编译",
+        "原示例树输出A B C D E F、最大宽度3",
+        "新增单结点测试：层序输出A、最大宽度1",
+        "新增空树测试：层序输出空行、最大宽度0"
+      ]
     }
   ],
   "validation": {
@@ -241,16 +255,18 @@
     ],
     "code_commit": "27e691771e768c27cd094ec8db974d27f71f27d1",
     "validator_fix_commit": "490b3e3ac9290792e47eaf10f7e126ade2f24676",
-    "latest_actions_run_id": 42934459738,
-    "latest_result": "success：Check predictive selection policy and queue通过；北京时间2026-11-11已发布KMP课程，正式/备用副本一致，无重复发布；未来11/12—11/18连续7天备用覆盖；37道备用题共207次C程序编译运行测试全部通过。分类计数18经典、14综合、5预测补盲，补盲比例13.5%，需后续补足。",
-    "pages_run_id": 42910362569,
-    "pages_result": "success：master上最近一次与本轮代码队列相关的Pages构建和部署均成功；本轮仅更新审核进度，不涉及网站页面文件。",
-    "source_commit": "91283aad745e72841aa63f587a2170bb31d63902",
-    "latest_commit": "ba9ed55ece95e963074b969665c7979271d5816c"
+    "latest_actions_run_id": 43133111095,
+    "latest_result": "success：publish_daily.py --dry-run确认北京时间2026-11-12当天课程已发布、未来7天备用覆盖；validate_lessons.py验证38道备用题、216次C程序编译运行测试全部通过（较基线210次新增6个树单结点/空树测试）；发布步骤确认无需重复发布。",
+    "pages_run_id": 43133110649,
+    "pages_result": "success：GitHub Pages build、artifact upload和deploy均成功，head SHA 68a5f798e9ff1f6648ce89b745a4ef5b28a8923f。",
+    "source_commit": "68a5f798e9ff1f6648ce89b745a4ef5b28a8923f",
+    "latest_commit": "68a5f798e9ff1f6648ce89b745a4ef5b28a8923f",
+    "current_master_head_before_audit_update": "68a5f798e9ff1f6648ce89b745a4ef5b28a8923f",
+    "tree_boundary_tests": "新增6个C程序编译运行用例：朴素/优化/变式分别覆盖单结点与空树；全部通过。"
   },
   "next_priorities": [
-    "11/19—11/21优先补入3道预测补盲：括号匹配（栈）、滑动窗口最大值（单调双端队列）、稀疏矩阵三元组快速转置；每题先核来源、写三份标准C程序和逐帧动画，再同步补validate_lessons.py测试，验证通过后才进入master。",
-    "保持11/12—11/18连续7天覆盖；后续继续减少链表和连续图题，增加排序、查找、栈、队列、矩阵/稀疏表示。",
+    "11/20—11/22优先补入3道预测补盲：括号匹配（栈）、滑动窗口最大值（单调双端队列）、稀疏矩阵三元组快速转置；每题先核来源、题意、样例、三份标准C程序和逐帧动画，再同步补validate_lessons.py测试，验证通过后才进入master。",
+    "保持11/13—11/19连续7天覆盖；后续继续减少链表和连续图题，增加排序、查找、栈、队列、矩阵/稀疏表示。",
     "按67天计划继续审核后续题目，并回溯历史正式课程；选题比例以实际分类统计，不通过误标旧题来凑45/35/20。"
   ],
   "commit_history": [
@@ -272,19 +288,20 @@
     "27e691771e768c27cd094ec8db974d27f71f27d1",
     "490b3e3ac9290792e47eaf10f7e126ade2f24676",
     "91283aad745e72841aa63f587a2170bb31d63902",
-    "ba9ed55ece95e963074b969665c7979271d5816c"
+    "ba9ed55ece95e963074b969665c7979271d5816c",
+    "68a5f798e9ff1f6648ce89b745a4ef5b28a8923f"
   ],
   "selection_balance": {
-    "current_unique_entries": 41,
+    "current_unique_entries": 42,
     "counts": {
       "经典方法": 20,
-      "综合变式": 15,
+      "综合变式": 16,
       "预测补盲": 6
     },
     "approximate_percent": {
-      "经典方法": 48.8,
-      "综合变式": 36.6,
-      "预测补盲": 14.6
+      "经典方法": 47.6,
+      "综合变式": 38.1,
+      "预测补盲": 14.3
     },
     "target_percent": {
       "经典方法": 45,
@@ -292,18 +309,18 @@
       "预测补盲": 20
     },
     "pending_queue": {
-      "total": 37,
+      "total": 38,
       "counts": {
         "经典方法": 18,
-        "综合变式": 14,
+        "综合变式": 15,
         "预测补盲": 5
       },
       "approximate_percent": {
-        "经典方法": 48.6,
-        "综合变式": 37.8,
-        "预测补盲": 13.5
+        "经典方法": 47.4,
+        "综合变式": 39.5,
+        "预测补盲": 13.2
       }
     },
-    "note": "按lessons.json与pending-lessons.json合并后按publish_daily.py的topic_group规则去重统计：41道，20经典、15综合、6补盲。pending本身37道为18/14/5。未来11/12—11/18正好连续7天。当前补盲比例不足20%；下一轮建议新增3道预测补盲（栈、单调双端队列、稀疏矩阵），使pending队列达到40道、18/14/8，即45/35/20。"
+    "note": "按lessons.json与pending-lessons.json合并后按publish_daily.py的topic_group规则去重统计：42道，20经典、16综合、6补盲；pending 38道为18/15/5。未来11/13—11/19正好连续7天。补盲比例仍不足20%；下一轮安排11/20括号匹配（栈）、11/21滑动窗口最大值（单调双端队列）、11/22稀疏矩阵三元组快速转置，完成完整代码、动画和验证后再入队。"
   }
 }
