@@ -6782,5 +6782,253 @@
         }
       ]
     }
+  },
+  {
+    "id": "huffman-20261113",
+    "date": "2026-11-13",
+    "year": "原创408练习",
+    "number": "03",
+    "category": "二叉树 · 哈夫曼树 · 贪心",
+    "title": "哈夫曼树：从反复扫描到小根堆",
+    "difficulty": "中等",
+    "time": "20–25分钟",
+    "source": "https://oi-wiki.net/ds/huffman-tree/",
+    "question": "给定n个正整数作为叶结点权值，每次选取当前最小的两个权值合并为新结点，新结点权值为两者之和。重复直到只剩一个结点，输出所得哈夫曼树的带权路径长度WPL。可用所有合并权值之和计算WPL。输入格式：无（示例叶结点权值数组已内置）。输出格式：一行一个整数，表示WPL。",
+    "constraint": "2≤n≤1000；每个叶结点权值为正整数且1≤w_i≤10^9；WPL及合并权值使用long long。n个叶结点最多创建2n-1个树结点，朴素数组容量2×MAXN足够；小根堆最多同时存放n个活动权值。本站示例使用内置权值数组，无须键盘输入；题目只要求WPL，不要求输出具体编码。",
+    "sample": "叶结点权值：[5,9,12,13,16,45]\n合并过程：5+9=14，12+13=25，14+16=30，25+30=55，45+55=100。\n输出：224\n解释：WPL等于所有新合并结点权值之和14+25+30+55+100。\n\n边界：n=2、权值[4,7]时只合并一次，WPL=11。\n反例：若错误地反复合并最大两个权值，本例不会得到最优WPL=224。",
+    "brute": {
+      "title": "每轮扫描找两个最小值",
+      "tag": "朴素贪心",
+      "idea": "用active标记当前仍在森林中的结点。每轮扫描所有已创建结点，找出两个最小权值，删除它们并加入权值之和。",
+      "complexity": "时间 O(n²)；空间 O(n)。",
+      "risk": "两个最小值必须来自当前森林，合并后旧结点要退出候选集合，新结点要加入。",
+      "code": "/*\n * 朴素哈夫曼构造：每轮扫描当前所有活动结点，\n * 找到最小的两个权值并合并。\n * WPL等于每次合并产生的新结点权值之和。\n */\n#include <stdio.h>\n\n#define MAXN 1000\n\nint main(void) {\n    long long weight[2 * MAXN];\n    int active[2 * MAXN] = {0};\n    int n = 6;\n    int nodes = n;\n    int remain = n;\n    long long wpl = 0;\n    int input[6] = {5, 9, 12, 13, 16, 45};\n\n    for (int i = 0; i < n; i++) {\n        weight[i] = input[i];\n        active[i] = 1;\n    }\n\n    while (remain > 1) {\n        int first = -1, second = -1;\n\n        // 扫描所有已创建结点，只考虑仍在森林中的结点\n        for (int i = 0; i < nodes; i++) {\n            if (!active[i]) continue;\n            if (first == -1 || weight[i] < weight[first]) {\n                second = first;\n                first = i;\n            } else if (second == -1 || weight[i] < weight[second]) {\n                second = i;\n            }\n        }\n\n        long long sum = weight[first] + weight[second];\n        active[first] = 0;\n        active[second] = 0;\n        weight[nodes] = sum;\n        active[nodes] = 1;\n        nodes++;\n        remain--;\n        wpl += sum;\n    }\n\n    printf(\"%lld\\n\", wpl); // 224\n    return 0;\n}",
+      "explain": [
+        "active[i]=1表示结点仍在当前森林中，可以参与下一次合并。",
+        "每轮取两个最小权值，合并后旧结点退出、新结点加入。",
+        "每个新结点的权值会贡献一次WPL，因此累加所有合并值。"
+      ]
+    },
+    "optimal": {
+      "title": "小根堆维护最小权值",
+      "tag": "推荐优化",
+      "idea": "把当前森林的权值放入小根堆。每轮连续弹出两个最小值，合并后再把新权值压入堆，避免反复全表扫描。",
+      "complexity": "时间 O(n log n)；空间 O(n)。",
+      "risk": "堆顶是最小值；弹出两个元素后再压入它们的和。不要把已经弹出的旧权值再次放回。",
+      "code": "/*\n * 小根堆优化哈夫曼构造。\n * push把新权值上滤，popMin删除堆顶并下滤。\n * 每次合并只需两次弹出和一次插入。\n */\n#include <stdio.h>\n\n#define MAXN 1000\nlong long heap[2 * MAXN];\nint heapSize = 0;\n\nvoid push(long long x) {\n    int i = ++heapSize;\n    while (i > 1 && heap[i / 2] > x) {\n        heap[i] = heap[i / 2];\n        i /= 2;\n    }\n    heap[i] = x;\n}\n\nlong long popMin(void) {\n    long long result = heap[1];\n    long long last = heap[heapSize--];\n    int i = 1;\n\n    // 用末尾元素填补堆顶，再向下调整\n    while (i * 2 <= heapSize) {\n        int child = i * 2;\n        if (child + 1 <= heapSize && heap[child + 1] < heap[child])\n            child++;\n        if (heap[child] >= last)\n            break;\n        heap[i] = heap[child];\n        i = child;\n    }\n    heap[i] = last;\n    return result;\n}\n\nint main(void) {\n    int input[6] = {5, 9, 12, 13, 16, 45};\n    int n = 6;\n    long long wpl = 0;\n\n    // 初始森林中的每个叶权值都进入小根堆\n    for (int i = 0; i < n; i++)\n        push(input[i]);\n\n    while (heapSize > 1) {\n        long long a = popMin();\n        long long b = popMin();\n        long long sum = a + b;\n\n        wpl += sum;\n        push(sum); // 合并结点重新加入森林\n    }\n\n    printf(\"%lld\\n\", wpl); // 224\n    return 0;\n}",
+      "explain": [
+        "小根堆保证堆顶始终是当前最小权值。",
+        "每轮弹出两个最小值a、b，合并为sum=a+b。",
+        "将sum重新入堆；每轮堆规模减少1，总共合并n-1次。"
+      ]
+    },
+    "tips": [
+      "哈夫曼树每次合并当前森林中权值最小的两个根结点。",
+      "WPL可直接累加每次合并产生的新权值。",
+      "小根堆把每轮找最小值的线性扫描降为对数复杂度。"
+    ],
+    "variation": {
+      "question": "巩固题：叶结点权值为[2,3,7,9]，按哈夫曼算法构造，求WPL。请写出使用小根堆的完整C程序。",
+      "idea": "合并2+3=5，5+7=12，9+12=21，因此WPL=5+12+21=38。",
+      "code": "#include <stdio.h>\n#define MAXN 1000\n\nlong long heap[2 * MAXN];\nint heapSize = 0;\n\nvoid push(long long x) {\n    int i = ++heapSize;\n    // 只有父结点比新值大时才上滤，维持小根堆性质。\n    while (i > 1 && heap[i / 2] > x) {\n        heap[i] = heap[i / 2];\n        i /= 2;\n    }\n    heap[i] = x;\n}\n\nlong long popMin(void) {\n    long long result = heap[1];\n    long long last = heap[heapSize--];\n    int i = 1;\n\n    while (i * 2 <= heapSize) {\n        int child = i * 2;\n        // 先选较小孩子；若右孩子更小，应该沿右侧下滤。\n        if (child + 1 <= heapSize && heap[child + 1] < heap[child])\n            child++;\n        // 末尾元素已不大于较小孩子，堆序恢复，可以停止下滤。\n        if (heap[child] >= last)\n            break;\n        heap[i] = heap[child];\n        i = child;\n    }\n    heap[i] = last;\n    return result;                  // 返回原堆顶，即当前最小权值\n}\n\nint main(void) {\n    int weight[4] = {2, 3, 7, 9};\n    long long wpl = 0;\n\n    for (int i = 0; i < 4; i++)\n        push(weight[i]);\n\n    // 只剩一个根结点时，哈夫曼树构造完成。\n    while (heapSize > 1) {\n        long long a = popMin();\n        long long b = popMin();\n        long long sum = a + b;\n        wpl += sum;\n        push(sum);                  // 合并结点重新加入森林\n    }\n\n    printf(\"%lld\\n\", wpl);       // 2+3=5，5+7=12，9+12=21，总和38\n    return 0;                        // 所有叶结点已合并为一棵树\n}",
+      "complexity": "时间 O(n log n)，额外空间 O(n)。"
+    },
+    "animation": {
+      "layout": "array",
+      "brute": [
+        {
+          "array": [
+            5,
+            9,
+            12,
+            13,
+            16,
+            45
+          ],
+          "active": [
+            0,
+            1
+          ],
+          "text": "扫描森林，选最小的5和9，合并为14；WPL暂为14。",
+          "diagram": "森林根：5、9、12、13、16、45\n合并5和9，建立父结点14：14(5,9)",
+          "pointers": {
+            "left": 5,
+            "right": 9,
+            "parent": 14
+          }
+        },
+        {
+          "array": [
+            12,
+            13,
+            16,
+            45,
+            14
+          ],
+          "active": [
+            0,
+            1
+          ],
+          "text": "当前森林为12、13、16、45、14；选12和13，合并为25。",
+          "diagram": "森林根：12、13、14、16、45\n合并12和13，建立父结点25：25(12,13)",
+          "pointers": {
+            "left": 12,
+            "right": 13,
+            "parent": 25
+          }
+        },
+        {
+          "array": [
+            16,
+            45,
+            14,
+            25
+          ],
+          "active": [
+            2,
+            3
+          ],
+          "text": "选14和16，合并为30；WPL累计14+25+30=69。",
+          "diagram": "森林根：14、16、25、45\n合并14和16，建立父结点30：30(14(5,9),16)",
+          "pointers": {
+            "left": 14,
+            "right": 16,
+            "parent": 30
+          }
+        },
+        {
+          "array": [
+            45,
+            25,
+            30
+          ],
+          "active": [
+            1,
+            2
+          ],
+          "text": "选25和30，合并为55；WPL累计124。",
+          "diagram": "森林根：25、30、45\n合并25和30，建立父结点55：55(25(12,13),30(14(5,9),16))",
+          "pointers": {
+            "left": 25,
+            "right": 30,
+            "parent": 55
+          }
+        },
+        {
+          "array": [
+            45,
+            55
+          ],
+          "active": [
+            0,
+            1
+          ],
+          "text": "最后合并45和55得到100；总WPL=224。",
+          "diagram": "森林根：45、55\n合并45和55，得到根100：100(45,55(25(12,13),30(14(5,9),16)))",
+          "pointers": {
+            "left": 45,
+            "right": 55,
+            "parent": 100
+          }
+        }
+      ],
+      "optimal": [
+        {
+          "array": [
+            5,
+            9,
+            12,
+            13,
+            16,
+            45
+          ],
+          "active": [
+            0,
+            1
+          ],
+          "text": "小根堆堆顶依次为5和9，弹出后合并为14并重新入堆。",
+          "diagram": "森林根：5、9、12、13、16、45\n合并5和9，建立父结点14：14(5,9)",
+          "pointers": {
+            "left": 5,
+            "right": 9,
+            "parent": 14
+          }
+        },
+        {
+          "array": [
+            12,
+            13,
+            14,
+            16,
+            45
+          ],
+          "active": [
+            0,
+            1
+          ],
+          "text": "下一轮弹出12和13，合并为25；堆中保留14、16、25、45。",
+          "diagram": "森林根：12、13、14、16、45\n合并12和13，建立父结点25：25(12,13)",
+          "pointers": {
+            "left": 12,
+            "right": 13,
+            "parent": 25
+          }
+        },
+        {
+          "array": [
+            14,
+            16,
+            25,
+            45
+          ],
+          "active": [
+            0,
+            1
+          ],
+          "text": "弹出14和16，合并为30；堆中保留25、30、45。",
+          "diagram": "森林根：14、16、25、45\n合并14和16，建立父结点30：30(14(5,9),16)",
+          "pointers": {
+            "left": 14,
+            "right": 16,
+            "parent": 30
+          }
+        },
+        {
+          "array": [
+            25,
+            30,
+            45
+          ],
+          "active": [
+            0,
+            1
+          ],
+          "text": "弹出25和30，合并为55；堆中保留45、55。",
+          "diagram": "森林根：25、30、45\n合并25和30，建立父结点55：55(25(12,13),30(14(5,9),16))",
+          "pointers": {
+            "left": 25,
+            "right": 30,
+            "parent": 55
+          }
+        },
+        {
+          "array": [
+            45,
+            55
+          ],
+          "active": [
+            0,
+            1
+          ],
+          "text": "最后合并45和55得到100；所有合并值之和为224。",
+          "diagram": "森林根：45、55\n合并45和55，得到根100：100(45,55(25(12,13),30(14(5,9),16)))",
+          "pointers": {
+            "left": 45,
+            "right": 55,
+            "parent": 100
+          }
+        }
+      ]
+    }
   }
 ]
