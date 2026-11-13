@@ -2,7 +2,7 @@
   "schema_version": 1,
   "last_audit_date": "2026-11-13",
   "scope": "每日检查正式题库、备用队列、来源、题意、样例、约束、三份C程序、复杂度、注释与逐帧动画；优先当天及未来7天并持续回溯历史题目。",
-  "status_note": "11月13日哈夫曼课程已发布。修复哈夫曼朴素动画第3轮合并指针错位；补全11月20日共享栈变式动画、边界样例和return注释；新增11月21日滑动窗口最大值，含朴素扫描、单调双端队列、最大堆三种C实现及逐帧动画。候选分支正在执行PR验证，未通过前不合入master。",
+  "status_note": "11月13日哈夫曼课程已发布。修复哈夫曼朴素动画第3轮合并指针；补全11月20日共享栈变式动画、边界样例和return注释；新增11月21日滑动窗口最大值。候选分支PR验证已通过，40道备用题、240次C程序编译运行测试全部通过，等待合入master。",
   "published_today": {
     "date": "2026-11-13",
     "id": "huffman-20261113",
@@ -259,9 +259,9 @@
   ],
   "validation": {
     "previous_actions_run_id": 42733107324,
-    "previous_result": "第一次新Actions运行因validate_lessons.py中max_n回归用例元组少一个右括号而触发SyntaxError；C编译测试未执行，发布步骤被跳过。已记录该失败，不计为验证成功。",
-    "new_commit_actions_result": "本轮先提交26ad009d383480dc84ff308a5bed236d4d3d9ba2，首次Actions发现新变式代码中的换行转义多了一层，测试正确报错；随后提交9ee6fca7699a4748813bbf838f1d2e1deec6758a修正5道变式代码的换行转义。最终运行42432519345全绿，验证34道备用题、159次C程序编译运行。",
-    "local_modified_code": "哈夫曼仅修正题面反例与朴素动画指针；共享栈变式仅补充解释性注释并新增变式动画；新增滑动窗口最大值三份C程序、三套动画及样例/边界/指针回归测试。候选分支CI待完成，未合入master。",
+    "previous_result": "候选分支第一次Actions因滑动窗口边界测试输入字符串多转义一层，程序未读到输入而返回1；修正Python测试字符串后重新运行。失败运行43342985976、43343064935均未合入master，最终成功运行43343117214。",
+    "new_commit_actions_result": "候选分支PR运行43343117214成功：publish_daily.py --dry-run确认北京时间2026-11-13今日课程已存在、待发布0、后备8；validate_lessons.py验证40道备用题、240次C程序编译运行测试全部通过。PR环境有意跳过实际发布步骤，避免在候选分支触发master发布。",
+    "local_modified_code": "正式题库与备用题库同步修正哈夫曼朴素动画第3轮active下标；备用共享栈题补输入/输出、边界/反例、变式Push/Pop注释及9帧动画；新增滑动窗口最大值三份标准C程序、18/8/8帧动画、精确窗口/双端队列/最大堆指针断言和边界测试。",
     "commit_history": [
       "3da63b267ff9f703714b70d59e92eba34dc5553a",
       "b3d7646ed5766108a7864c8839e5c1c72f7a32af",
@@ -275,18 +275,29 @@
       "28cf5a9bb426008966d2455eecd27467e7b7c00c",
       "20a12f232585e32fde33ccfe35d3851c474ba373",
       "26ad009d383480dc84ff308a5bed236d4d3d9ba2",
-      "9ee6fca7699a4748813bbf838f1d2e1deec6758a"
+      "9ee6fca7699a4748813bbf838f1d2e1deec6758a",
+      "6e50cfd46259a597dda545bcd86df4e8b105ae69",
+      "15518ddfe41ef5288e42c7c9857265851c9fb727",
+      "f4d7a870493869d0b79b3ccf48f42cf9f9c97b9a",
+      "27b283e2d2c116180ac0e37fb63e0abccc6e53e5",
+      "c6dbd9d922fae75a7d073fd232865d8f401163a1",
+      "38d91b221785102ac5fa123b00e3c2e7f0fb7ee5",
+      "43e75f41805446e2c733dd2a9e492febe1e4cabd",
+      "a6bcd064d2e7a409cd2bcb7e1611aa66386ce27e",
+      "09afc21cdfceee2ae718e7d97e807611b263a7b2"
     ],
     "code_commit": "27e691771e768c27cd094ec8db974d27f71f27d1",
     "validator_fix_commit": "490b3e3ac9290792e47eaf10f7e126ade2f24676",
-    "latest_actions_run_id": 43133111095,
-    "latest_result": "候选分支等待GitHub Actions验证；master当前最新基线运行43338883975已成功，确认11月13日课程已发布。",
+    "latest_actions_run_id": 43343117214,
+    "latest_result": "success：候选分支SHA a6bcd064d2e7a409cd2bcb7e1611aa66386ce27e；dry-run确认11/13已发布、后备8天；40道题、240次C程序编译运行测试通过。",
     "pages_run_id": 43133110649,
-    "pages_result": "success：GitHub Pages build、artifact upload和deploy均成功，head SHA 68a5f798e9ff1f6648ce89b745a4ef5b28a8923f。",
-    "source_commit": "68a5f798e9ff1f6648ce89b745a4ef5b28a8923f",
-    "latest_commit": "68a5f798e9ff1f6648ce89b745a4ef5b28a8923f",
-    "current_master_head_before_audit_update": "68a5f798e9ff1f6648ce89b745a4ef5b28a8923f",
-    "tree_boundary_tests": "新增6个C程序编译运行用例：朴素/优化/变式分别覆盖单结点与空树；全部通过。"
+    "pages_result": "候选PR未部署Pages；合入master后由仓库现有branch-based Pages workflow部署。",
+    "source_commit": "a6bcd064d2e7a409cd2bcb7e1611aa66386ce27e",
+    "latest_commit": "a6bcd064d2e7a409cd2bcb7e1611aa66386ce27e",
+    "current_master_head_before_audit_update": "96809c8599adaaebfb6d6b229a4060a828ac1c20",
+    "tree_boundary_tests": "新增6个C程序编译运行用例：朴素/优化/变式分别覆盖单结点与空树；全部通过。",
+    "candidate_pr_validation_run_id": 43343117214,
+    "candidate_pr_number": 1
   },
   "next_priorities": [
     "11/22优先补入稀疏矩阵三元组快速转置，重点检查非零元计数、起始位置、列主序和稳定写入；三份C程序与逐帧动画验证通过后入队。",
@@ -313,7 +324,16 @@
     "490b3e3ac9290792e47eaf10f7e126ade2f24676",
     "91283aad745e72841aa63f587a2170bb31d63902",
     "ba9ed55ece95e963074b969665c7979271d5816c",
-    "68a5f798e9ff1f6648ce89b745a4ef5b28a8923f"
+    "68a5f798e9ff1f6648ce89b745a4ef5b28a8923f",
+    "6e50cfd46259a597dda545bcd86df4e8b105ae69",
+    "15518ddfe41ef5288e42c7c9857265851c9fb727",
+    "f4d7a870493869d0b79b3ccf48f42cf9f9c97b9a",
+    "27b283e2d2c116180ac0e37fb63e0abccc6e53e5",
+    "c6dbd9d922fae75a7d073fd232865d8f401163a1",
+    "38d91b221785102ac5fa123b00e3c2e7f0fb7ee5",
+    "43e75f41805446e2c733dd2a9e492febe1e4cabd",
+    "a6bcd064d2e7a409cd2bcb7e1611aa66386ce27e",
+    "09afc21cdfceee2ae718e7d97e807611b263a7b2"
   ],
   "selection_balance": {
     "current_unique_entries": 44,
