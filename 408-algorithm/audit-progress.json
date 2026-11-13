@@ -2,12 +2,12 @@
   "schema_version": 1,
   "last_audit_date": "2026-11-13",
   "scope": "每日检查正式题库、备用队列、来源、题意、样例、约束、三份C程序、复杂度、注释与逐帧动画；优先当天及未来7天并持续回溯历史题目。",
-  "status_note": "11月13日哈夫曼课程已发布。修复哈夫曼朴素动画第3轮合并指针；补全11月20日共享栈变式动画、边界样例和return注释；新增11月21日滑动窗口最大值。候选分支PR验证已通过，40道备用题、240次C程序编译运行测试全部通过，等待合入master。",
+  "status_note": "11月13日检查与修复已合入master（85d29aad）。今日哈夫曼课已发布；修复哈夫曼朴素动画指针、补充416错误反例；补全11月20日共享栈变式动画与边界；新增11月21日滑动窗口最大值。master Actions 43343287096通过40道备用题、240次C程序编译运行测试；Pages部署43343286747成功。",
   "published_today": {
     "date": "2026-11-13",
     "id": "huffman-20261113",
     "present": true,
-    "review_note": "今日课程已存在于lessons.json，pending中同ID副本一致。复核最小两权值合并序列及WPL=224；n=2边界WPL=11；补充错误地反复合并最大权值会得到WPL=416的具体反例。发现朴素动画第3轮数组[16,45,14,25]高亮错标为[2,3]，已修正为[0,2]并记录左右权值下标。"
+    "review_note": "今日课程已存在于lessons.json，pending中同ID副本一致。复核最小两权值合并序列及WPL=224；n=2边界WPL=11；补充错误地反复合并最大权值会得到WPL=416的具体反例。修正朴素动画第3轮数组[16,45,14,25]的高亮下标为[0,2]。master Actions 43343287096确认今天无需重复发布。"
   },
   "future_queue": {
     "from": "2026-11-14",
@@ -167,7 +167,7 @@
       "date": "2026-11-13",
       "id": "huffman-20261113",
       "scope": "复核哈夫曼合并序列、WPL=224、n=2边界与最大权值错误反例WPL=416；发现朴素动画第3轮数组[16,45,14,25]应高亮下标0和2，已修正指针并增加精确状态断言；三份C程序新增n=2编译运行回归。",
-      "commit": "candidate-branch",
+      "commit": "85d29aad3a28c6f43f49394916364bd2dabb5fb3",
       "local_c_tests": [
         "三份C程序原样例输出224、224、38",
         "三份C程序通过n=2、权值[4,7]的边界测试，输出11"
@@ -244,7 +244,8 @@
       "local_c_tests": [
         "朴素固定分区、共享双栈、变式三份程序样例输出核对",
         "三份程序均通过n=2容量耗尽、拒绝入栈、两栈弹空测试"
-      ]
+      ],
+      "commit": "85d29aad3a28c6f43f49394916364bd2dabb5fb3"
     },
     {
       "date": "2026-11-21",
@@ -254,14 +255,15 @@
       "local_c_tests": [
         "三份程序样例输出3 3 5 5 6 7",
         "k=1、k=n、全负数、全相等四组边界测试"
-      ]
+      ],
+      "commit": "85d29aad3a28c6f43f49394916364bd2dabb5fb3"
     }
   ],
   "validation": {
     "previous_actions_run_id": 42733107324,
-    "previous_result": "候选分支第一次Actions因滑动窗口边界测试输入字符串多转义一层，程序未读到输入而返回1；修正Python测试字符串后重新运行。失败运行43342985976、43343064935均未合入master，最终成功运行43343117214。",
-    "new_commit_actions_result": "候选分支PR运行43343117214成功：publish_daily.py --dry-run确认北京时间2026-11-13今日课程已存在、待发布0、后备8；validate_lessons.py验证40道备用题、240次C程序编译运行测试全部通过。PR环境有意跳过实际发布步骤，避免在候选分支触发master发布。",
-    "local_modified_code": "正式题库与备用题库同步修正哈夫曼朴素动画第3轮active下标；备用共享栈题补输入/输出、边界/反例、变式Push/Pop注释及9帧动画；新增滑动窗口最大值三份标准C程序、18/8/8帧动画、精确窗口/双端队列/最大堆指针断言和边界测试。",
+    "previous_result": "候选分支首次两次Actions因滑动窗口边界测试输入多转义一层而失败，均未合入master；修正测试字符串后候选PR运行43343117214通过。合入master后又由43343287096完整复验通过。",
+    "new_commit_actions_result": "master运行43343287096成功：publish_daily.py --dry-run确认北京时间2026-11-13今日课程已存在、待发布0、后备8；validate_lessons.py验证40道备用题、240次C程序编译运行测试全部通过；发布步骤确认今天已发布，无重复提交。",
+    "local_modified_code": "哈夫曼正式/备用副本同步修正朴素动画第3轮active下标，并补充最大权值错误合并WPL=416的具体反例；共享栈题补输入/输出、n=2满栈/空栈边界、固定分区反例、变式Push/Pop返回原因注释和9帧动画；新增力扣239滑动窗口最大值三份标准C程序、18/8/8帧动画、精确指针断言和k=1、k=n、全负数、全相等测试。",
     "commit_history": [
       "3da63b267ff9f703714b70d59e92eba34dc5553a",
       "b3d7646ed5766108a7864c8839e5c1c72f7a32af",
@@ -276,25 +278,17 @@
       "20a12f232585e32fde33ccfe35d3851c474ba373",
       "26ad009d383480dc84ff308a5bed236d4d3d9ba2",
       "9ee6fca7699a4748813bbf838f1d2e1deec6758a",
-      "6e50cfd46259a597dda545bcd86df4e8b105ae69",
-      "15518ddfe41ef5288e42c7c9857265851c9fb727",
-      "f4d7a870493869d0b79b3ccf48f42cf9f9c97b9a",
-      "27b283e2d2c116180ac0e37fb63e0abccc6e53e5",
-      "c6dbd9d922fae75a7d073fd232865d8f401163a1",
-      "38d91b221785102ac5fa123b00e3c2e7f0fb7ee5",
-      "43e75f41805446e2c733dd2a9e492febe1e4cabd",
-      "a6bcd064d2e7a409cd2bcb7e1611aa66386ce27e",
-      "09afc21cdfceee2ae718e7d97e807611b263a7b2"
+      "85d29aad3a28c6f43f49394916364bd2dabb5fb3"
     ],
     "code_commit": "27e691771e768c27cd094ec8db974d27f71f27d1",
     "validator_fix_commit": "490b3e3ac9290792e47eaf10f7e126ade2f24676",
-    "latest_actions_run_id": 43343117214,
-    "latest_result": "success：候选分支SHA a6bcd064d2e7a409cd2bcb7e1611aa66386ce27e；dry-run确认11/13已发布、后备8天；40道题、240次C程序编译运行测试通过。",
-    "pages_run_id": 43133110649,
-    "pages_result": "候选PR未部署Pages；合入master后由仓库现有branch-based Pages workflow部署。",
-    "source_commit": "a6bcd064d2e7a409cd2bcb7e1611aa66386ce27e",
-    "latest_commit": "a6bcd064d2e7a409cd2bcb7e1611aa66386ce27e",
-    "current_master_head_before_audit_update": "96809c8599adaaebfb6d6b229a4060a828ac1c20",
+    "latest_actions_run_id": 43343287096,
+    "latest_result": "success：master代码提交85d29aad。确认11/13已发布、未来8天备用覆盖；40道备用题、240次C程序编译运行测试全部通过；今天无需重复发布。",
+    "pages_run_id": 43343286747,
+    "pages_result": "success：GitHub Pages build、artifact upload和deploy均成功，head SHA 85d29aad3a28c6f43f49394916364bd2dabb5fb3。",
+    "source_commit": "85d29aad3a28c6f43f49394916364bd2dabb5fb3",
+    "latest_commit": "85d29aad3a28c6f43f49394916364bd2dabb5fb3",
+    "current_master_head_before_audit_update": "85d29aad3a28c6f43f49394916364bd2dabb5fb3",
     "tree_boundary_tests": "新增6个C程序编译运行用例：朴素/优化/变式分别覆盖单结点与空树；全部通过。",
     "candidate_pr_validation_run_id": 43343117214,
     "candidate_pr_number": 1
@@ -325,15 +319,7 @@
     "91283aad745e72841aa63f587a2170bb31d63902",
     "ba9ed55ece95e963074b969665c7979271d5816c",
     "68a5f798e9ff1f6648ce89b745a4ef5b28a8923f",
-    "6e50cfd46259a597dda545bcd86df4e8b105ae69",
-    "15518ddfe41ef5288e42c7c9857265851c9fb727",
-    "f4d7a870493869d0b79b3ccf48f42cf9f9c97b9a",
-    "27b283e2d2c116180ac0e37fb63e0abccc6e53e5",
-    "c6dbd9d922fae75a7d073fd232865d8f401163a1",
-    "38d91b221785102ac5fa123b00e3c2e7f0fb7ee5",
-    "43e75f41805446e2c733dd2a9e492febe1e4cabd",
-    "a6bcd064d2e7a409cd2bcb7e1611aa66386ce27e",
-    "09afc21cdfceee2ae718e7d97e807611b263a7b2"
+    "85d29aad3a28c6f43f49394916364bd2dabb5fb3"
   ],
   "selection_balance": {
     "current_unique_entries": 44,
