@@ -2,7 +2,7 @@
   "schema_version": 1,
   "last_audit_date": "2026-11-13",
   "scope": "每日检查正式题库、备用队列、来源、题意、样例、约束、三份C程序、复杂度、注释与逐帧动画；优先当天及未来7天并持续回溯历史题目。",
-  "status_note": "11月13日检查与修复已合入master（85d29aad）。今日哈夫曼课已发布；修复哈夫曼朴素动画指针、补充416错误反例；补全11月20日共享栈变式动画与边界；新增11月21日滑动窗口最大值。master Actions 43343287096通过40道备用题、240次C程序编译运行测试；Pages部署43343286747成功。",
+  "status_note": "11月13日继续回溯未来7天课程来源和样例。已把哈夫曼、散列表、Floyd来源更正为OI Wiki规范域名；快速排序改为直接讲解Hoare划分的资料；修正共享栈示例中的字面\\n；补充Dijkstra不可达顶点与Floyd负权边无负环样例。来源断言和样例回归已加入验证器，候选PR验证待执行。",
   "published_today": {
     "date": "2026-11-13",
     "id": "huffman-20261113",
@@ -257,13 +257,20 @@
         "k=1、k=n、全负数、全相等四组边界测试"
       ],
       "commit": "85d29aad3a28c6f43f49394916364bd2dabb5fb3"
+    },
+    {
+      "date": "2026-11-13",
+      "id": "future-source-audit-20261113",
+      "scope": "回溯审核11/14—11/20来源链接与样例：哈夫曼、散列表、Floyd更换为oi-wiki.org规范页面；快速排序改用直接讲解Hoare双向划分的GFG页面；共享栈示例把字面\\\\n改为真实换行；Dijkstra增加不可达点输出-1的具体边界，Floyd增加负权边且无负环的完整矩阵样例。验证器增加9道课程来源精确断言及相关样例检查。",
+      "source": "https://oi-wiki.org/ds/huffman-tree/; https://oi-wiki.org/ds/hash/; https://oi-wiki.org/graph/shortest-path/; https://www.geeksforgeeks.org/dsa/hoare-s-partition-algorithm/",
+      "commit": "candidate-source-audit"
     }
   ],
   "validation": {
     "previous_actions_run_id": 42733107324,
     "previous_result": "候选分支首次两次Actions因滑动窗口边界测试输入多转义一层而失败，均未合入master；修正测试字符串后候选PR运行43343117214通过。合入master后又由43343287096完整复验通过。",
     "new_commit_actions_result": "master运行43343287096成功：publish_daily.py --dry-run确认北京时间2026-11-13今日课程已存在、待发布0、后备8；validate_lessons.py验证40道备用题、240次C程序编译运行测试全部通过；发布步骤确认今天已发布，无重复提交。",
-    "local_modified_code": "哈夫曼正式/备用副本同步修正朴素动画第3轮active下标，并补充最大权值错误合并WPL=416的具体反例；共享栈题补输入/输出、n=2满栈/空栈边界、固定分区反例、变式Push/Pop返回原因注释和9帧动画；新增力扣239滑动窗口最大值三份标准C程序、18/8/8帧动画、精确指针断言和k=1、k=n、全负数、全相等测试。",
+    "local_modified_code": "第二轮回溯仅修正来源链接和样例文本，不修改C算法实现；验证器增加9道未来课程的来源断言、Dijkstra不可达边界、Floyd负权边无负环样例及共享栈真实换行检查。候选分支CI待完成。",
     "commit_history": [
       "3da63b267ff9f703714b70d59e92eba34dc5553a",
       "b3d7646ed5766108a7864c8839e5c1c72f7a32af",
@@ -283,7 +290,7 @@
     "code_commit": "27e691771e768c27cd094ec8db974d27f71f27d1",
     "validator_fix_commit": "490b3e3ac9290792e47eaf10f7e126ade2f24676",
     "latest_actions_run_id": 43343287096,
-    "latest_result": "success：master代码提交85d29aad。确认11/13已发布、未来8天备用覆盖；40道备用题、240次C程序编译运行测试全部通过；今天无需重复发布。",
+    "latest_result": "来源与样例回归已更新到候选分支，等待GitHub Actions执行；master仍保持上一轮40题、240次C程序测试通过状态。",
     "pages_run_id": 43343286747,
     "pages_result": "success：GitHub Pages build、artifact upload和deploy均成功，head SHA 85d29aad3a28c6f43f49394916364bd2dabb5fb3。",
     "source_commit": "85d29aad3a28c6f43f49394916364bd2dabb5fb3",
