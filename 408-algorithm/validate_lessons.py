@@ -95,7 +95,7 @@ def main():
         "huffman-20261113": {"brute": 5, "optimal": 5},
         "dijkstra-20261114": {"brute": 5, "optimal": 6},
         "aoe-critical-20261115": {"brute": 5, "optimal": 9},
-        "two-stacks-one-array-20261120": {"brute": 4, "optimal": 5},
+        "two-stacks-one-array-20261120": {"brute": 4, "optimal": 5, "variation": 9},
     }
     for lesson in queue:
         for method, minimum in diagram_minimum.get(lesson["id"], {}).items():
@@ -224,6 +224,9 @@ def main():
     ]
     if [f.get("pointers") for f in stack_variation] != expected_stack_tops:
         raise ValueError("two-stacks-one-array-20261120.variation: top1/top2与Push/Pop顺序不一致")
+    for index, frame in enumerate(stack_variation):
+        if not frame.get("diagram") or not frame.get("text") or not isinstance(frame.get("active"), list):
+            raise ValueError(f"two-stacks-one-array-20261120.variation: 第{index + 1}帧缺少连线/高亮")
 
     sliding_lesson = next((x for x in queue if x["id"] == "sliding-window-max-20261121"), None)
     if sliding_lesson is None:
@@ -242,6 +245,30 @@ def main():
         raise ValueError("sliding-window-max-20261121.optimal: 单调队列状态错误")
     if [f.get("pointers", {}).get("topIndex") for f in sliding_frames.get("variation", [])] != [0, 1, 1, 1, 4, 4, 6, 7]:
         raise ValueError("sliding-window-max-20261121.variation: 最大堆堆顶下标轨迹错误")
+    expected_brute = []
+    nums = [1, 3, -1, -3, 5, 3, 6, 7]
+    k = 3
+    for left in range(len(nums) - k + 1):
+        max_index = left
+        for j in range(left, left + k):
+            if nums[j] > nums[max_index]:
+                max_index = j
+            expected_brute.append({"left": left, "right": left + k - 1,
+                                   "j": j, "maxIndex": max_index})
+    if [f.get("pointers") for f in sliding_frames.get("brute", [])] != expected_brute:
+        raise ValueError("sliding-window-max-20261121.brute: 窗口扫描指针或最大值位置错误")
+    expected_head = [0, 0, 0, 0, 1, 1, 1, 1]
+    expected_tail = [1, 1, 2, 3, 2, 3, 2, 2]
+    expected_expired = [[], [], [], [], [1], [], [], []]
+    expected_removed = [[], [0], [], [], [3, 2], [], [5, 4], [6]]
+    for key, expected in (("head", expected_head), ("tail", expected_tail),
+                          ("expired", expected_expired), ("removedBack", expected_removed)):
+        if [f.get("pointers", {}).get(key) for f in sliding_frames.get("optimal", [])] != expected:
+            raise ValueError(f"sliding-window-max-20261121.optimal: {key}轨迹错误")
+    for method in ("brute", "optimal", "variation"):
+        for index, frame in enumerate(sliding_frames.get(method, [])):
+            if not frame.get("diagram") or not frame.get("text") or not isinstance(frame.get("active"), list):
+                raise ValueError(f"sliding-window-max-20261121.{method}: 第{index + 1}帧缺少数组连线/操作高亮")
     quick_lesson = next((x for x in queue if x["id"] == "quick-sort-20261117"), None)
     if quick_lesson is None:
         raise ValueError("缺少quick-sort-20261117，无法审核快速排序动画")
