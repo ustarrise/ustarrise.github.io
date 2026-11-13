@@ -467,10 +467,10 @@ def main():
                 count += 1
         if x["id"] == "sliding-window-max-20261121":
             extra = [
-                ("k_one", "4 1\\n2 -1 2 3\\n", "2 -1 2 3"),
-                ("k_equals_n", "4 4\\n-5 -2 -9 -3\\n", "-2"),
-                ("all_negative", "5 2\\n-5 -2 -7 -1 -3\\n", "-2 -2 -1 -1"),
-                ("all_equal", "4 3\\n5 5 5 5\\n", "5 5"),
+                ("k_one", "4 1\n2 -1 2 3\n", "2 -1 2 3"),
+                ("k_equals_n", "4 4\n-5 -2 -9 -3\n", "-2"),
+                ("all_negative", "5 2\n-5 -2 -7 -1 -3\n", "-2 -2 -1 -1"),
+                ("all_equal", "4 3\n5 5 5 5\n", "5 5"),
             ]
             for method in ("brute", "optimal", "variation"):
                 for label, data, expected in extra:
