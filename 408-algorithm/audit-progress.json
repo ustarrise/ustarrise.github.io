@@ -268,7 +268,7 @@
   ],
   "validation": {
     "previous_actions_run_id": 42733107324,
-    "previous_result": "候选分支首次两次Actions因滑动窗口边界测试输入多转义一层而失败，均未合入master；修正测试字符串后候选PR运行43343117214通过。合入master后又由43343287096完整复验通过。",
+    "previous_result": "第二轮候选PR验证43343724045成功；来源断言、Dijkstra不可达边界、Floyd负权边样例、共享栈换行检查均通过，40道备用题、240次C程序编译运行测试全部通过。候选PR未执行发布步骤。",
     "new_commit_actions_result": "master运行43343287096成功：publish_daily.py --dry-run确认北京时间2026-11-13今日课程已存在、待发布0、后备8；validate_lessons.py验证40道备用题、240次C程序编译运行测试全部通过；发布步骤确认今天已发布，无重复提交。",
     "local_modified_code": "第二轮回溯仅修正来源链接和样例文本，不修改C算法实现；验证器增加9道未来课程的来源断言、Dijkstra不可达边界、Floyd负权边无负环样例及共享栈真实换行检查。候选分支CI待完成。",
     "commit_history": [
@@ -289,8 +289,8 @@
     ],
     "code_commit": "27e691771e768c27cd094ec8db974d27f71f27d1",
     "validator_fix_commit": "490b3e3ac9290792e47eaf10f7e126ade2f24676",
-    "latest_actions_run_id": 43343287096,
-    "latest_result": "来源与样例回归已更新到候选分支，等待GitHub Actions执行；master仍保持上一轮40题、240次C程序测试通过状态。",
+    "latest_actions_run_id": 43343724045,
+    "latest_result": "success：候选分支SHA babd9660cc7b174934c761f19579ec0931de313a；9道未来课程来源断言通过，Dijkstra/Floyd新增样例检查通过；40道备用题、240次C程序编译运行测试全部通过。",
     "pages_run_id": 43343286747,
     "pages_result": "success：GitHub Pages build、artifact upload和deploy均成功，head SHA 85d29aad3a28c6f43f49394916364bd2dabb5fb3。",
     "source_commit": "85d29aad3a28c6f43f49394916364bd2dabb5fb3",
@@ -298,7 +298,9 @@
     "current_master_head_before_audit_update": "85d29aad3a28c6f43f49394916364bd2dabb5fb3",
     "tree_boundary_tests": "新增6个C程序编译运行用例：朴素/优化/变式分别覆盖单结点与空树；全部通过。",
     "candidate_pr_validation_run_id": 43343117214,
-    "candidate_pr_number": 1
+    "candidate_pr_number": 1,
+    "source_audit_pr_run_id": 43343724045,
+    "source_audit_pr_number": 2
   },
   "next_priorities": [
     "11/22优先补入稀疏矩阵三元组快速转置，重点检查非零元计数、起始位置、列主序和稳定写入；三份C程序与逐帧动画验证通过后入队。",
