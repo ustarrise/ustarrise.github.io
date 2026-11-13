@@ -71,6 +71,22 @@ def check_one(source, expected, key, stdin_data=""):
 
 def main():
     queue = json.loads((ROOT / "pending-lessons.json").read_text(encoding="utf-8"))
+    expected_sources = {
+        "huffman-20261113": "https://oi-wiki.org/ds/huffman-tree/",
+        "dijkstra-20261114": "https://cp-algorithms.com/graph/dijkstra.html",
+        "aoe-critical-20261115": "https://m.biancheng.net/view/3417.html",
+        "lc-hash-linear-20261116": "https://oi-wiki.org/ds/hash/",
+        "quick-sort-20261117": "https://www.geeksforgeeks.org/dsa/hoare-s-partition-algorithm/",
+        "floyd-20261118": "https://oi-wiki.org/graph/shortest-path/",
+        "tree-level-order-20261119": "https://leetcode.cn/problems/binary-tree-level-order-traversal/description/",
+        "two-stacks-one-array-20261120": "https://www.geeksforgeeks.org/dsa/implement-two-stacks-in-an-array/",
+        "sliding-window-max-20261121": "https://leetcode.cn/problems/sliding-window-maximum/",
+    }
+    for lesson in queue:
+        expected_source = expected_sources.get(lesson["id"])
+        if expected_source and lesson.get("source") != expected_source:
+            raise ValueError("{}: 来源链接与已核验资料不一致".format(lesson.get("id")))
+
 
     # 关键课程的逐帧动画回归：避免只有结论、缺少指针/状态的粗略动画。
     animation_minimum = {
@@ -206,6 +222,12 @@ def main():
         raise ValueError("huffman-20261113.brute: 第3轮左右最小权值指针错误")
     if "WPL=416" not in huffman_lesson.get("sample", ""):
         raise ValueError("huffman-20261113: 缺少取最大权值的具体错误反例")
+    dijkstra_lesson = next((x for x in queue if x["id"] == "dijkstra-20261114"), None)
+    if dijkstra_lesson is None or "0 4 -1" not in dijkstra_lesson.get("sample", ""):
+        raise ValueError("dijkstra-20261114: 缺少不可达顶点输出-1的具体边界")
+    floyd_lesson = next((x for x in queue if x["id"] == "floyd-20261118"), None)
+    if floyd_lesson is None or "0 4 2" not in floyd_lesson.get("sample", ""):
+        raise ValueError("floyd-20261118: 缺少负权边且无负环的具体样例")
 
     stacks_lesson = next((x for x in queue if x["id"] == "two-stacks-one-array-20261120"), None)
     if stacks_lesson is None:
@@ -224,6 +246,8 @@ def main():
     ]
     if [f.get("pointers") for f in stack_variation] != expected_stack_tops:
         raise ValueError("two-stacks-one-array-20261120.variation: top1/top2与Push/Pop顺序不一致")
+    if "\\n" in stacks_lesson.get("sample", ""):
+        raise ValueError("two-stacks-one-array-20261120: 示例文本含字面\\n，换行应为真实换行")
     for index, frame in enumerate(stack_variation):
         if not frame.get("diagram") or not frame.get("text") or not isinstance(frame.get("active"), list):
             raise ValueError(f"two-stacks-one-array-20261120.variation: 第{index + 1}帧缺少连线/高亮")
