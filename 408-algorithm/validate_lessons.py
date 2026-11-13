@@ -46,6 +46,7 @@ CASES = {
     "lc912-merge-20261102": ("1 2 3 4 5", "5 4 3 2 1"),
     "lc48-20261024": ("7 4 1\n8 5 2\n9 6 3", "3 6 9\n2 5 8\n1 4 7"),
     "two-stacks-one-array-20261120": ("固定分区：栈1溢出，但栈2一侧仍有空位\ntop1=3, top2=4, mid=4", "数组：10 20 30 40 50 70 80 90\ntop1=4, top2=5\n共享空间：两个栈顶相邻，整个数组已满", "Pop2=9\nPop1=3\nPop2=8\n栈1自底向顶：1 2\n栈2为空：是"),
+    "sliding-window-max-20261121": ("3 3 5 5 6 7", "3 3 5 5 6 7", "3 3 5 5 6 7"),
 }
 
 
@@ -83,9 +84,9 @@ def main():
         "kmp-20261111": {"brute": 12, "optimal": 17},
         "dijkstra-20261114": {"brute": 5, "optimal": 6},
         "aoe-critical-20261115": {"brute": 5, "optimal": 9},
-        "tree-level-order-20261119": {"brute": 4, "optimal": 5, "variation": 4},
         "quick-sort-20261117": {"brute": 6, "optimal": 10},
-        "two-stacks-one-array-20261120": {"brute": 4, "optimal": 5},
+        "two-stacks-one-array-20261120": {"brute": 4, "optimal": 5, "variation": 9},
+        "sliding-window-max-20261121": {"brute": 18, "optimal": 8, "variation": 8},
     }
     diagram_minimum = {
         "lc997-20261109": {"brute": 6, "optimal": 6},
@@ -94,7 +95,7 @@ def main():
         "huffman-20261113": {"brute": 5, "optimal": 5},
         "dijkstra-20261114": {"brute": 5, "optimal": 6},
         "aoe-critical-20261115": {"brute": 5, "optimal": 9},
-        "two-stacks-one-array-20261120": {"brute": 4, "optimal": 5},
+        "two-stacks-one-array-20261120": {"brute": 4, "optimal": 5, "variation": 9},
     }
     for lesson in queue:
         for method, minimum in diagram_minimum.get(lesson["id"], {}).items():
@@ -170,12 +171,15 @@ def main():
         "quick-sort-20261117": ("brute", "optimal"),
         "tree-level-order-20261119": ("brute", "optimal", "variation"),
         "lc-hash-linear-20261116": ("brute", "optimal", "variation"),
+        "two-stacks-one-array-20261120": ("brute", "optimal", "variation"),
+        "sliding-window-max-20261121": ("brute", "optimal", "variation"),
     }
     reviewed_variations = {
         "lc997-20261109", "lc994-20261110", "kmp-20261111",
         "prim-20261112", "huffman-20261113", "dijkstra-20261114",
         "tree-level-order-20261119",
         "aoe-critical-20261115", "lc-hash-linear-20261116",
+        "two-stacks-one-array-20261120", "sliding-window-max-20261121",
     }
     for lesson in queue:
         if lesson["id"] in reviewed_variations and not lesson.get("variation", {}).get("complexity"):
@@ -187,6 +191,84 @@ def main():
                     raise ValueError(
                         f"{lesson['id']}.{method}: 第{index + 1}帧缺少指针或操作高亮"
                     )
+    huffman_lesson = next((x for x in queue if x["id"] == "huffman-20261113"), None)
+    if huffman_lesson is None:
+        raise ValueError("缺少huffman-20261113")
+    huffman_brute = huffman_lesson["animation"]["brute"]
+    expected_huffman_active = [[0, 1], [0, 1], [0, 2], [1, 2], [0, 1]]
+    if [f.get("active") for f in huffman_brute] != expected_huffman_active:
+        raise ValueError("huffman-20261113.brute: 第3轮合并14和16时必须高亮数组下标2和0")
+    if huffman_brute[2].get("array") != [16, 45, 14, 25]:
+        raise ValueError("huffman-20261113.brute: 第3轮活动森林数组状态错误")
+    if huffman_brute[2].get("pointers") != {
+        "left": 14, "right": 16, "parent": 30, "leftIndex": 2, "rightIndex": 0
+    }:
+        raise ValueError("huffman-20261113.brute: 第3轮左右最小权值指针错误")
+    if "WPL=416" not in huffman_lesson.get("sample", ""):
+        raise ValueError("huffman-20261113: 缺少取最大权值的具体错误反例")
+
+    stacks_lesson = next((x for x in queue if x["id"] == "two-stacks-one-array-20261120"), None)
+    if stacks_lesson is None:
+        raise ValueError("缺少two-stacks-one-array-20261120")
+    stack_variation = stacks_lesson.get("animation", {}).get("variation", [])
+    expected_stack_tops = [
+        {"top1": -1, "top2": 6},
+        {"top1": 0, "top2": 6},
+        {"top1": 0, "top2": 5},
+        {"top1": 1, "top2": 5},
+        {"top1": 1, "top2": 6, "popped": 9},
+        {"top1": 1, "top2": 5},
+        {"top1": 2, "top2": 5},
+        {"top1": 1, "top2": 5, "popped": 3},
+        {"top1": 1, "top2": 6, "popped": 8},
+    ]
+    if [f.get("pointers") for f in stack_variation] != expected_stack_tops:
+        raise ValueError("two-stacks-one-array-20261120.variation: top1/top2与Push/Pop顺序不一致")
+    for index, frame in enumerate(stack_variation):
+        if not frame.get("diagram") or not frame.get("text") or not isinstance(frame.get("active"), list):
+            raise ValueError(f"two-stacks-one-array-20261120.variation: 第{index + 1}帧缺少连线/高亮")
+
+    sliding_lesson = next((x for x in queue if x["id"] == "sliding-window-max-20261121"), None)
+    if sliding_lesson is None:
+        raise ValueError("缺少sliding-window-max-20261121")
+    if sliding_lesson.get("source") != "https://leetcode.cn/problems/sliding-window-maximum/":
+        raise ValueError("sliding-window-max-20261121: 来源必须指向力扣239官方题面")
+    if not all(term in sliding_lesson.get("question", "") for term in ("输入格式：", "输出格式：")):
+        raise ValueError("sliding-window-max-20261121: 缺少输入/输出格式")
+    if "边界1：" not in sliding_lesson.get("sample", "") or "反例：" not in sliding_lesson.get("sample", ""):
+        raise ValueError("sliding-window-max-20261121: 缺少边界或反例")
+    sliding_frames = sliding_lesson.get("animation", {})
+    if [f.get("pointers", {}).get("i") for f in sliding_frames.get("optimal", [])] != list(range(8)):
+        raise ValueError("sliding-window-max-20261121.optimal: i指针轨迹错误")
+    expected_deques = [[0], [1], [1, 2], [1, 2, 3], [4], [4, 5], [6], [7]]
+    if [f.get("pointers", {}).get("deque") for f in sliding_frames.get("optimal", [])] != expected_deques:
+        raise ValueError("sliding-window-max-20261121.optimal: 单调队列状态错误")
+    if [f.get("pointers", {}).get("topIndex") for f in sliding_frames.get("variation", [])] != [0, 1, 1, 1, 4, 4, 6, 7]:
+        raise ValueError("sliding-window-max-20261121.variation: 最大堆堆顶下标轨迹错误")
+    expected_brute = []
+    nums = [1, 3, -1, -3, 5, 3, 6, 7]
+    k = 3
+    for left in range(len(nums) - k + 1):
+        max_index = left
+        for j in range(left, left + k):
+            if nums[j] > nums[max_index]:
+                max_index = j
+            expected_brute.append({"left": left, "right": left + k - 1,
+                                   "j": j, "maxIndex": max_index})
+    if [f.get("pointers") for f in sliding_frames.get("brute", [])] != expected_brute:
+        raise ValueError("sliding-window-max-20261121.brute: 窗口扫描指针或最大值位置错误")
+    expected_head = [0, 0, 0, 0, 1, 1, 1, 1]
+    expected_tail = [1, 1, 2, 3, 2, 3, 2, 2]
+    expected_expired = [[], [], [], [], [1], [], [], []]
+    expected_removed = [[], [0], [], [], [3, 2], [], [5, 4], [6]]
+    for key, expected in (("head", expected_head), ("tail", expected_tail),
+                          ("expired", expected_expired), ("removedBack", expected_removed)):
+        if [f.get("pointers", {}).get(key) for f in sliding_frames.get("optimal", [])] != expected:
+            raise ValueError(f"sliding-window-max-20261121.optimal: {key}轨迹错误")
+    for method in ("brute", "optimal", "variation"):
+        for index, frame in enumerate(sliding_frames.get(method, [])):
+            if not frame.get("diagram") or not frame.get("text") or not isinstance(frame.get("active"), list):
+                raise ValueError(f"sliding-window-max-20261121.{method}: 第{index + 1}帧缺少数组连线/操作高亮")
     quick_lesson = next((x for x in queue if x["id"] == "quick-sort-20261117"), None)
     if quick_lesson is None:
         raise ValueError("缺少quick-sort-20261117，无法审核快速排序动画")
@@ -277,11 +359,12 @@ def main():
         "lc503-20261106": "3\n1 2 1\n",
         "quick-sort-20261117": "8\n5 1 8 3 2 7 4 6\n",
         "floyd-20261118": "4 5\n1 2 5\n1 3 10\n2 3 3\n2 4 9\n3 4 1\n",
+        "sliding-window-max-20261121": "8 3\n1 3 -1 -3 5 3 6 7\n",
     }
     variant_inputs = { "kmp-20261111": "aaaaab\naaab\n","lc-hash-linear-20261116": "7 5\n5 20016 40027 17 20028 -3 8\n40027 5 99 -3 20028\n",
                       "lc997-20261109": "3 3\n1 3\n2 3\n3 1\n",
                       "lc994-20261110": "2 2\n2 0\n0 1\n",
-                      "lc503-20261106": "5\n3 8 4 1 2\n", "quick-sort-20261117": "6\n3 -1 3 0 -1 2\n", "floyd-20261118": "3 3\n1 2 4\n2 3 -2\n1 3 5\n"}
+                      "lc503-20261106": "5\n3 8 4 1 2\n", "quick-sort-20261117": "6\n3 -1 3 0 -1 2\n", "floyd-20261118": "3 3\n1 2 4\n2 3 -2\n1 3 5\n", "sliding-window-max-20261121": "8 3\n1 3 -1 -3 5 3 6 7\n"}
     count = 0
     for x in queue:
         case = CASES.get(x["id"])
@@ -326,6 +409,73 @@ def main():
                 empty_expected = "0" if method == "variation" else ""
                 check_one(empty_code, empty_expected, x["id"] + "." + method + ".empty_tree")
                 count += 1
+        if x["id"] == "huffman-20261113":
+            brute_code = x["brute"]["code"].replace("int n = 6;", "int n = 2;")
+            brute_code = brute_code.replace(
+                "int input[6] = {5, 9, 12, 13, 16, 45};",
+                "int input[6] = {4, 7};"
+            )
+            optimal_code = x["optimal"]["code"].replace(
+                "int input[6] = {5, 9, 12, 13, 16, 45};",
+                "int input[6] = {4, 7};"
+            ).replace("int n = 6;", "int n = 2;")
+            variation_code = x["variation"]["code"].replace(
+                "int weight[4] = {2, 3, 7, 9};",
+                "int weight[4] = {4, 7};"
+            ).replace("i < 4", "i < 2")
+            for method, code in (("brute", brute_code), ("optimal", optimal_code),
+                                 ("variation", variation_code)):
+                check_one(code, "11", x["id"] + "." + method + ".two_leaves")
+                count += 1
+        if x["id"] == "two-stacks-one-array-20261120":
+            harnesses = {
+                "brute": """int main(void) {
+    FixedStacks s; int x = -1;
+    initFixed(&s, 2);
+    if (!push1(&s, 1)) return 1;
+    if (push1(&s, 2)) return 2;
+    if (!push2(&s, 9)) return 3;
+    if (!pop1(&s, &x) || x != 1) return 4;
+    if (!pop2(&s, &x) || x != 9) return 5;
+    if (pop1(&s, &x) || pop2(&s, &x)) return 6;
+    puts("PASS"); return 0;
+}""",
+                "optimal": """int main(void) {
+    SharedStacks s; int x = -1;
+    initShared(&s, 2);
+    if (!push1(&s, 1) || !push2(&s, 9)) return 1;
+    if (push1(&s, 2)) return 2;
+    if (!pop1(&s, &x) || x != 1) return 3;
+    if (!pop2(&s, &x) || x != 9) return 4;
+    if (pop1(&s, &x) || pop2(&s, &x)) return 5;
+    puts("PASS"); return 0;
+}""",
+                "variation": """int main(void) {
+    SharedStacks s; int x = -1;
+    init(&s, 2);
+    if (!push1(&s, 1) || !push2(&s, 9)) return 1;
+    if (push2(&s, 2)) return 2;
+    if (!pop2(&s, &x) || x != 9) return 3;
+    if (!pop1(&s, &x) || x != 1) return 4;
+    if (pop1(&s, &x) || pop2(&s, &x)) return 5;
+    puts("PASS"); return 0;
+}"""
+            }
+            for method, harness in harnesses.items():
+                code = x[method]["code"].rsplit("int main(void) {", 1)[0] + harness
+                check_one(code, "PASS", x["id"] + "." + method + ".capacity_two")
+                count += 1
+        if x["id"] == "sliding-window-max-20261121":
+            extra = [
+                ("k_one", "4 1\n2 -1 2 3\n", "2 -1 2 3"),
+                ("k_equals_n", "4 4\n-5 -2 -9 -3\n", "-2"),
+                ("all_negative", "5 2\n-5 -2 -7 -1 -3\n", "-2 -2 -1 -1"),
+                ("all_equal", "4 3\n5 5 5 5\n", "5 5"),
+            ]
+            for method in ("brute", "optimal", "variation"):
+                for label, data, expected in extra:
+                    check_one(x[method]["code"], expected, x["id"] + "." + method + "." + label, data)
+                    count += 1
         if x["id"] == "lc997-20261109":
             extra = [
                 ("single", "1 0\n", "1"),
