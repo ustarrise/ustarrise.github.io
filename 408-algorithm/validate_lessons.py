@@ -75,7 +75,7 @@ def main():
         "huffman-20261113": "https://oi-wiki.org/ds/huffman-tree/",
         "dijkstra-20261114": "https://cp-algorithms.com/graph/dijkstra.html",
         "aoe-critical-20261115": "https://m.biancheng.net/view/3417.html",
-        "lc-hash-linear-20261116": "https://oi-wiki.org/ds/hash/",
+        "lc-hash-linear-20261116": "https://www.cs.hmc.edu/courses/current.then/cs70/lessons/week12/lesson2/linearprobing/",
         "quick-sort-20261117": "https://www.geeksforgeeks.org/dsa/hoare-s-partition-algorithm/",
         "floyd-20261118": "https://oi-wiki.org/graph/shortest-path/",
         "tree-level-order-20261119": "https://leetcode.cn/problems/binary-tree-level-order-traversal/description/",
@@ -98,9 +98,10 @@ def main():
         "tree-level-order-20261119": {"brute": 4, "optimal": 5, "variation": 4},
         "huffman-20261113": {"brute": 5, "optimal": 5},
         "kmp-20261111": {"brute": 12, "optimal": 17},
-        "dijkstra-20261114": {"brute": 5, "optimal": 6},
-        "aoe-critical-20261115": {"brute": 5, "optimal": 9},
-        "quick-sort-20261117": {"brute": 6, "optimal": 10},
+        "dijkstra-20261114": {"brute": 5, "optimal": 6, "variation": 5},
+        "aoe-critical-20261115": {"brute": 5, "optimal": 9, "variation": 8},
+        "quick-sort-20261117": {"brute": 6, "optimal": 10, "variation": 7},
+        "floyd-20261118": {"brute": 5, "optimal": 5, "variation": 4},
         "two-stacks-one-array-20261120": {"brute": 4, "optimal": 5, "variation": 9},
         "sliding-window-max-20261121": {"brute": 18, "optimal": 8, "variation": 8},
     }
@@ -109,8 +110,10 @@ def main():
         "lc-hash-linear-20261116": {"brute": 10, "optimal": 10, "variation": 5},
         "prim-20261112": {"brute": 4, "optimal": 5},
         "huffman-20261113": {"brute": 5, "optimal": 5},
-        "dijkstra-20261114": {"brute": 5, "optimal": 6},
-        "aoe-critical-20261115": {"brute": 5, "optimal": 9},
+        "dijkstra-20261114": {"brute": 5, "optimal": 6, "variation": 5},
+        "aoe-critical-20261115": {"brute": 5, "optimal": 9, "variation": 8},
+        "quick-sort-20261117": {"optimal": 10, "variation": 7},
+        "floyd-20261118": {"brute": 5, "optimal": 5, "variation": 4},
         "two-stacks-one-array-20261120": {"brute": 4, "optimal": 5, "variation": 9},
     }
     for lesson in queue:
@@ -183,8 +186,10 @@ def main():
     controlled_animation = {
         "lc997-20261109": ("brute", "optimal"),
         "lc994-20261110": ("brute", "optimal"),
-        "aoe-critical-20261115": ("brute", "optimal"),
-        "quick-sort-20261117": ("brute", "optimal"),
+        "dijkstra-20261114": ("brute", "optimal", "variation"),
+        "aoe-critical-20261115": ("brute", "optimal", "variation"),
+        "quick-sort-20261117": ("brute", "optimal", "variation"),
+        "floyd-20261118": ("brute", "optimal", "variation"),
         "tree-level-order-20261119": ("brute", "optimal", "variation"),
         "lc-hash-linear-20261116": ("brute", "optimal", "variation"),
         "two-stacks-one-array-20261120": ("brute", "optimal", "variation"),
@@ -195,6 +200,7 @@ def main():
         "prim-20261112", "huffman-20261113", "dijkstra-20261114",
         "tree-level-order-20261119",
         "aoe-critical-20261115", "lc-hash-linear-20261116",
+        "quick-sort-20261117", "floyd-20261118",
         "two-stacks-one-array-20261120", "sliding-window-max-20261121",
     }
     for lesson in queue:
@@ -225,9 +231,103 @@ def main():
     dijkstra_lesson = next((x for x in queue if x["id"] == "dijkstra-20261114"), None)
     if dijkstra_lesson is None or "0 4 -1" not in dijkstra_lesson.get("sample", ""):
         raise ValueError("dijkstra-20261114: 缺少不可达顶点输出-1的具体边界")
+    hash_lesson = next((x for x in queue if x["id"] == "lc-hash-linear-20261116"), None)
+    if hash_lesson is None or hash_lesson.get("source") != "https://www.cs.hmc.edu/courses/current.then/cs70/lessons/week12/lesson2/linearprobing/":
+        raise ValueError("lc-hash-linear-20261116: 来源必须直接讲解线性探测")
+    if not all(term in hash_lesson.get("question", "") for term in ("输入格式：", "输出格式：")):
+        raise ValueError("lc-hash-linear-20261116: 缺少明确输入/输出格式")
+    if "反例：" not in hash_lesson.get("sample", "") or "边界：" not in hash_lesson.get("sample", ""):
+        raise ValueError("lc-hash-linear-20261116: 缺少负例或边界样例")
     floyd_lesson = next((x for x in queue if x["id"] == "floyd-20261118"), None)
     if floyd_lesson is None or "0 4 2" not in floyd_lesson.get("sample", ""):
         raise ValueError("floyd-20261118: 缺少负权边且无负环的具体样例")
+    if "反例：" not in floyd_lesson.get("sample", "") or "负权回路" not in floyd_lesson.get("sample", ""):
+        raise ValueError("floyd-20261118: 缺少负权回路非法输入反例")
+
+    variation_traces = {
+        "dijkstra-20261114": (
+            [
+                {"u": 0, "v": -1, "visited": []},
+                {"u": 0, "v": 2, "visited": [0]},
+                {"u": 2, "v": 3, "visited": [0, 2]},
+                {"u": 1, "v": 3, "visited": [0, 2, 1]},
+                {"u": 3, "v": -1, "visited": [0, 2, 1, 3]},
+            ],
+            [
+                [0, "∞", "∞", "∞"],
+                [0, 4, 1, "∞"],
+                [0, 3, 1, 6],
+                [0, 3, 1, 4],
+                [0, 3, 1, 4],
+            ],
+        ),
+        "aoe-critical-20261115": (
+            [
+                {"u": 1, "front": 0, "rear": 1},
+                {"u": 1, "v": 3, "front": 1, "rear": 3},
+                {"u": 2, "v": 5, "front": 2, "rear": 3},
+                {"u": 3, "v": 4, "front": 3, "rear": 5},
+                {"u": 4, "v": 6, "front": 4, "rear": 5},
+                {"u": 5, "v": 6, "front": 5, "rear": 6},
+                {"u": 1, "phase": "reverse"},
+                {"u": 1, "v": 4, "path": [1, 2, 4, 6]},
+            ],
+            [
+                [0, 0, 0, 0, 0, 0],
+                [0, 3, 2, 0, 0, 0],
+                [0, 3, 2, 5, 6, 0],
+                [0, 3, 2, 5, 6, 0],
+                [0, 3, 2, 5, 6, 8],
+                [0, 3, 2, 5, 6, 8],
+                [0, 3, 2, 5, 6, 8],
+                [0, 3, 2, 5, 6, 8],
+            ],
+        ),
+        "quick-sort-20261117": (
+            [
+                {"low": 0, "high": 5, "pivot": 3, "i": 0, "j": 5},
+                {"low": 0, "high": 5, "pivot": 3, "i": 1, "j": 4},
+                {"low": 0, "high": 5, "pivot": 3, "i": 3, "j": 3},
+                {"low": 0, "high": 3, "pivot": -1, "i": 1, "j": 1},
+                {"low": 0, "high": 3, "pivot": -1, "i": 2, "j": 0},
+                {"low": 2, "high": 3, "pivot": 2, "i": 3, "j": 2},
+                {"low": 4, "high": 5, "pivot": 3, "i": 5, "j": 4},
+            ],
+            [
+                [3, -1, 3, 0, -1, 2],
+                [2, -1, 3, 0, -1, 3],
+                [2, -1, -1, 0, 3, 3],
+                [-1, -1, 2, 0, 3, 3],
+                [-1, -1, 2, 0, 3, 3],
+                [-1, -1, 0, 2, 3, 3],
+                [-1, -1, 0, 2, 3, 3],
+            ],
+        ),
+        "floyd-20261118": (
+            [
+                {"k": -1, "i": -1, "j": -1},
+                {"k": 0, "i": 0, "j": 0},
+                {"k": 1, "i": 0, "j": 2},
+                {"k": 2, "i": 0, "j": 2},
+            ],
+            [
+                [[0, 4, 5], ["∞", 0, -2], ["∞", "∞", 0]],
+                [[0, 4, 5], ["∞", 0, -2], ["∞", "∞", 0]],
+                [[0, 4, 2], ["∞", 0, -2], ["∞", "∞", 0]],
+                [[0, 4, 2], ["∞", 0, -2], ["∞", "∞", 0]],
+            ],
+        ),
+    }
+    for lesson_id, (expected_pointers, expected_arrays) in variation_traces.items():
+        lesson = next((x for x in queue if x["id"] == lesson_id), None)
+        frames = lesson.get("animation", {}).get("variation", []) if lesson else []
+        if [f.get("pointers") for f in frames] != expected_pointers:
+            raise ValueError(f"{lesson_id}.variation: 指针轨迹与真实执行顺序不一致")
+        if [f.get("array") for f in frames] != expected_arrays:
+            raise ValueError(f"{lesson_id}.variation: 数组/矩阵状态与真实执行结果不一致")
+        for index, frame in enumerate(frames):
+            if not frame.get("diagram") or not frame.get("text") or not isinstance(frame.get("active"), list):
+                raise ValueError(f"{lesson_id}.variation: 第{index + 1}帧缺少连线/说明/操作高亮")
 
     stacks_lesson = next((x for x in queue if x["id"] == "two-stacks-one-array-20261120"), None)
     if stacks_lesson is None:
@@ -316,7 +416,16 @@ def main():
         {"array": [1,2,3,4,5,6,7,8], "pointers": {"low":3,"high":5,"pivot":5,"i":5,"j":3}},
         {"array": [1,2,3,4,5,6,7,8], "pointers": {"low":6,"high":7,"pivot":7,"i":7,"j":5}},
     ]
-    for method, expected in (("brute", expected_quick_brute), ("optimal", expected_quick_optimal)):
+    expected_quick_variation = [
+        {"array": [3,-1,3,0,-1,2], "pointers": {"low":0,"high":5,"pivot":3,"i":0,"j":5}},
+        {"array": [2,-1,3,0,-1,3], "pointers": {"low":0,"high":5,"pivot":3,"i":1,"j":4}},
+        {"array": [2,-1,-1,0,3,3], "pointers": {"low":0,"high":5,"pivot":3,"i":3,"j":3}},
+        {"array": [-1,-1,2,0,3,3], "pointers": {"low":0,"high":3,"pivot":-1,"i":1,"j":1}},
+        {"array": [-1,-1,2,0,3,3], "pointers": {"low":0,"high":3,"pivot":-1,"i":2,"j":0}},
+        {"array": [-1,-1,0,2,3,3], "pointers": {"low":2,"high":3,"pivot":2,"i":3,"j":2}},
+        {"array": [-1,-1,0,2,3,3], "pointers": {"low":4,"high":5,"pivot":3,"i":5,"j":4}},
+    ]
+    for method, expected in (("brute", expected_quick_brute), ("optimal", expected_quick_optimal), ("variation", expected_quick_variation)):
         frames = quick_lesson.get("animation", {}).get(method, [])
         actual = [{"array": frame.get("array"), "pointers": frame.get("pointers")} for frame in frames]
         if actual != expected:
