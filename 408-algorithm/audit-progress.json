@@ -1,18 +1,18 @@
 {
   "schema_version": 1,
-  "last_audit_date": "2026-11-13",
+  "last_audit_date": "2026-11-14",
   "scope": "每日检查正式题库、备用队列、来源、题意、样例、约束、三份C程序、复杂度、注释与逐帧动画；优先当天及未来7天并持续回溯历史题目。",
-  "status_note": "11月13日检查已完成并合入master。哈夫曼动画、共享栈样例/变式动画、滑动窗口最大值课程及来源链接、Dijkstra/Floyd边界样例均已修复。master Actions 43343821958通过40道备用题、240次C程序编译运行测试；Pages部署43343821575成功。今日课程已发布，未来8天备用连续覆盖。",
+  "status_note": "11月14日检查完成。今日Dijkstra课程已发布且正式/备用副本一致；未来11/15—11/21连续7天备用覆盖。补齐Dijkstra、AOE、快速排序、Floyd四道题的变式逐帧动画；快速排序优化动画补齐10帧数组下标/枢轴/双指针图示；散列表来源更换为直接讲解线性探测的Harvey Mudd CS70资料，补齐输出格式标签和冲突覆盖反例；Floyd补充负权回路非法输入反例。首次验证因快速排序优化动画缺少diagram字段失败，补齐后master Actions 43539661236成功，40道备用题、240次C程序编译运行测试全部通过；Pages 43539661325成功。",
   "published_today": {
-    "date": "2026-11-13",
-    "id": "huffman-20261113",
+    "date": "2026-11-14",
+    "id": "dijkstra-20261114",
     "present": true,
-    "review_note": "今日课程已存在于lessons.json，pending中同ID副本一致。复核最小两权值合并序列及WPL=224；n=2边界WPL=11；补充错误地反复合并最大权值会得到WPL=416的具体反例。修正朴素动画第3轮数组[16,45,14,25]的高亮下标为[0,2]。master Actions 43343287096确认今天无需重复发布。"
+    "review_note": "今日课程已存在于lessons.json，pending中同ID副本逐字段一致。复核非负权约束、重复松弛/Bellman-Ford式逐轮扫描、Dijkstra确定顶点顺序、源点距离0、不可达输出-1及负权反例；补齐变式图的5帧指针/距离状态动画，并同步正式/备用副本。"
   },
   "future_queue": {
-    "from": "2026-11-14",
+    "from": "2026-11-15",
     "through": "2026-11-21",
-    "continuous_days": 8,
+    "continuous_days": 7,
     "shortfall_days": 0
   },
   "reviews": [
@@ -264,12 +264,33 @@
       "scope": "回溯审核11/14—11/20来源链接与样例：哈夫曼、散列表、Floyd更换为oi-wiki.org规范页面；快速排序改用直接讲解Hoare双向划分的GFG页面；共享栈示例把字面\\\\n改为真实换行；Dijkstra增加不可达点输出-1的具体边界，Floyd增加负权边且无负环的完整矩阵样例。验证器增加9道课程来源精确断言及相关样例检查。",
       "source": "https://oi-wiki.org/ds/huffman-tree/; https://oi-wiki.org/ds/hash/; https://oi-wiki.org/graph/shortest-path/; https://www.geeksforgeeks.org/dsa/hoare-s-partition-algorithm/",
       "commit": "d209a4fe3aa355664c3a7b944a601ebf9dffd4b9"
+    },
+    {
+      "date": "2026-11-14",
+      "id": "dijkstra-20261114 / aoe-critical-20261115 / lc-hash-linear-20261116 / quick-sort-20261117 / floyd-20261118 / tree-level-order-20261119 / two-stacks-one-array-20261120 / sliding-window-max-20261121",
+      "scope": "今日及未来7天逐题复核：Dijkstra非负权前提、Bellman-Ford式重复松弛和不可达输出；AOE源汇可达/DAG约束、ve/vl与关键路径；散列表线性探测来源、负数模、输出格式、未命中和覆盖冲突反例；Hoare快速排序重复值指针推进、平均/最坏复杂度及逐帧状态；Floyd允许负边但排除负权回路；二叉树层序/空树；双栈共享空间；滑动窗口单调队列。补齐Dijkstra、AOE、快速排序、Floyd四道变式动画；快速排序优化动画10帧补齐数组图示、pivot与i/j指针。",
+      "commit": "7f949fcb3fe628c1ef0f8dd8ea8e48c0dc98aed4",
+      "related_commits": [
+        "301593bdebedf35237c603696fd01da222f12514"
+      ],
+      "sources": [
+        "https://cp-algorithms.com/graph/dijkstra.html",
+        "https://m.biancheng.net/view/3417.html",
+        "https://www.cs.hmc.edu/courses/current.then/cs70/lessons/week12/lesson2/linearprobing/",
+        "https://www.geeksforgeeks.org/dsa/hoare-s-partition-algorithm/",
+        "https://oi-wiki.org/graph/shortest-path/",
+        "https://leetcode.cn/problems/binary-tree-level-order-traversal/description/",
+        "https://www.geeksforgeeks.org/dsa/implement-two-stacks-in-an-array/",
+        "https://leetcode.cn/problems/sliding-window-maximum/"
+      ],
+      "validation": "master Actions 43539661236成功：40道备用题全量检查，240次C程序编译运行测试通过；变式动画帧数、指针、数组/矩阵状态、连线和操作高亮断言通过。Pages 43539661325成功。",
+      "note": "首次运行43539327779失败，定位为快速排序optimal动画缺少diagram字段；补齐10帧diagram后重跑成功。未将首次失败记为成功。"
     }
   ],
   "validation": {
     "previous_actions_run_id": 42733107324,
     "previous_result": "第一轮候选PR验证43343117214成功，第二轮来源/样例候选PR验证43343724045成功；两轮均在候选分支通过后才合入master。合入后master运行43343821958再次完整验证成功。",
-    "new_commit_actions_result": "master运行43343821958成功：publish_daily.py --dry-run确认北京时间2026-11-13今日课程已存在、待发布0、后备8；validate_lessons.py验证40道备用题、240次C程序编译运行测试全部通过；发布步骤确认今天已发布，无重复提交。",
+    "new_commit_actions_result": "master运行43539661236成功：publish_daily.py --dry-run通过；validate_lessons.py对40道备用题执行结构/来源/样例/动画检查，并完成240次C程序编译运行测试；发布步骤确认北京时间2026-11-14课程已发布，无重复提交。首次运行43539327779因快速排序optimal动画缺少diagram字段失败，补齐10帧数组/枢轴/双指针图示后重跑成功。",
     "local_modified_code": "第一轮：哈夫曼正式/备用副本修正朴素动画第3轮active下标并补充WPL=416错误反例；共享栈题补输入/输出、n=2满栈/空栈边界、固定分区反例、Push/Pop返回原因注释和9帧变式动画；新增力扣239滑动窗口最大值三份标准C程序、18/8/8帧动画、精确指针断言和k=1、k=n、全负数、全相等测试。第二轮：哈夫曼/散列表/Floyd来源更正为OI Wiki规范域名，快速排序改为Hoare划分专门资料；共享栈示例换行修复；Dijkstra增加不可达点-1边界，Floyd增加负权边无负环样例；验证器加入9道来源断言和样例检查。",
     "commit_history": [
       "3da63b267ff9f703714b70d59e92eba34dc5553a",
@@ -286,22 +307,32 @@
       "26ad009d383480dc84ff308a5bed236d4d3d9ba2",
       "9ee6fca7699a4748813bbf838f1d2e1deec6758a",
       "85d29aad3a28c6f43f49394916364bd2dabb5fb3",
-      "d209a4fe3aa355664c3a7b944a601ebf9dffd4b9"
+      "d209a4fe3aa355664c3a7b944a601ebf9dffd4b9",
+      "7f949fcb3fe628c1ef0f8dd8ea8e48c0dc98aed4",
+      "301593bdebedf35237c603696fd01da222f12514"
     ],
     "code_commit": "27e691771e768c27cd094ec8db974d27f71f27d1",
     "validator_fix_commit": "490b3e3ac9290792e47eaf10f7e126ade2f24676",
-    "latest_actions_run_id": 43343821958,
-    "latest_result": "success：master代码提交d209a4fe。确认11/13已发布、未来8天备用覆盖；40道备用题、240次C程序编译运行测试全部通过；今天无需重复发布。",
-    "pages_run_id": 43343821575,
-    "pages_result": "success：GitHub Pages build、artifact upload和deploy均成功，head SHA d209a4fe3aa355664c3a7b944a601ebf9dffd4b9。",
-    "source_commit": "d209a4fe3aa355664c3a7b944a601ebf9dffd4b9",
-    "latest_commit": "d209a4fe3aa355664c3a7b944a601ebf9dffd4b9",
-    "current_master_head_before_audit_update": "d209a4fe3aa355664c3a7b944a601ebf9dffd4b9",
+    "latest_actions_run_id": 43539661236,
+    "latest_result": "success：master最终提交301593bdebedf35237c603696fd01da222f12514；今日课程已发布，未来7天备用连续覆盖；40道备用题、240次C程序编译运行测试及新增变式动画逐帧断言全部通过。",
+    "pages_run_id": 43539661325,
+    "pages_result": "success：GitHub Pages build、artifact upload、deploy均成功，head SHA 301593bdebedf35237c603696fd01da222f12514。",
+    "source_commit": "7f949fcb3fe628c1ef0f8dd8ea8e48c0dc98aed4",
+    "latest_commit": "301593bdebedf35237c603696fd01da222f12514",
+    "current_master_head_before_audit_update": "301593bdebedf35237c603696fd01da222f12514",
     "tree_boundary_tests": "新增6个C程序编译运行用例：朴素/优化/变式分别覆盖单结点与空树；全部通过。",
     "candidate_pr_validation_run_id": 43343117214,
     "candidate_pr_number": 1,
     "source_audit_pr_run_id": 43343724045,
-    "source_audit_pr_number": 2
+    "source_audit_pr_number": 2,
+    "intermediate_failure": {
+      "run_id": 43539327779,
+      "result": "failure",
+      "cause": "快速排序optimal动画被新增diagram_minimum断言要求diagram字段，但原10帧只有array/pointers/text。",
+      "correction_commit": "301593bdebedf35237c603696fd01da222f12514",
+      "rerun_id": 43539661236,
+      "rerun_result": "success"
+    }
   },
   "next_priorities": [
     "11/22优先补入稀疏矩阵三元组快速转置，重点检查非零元计数、起始位置、列主序和稳定写入；三份C程序与逐帧动画验证通过后入队。",
@@ -330,7 +361,9 @@
     "ba9ed55ece95e963074b969665c7979271d5816c",
     "68a5f798e9ff1f6648ce89b745a4ef5b28a8923f",
     "85d29aad3a28c6f43f49394916364bd2dabb5fb3",
-    "d209a4fe3aa355664c3a7b944a601ebf9dffd4b9"
+    "d209a4fe3aa355664c3a7b944a601ebf9dffd4b9",
+    "7f949fcb3fe628c1ef0f8dd8ea8e48c0dc98aed4",
+    "301593bdebedf35237c603696fd01da222f12514"
   ],
   "selection_balance": {
     "current_unique_entries": 44,
