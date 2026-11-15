@@ -67,9 +67,11 @@ def check_one(source, expected, key, stdin_data=""):
         if cc.returncode:
             raise RuntimeError(f"{key}: 编译失败\n{cc.stderr[:2000]}")
         run = subprocess.run([str(exe)], input=stdin_data, capture_output=True, text=True, timeout=5)
-        if run.returncode or run.stdout.strip() != expected:
+        actual = run.stdout.rstrip("\\r\\n")
+        expected_output = expected.rstrip("\\r\\n")
+        if run.returncode or actual != expected_output:
             raise RuntimeError(
-                f"{key}: 结果错误，预期 {expected!r}，实际 {run.stdout.strip()!r}，"
+                f"{key}: 结果错误，预期 {expected_output!r}，实际 {actual!r}，"
                 f"返回码 {run.returncode}，错误 {run.stderr[:500]}"
             )
 
@@ -556,7 +558,7 @@ def main():
             {"phase": "append", "p": 1, "column": 3, "head": [-1, 0, -1, 1, -1], "tail": [-1, 0, -1, 1, -1], "next": [-1, -1, -1, -1, -1]},
             {"phase": "append", "p": 2, "column": 0, "head": [2, 0, -1, 1, -1], "tail": [2, 0, -1, 1, -1], "next": [-1, -1, -1, -1, -1]},
             {"phase": "append", "p": 3, "column": 4, "head": [2, 0, -1, 1, 3], "tail": [2, 0, -1, 1, 3], "next": [-1, -1, -1, -1, -1]},
-            {"phase": "append", "p": 4, "column": 1, "head": [2, 0, -1, 1, 3], "tail": [2, 4, -1, 1, 3], "next": [-1, -1, -1, -1, -1]},
+            {"phase": "append", "p": 4, "column": 1, "head": [2, 0, -1, 1, 3], "tail": [2, 4, -1, 1, 3], "next": [4, -1, -1, -1, -1]},
             {"phase": "collect", "column": 0, "p": 2, "write": 0},
             {"phase": "collect", "column": 1, "p": 0, "write": 1},
             {"phase": "collect", "column": 1, "p": 4, "write": 2},
