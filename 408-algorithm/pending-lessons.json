@@ -10201,5 +10201,767 @@
         }
       ]
     }
+  },
+  {
+    "id": "sparse-fast-transpose-20261122",
+    "date": "2026-11-22",
+    "year": "教材改编",
+    "number": "5.2",
+    "category": "数组 · 稀疏矩阵 · 三元组快速转置",
+    "title": "稀疏矩阵快速转置：从逐列扫描到 num/cpot 定位",
+    "difficulty": "中等",
+    "time": "20–25 分钟",
+    "source": "https://blog.nerom.wang/2015/02/02/sparse-matrix",
+    "question": "给定一个 rows×cols 稀疏矩阵，非零元用三元组顺序表 A[0..nnz-1] 表示，每项为 (row,col,value)。输入三元组按行优先严格递增排列（先按row，再按col），坐标不重复。请构造转置矩阵T的三元组表，要求T也按行优先排列；分别给出朴素转置和快速转置，并输出每个原列在T中的0-based起始位置cpot。\n\n输入格式：\n第一行输入 rows cols nnz；随后nnz行，每行输入 row col value，行列下标均从0开始。\n输出格式：\n第一行输出 cpot[0..cols-1]，以空格分隔；第二行输出转置矩阵的 cols rows nnz；随后nnz行按行优先输出转置三元组 row col value。cols=0时第一行为空行；nnz=0时cpot各项均为0。",
+    "constraint": "0≤rows≤100000，0≤cols≤200000，0≤nnz≤100000，且nnz≤rows×cols。每个三元组满足0≤row<rows、0≤col<cols、value为非零整数且|value|≤10^9；坐标不重复，输入严格按row升序、同一row内col升序排列。若rows或cols为0，则nnz必须为0。cpot采用0-based定义：cpot[0]=0，cpot[c]=cpot[c-1]+num[c-1]；教材常见1-based写法需整体平移，不能混用。",
+    "sample": "正例：\n输入：\n4 5 5\n0 1 12\n0 3 9\n2 0 -3\n2 4 14\n3 1 24\n输出：\n0 1 3 3 4\n5 4 5\n0 2 -3\n1 0 12\n1 3 24\n3 0 9\n4 2 14\n\n变式样例：\n输入：\n3 4 4\n0 1 5\n1 0 -2\n1 3 8\n2 1 7\n输出：\n0 1 3 3\n4 3 4\n0 1 -2\n1 0 5\n1 2 7\n3 1 8\n\n边界：输入“3 4 0”时，cpot输出“0 0 0 0”，转置形状为“4 3 0”，没有三元组行；若cols=0且rows=3、nnz=0，第一行为空，形状输出“0 3 0”。\n\n反例：若只把原三元组的row与col交换，却保持原输入顺序，样例会得到行号序列1、3、0、4、1，不再按转置行优先排列；必须按原列分组或用cpot定位。",
+    "brute": {
+      "title": "逐列扫描完整三元组表",
+      "tag": "保底思路",
+      "idea": "先统计每列非零元数并计算cpot；再按原列号c从小到大处理，每处理一列都从头扫描全部nnz个三元组，遇到A[p].col==c就交换行列并追加到T。原表按行优先，因此同一列被找到的元素也按原行号递增。",
+      "complexity": "时间 O(cols×nnz + cols)；空间 O(nnz+cols)，包含转置结果和辅助数组。",
+      "risk": "正确且容易理解，但每一列都重复扫描整张三元组表；列数和非零元数较大时会明显变慢。",
+      "code": "#include <stdio.h>\n#include <stdlib.h>\n#define MAX_ROWS 100000\n#define MAX_COLS 200000\n#define MAX_NNZ 100000\ntypedef struct { int row; int col; int value; } Triple;\n\n/* 读取并检查行优先三元组，避免非法坐标或重复位置进入转置算法。 */\nstatic int read_input(int *rows, int *cols, int *nnz, Triple **a) {\n    if (scanf(\"%d %d %d\", rows, cols, nnz) != 3) return 0;\n    if (*rows < 0 || *rows > MAX_ROWS || *cols < 0 || *cols > MAX_COLS ||\n        *nnz < 0 || *nnz > MAX_NNZ ||\n        (long long)*nnz > (long long)*rows * *cols) return 0;\n    *a = malloc((size_t)(*nnz ? *nnz : 1) * sizeof(**a));\n    if (*a == NULL) return 0;\n    int previous_row = -1, previous_col = -1;\n    for (int i = 0; i < *nnz; i++) {\n        Triple *item = &(*a)[i];\n        if (scanf(\"%d %d %d\", &item->row, &item->col, &item->value) != 3) {\n            free(*a); *a = NULL;\n            return 0; /* 三元组缺字段，不能把未初始化数据用于转置。 */\n        }\n        if (item->row < 0 || item->row >= *rows ||\n            item->col < 0 || item->col >= *cols ||\n            item->value == 0 || item->value < -1000000000 ||\n            item->value > 1000000000 || item->row < previous_row ||\n            (item->row == previous_row && item->col <= previous_col)) {\n            free(*a); *a = NULL;\n            return 0; /* 坐标越界、零值、重复坐标或行优先次序错误。 */\n        }\n        previous_row = item->row;\n        previous_col = item->col;\n    }\n    return 1;\n}\n\n/* 输出时保留初始cpot，不能输出已经被写入过程推进的游标。 */\nstatic void print_result(int rows, int cols, int nnz,\n                         const int cpot[], const Triple t[]) {\n    for (int c = 0; c < cols; c++) {\n        if (c > 0) putchar(' ');\n        printf(\"%d\", cpot[c]);\n    }\n    putchar('\\n');\n    printf(\"%d %d %d\\n\", cols, rows, nnz);\n    for (int i = 0; i < nnz; i++)\n        printf(\"%d %d %d\\n\", t[i].row, t[i].col, t[i].value);\n}\n\n/* 朴素法：每处理一列都重新扫描完整三元组表。 */\nint main(void) {\n    int rows, cols, nnz;\n    Triple *a = NULL;\n    if (!read_input(&rows, &cols, &nnz, &a)) {\n        fprintf(stderr, \"invalid input\\n\");\n        return 1; /* 输入不满足题目约束，不能继续按列访问。 */\n    }\n    Triple *t = malloc((size_t)(nnz ? nnz : 1) * sizeof(*t));\n    int *num = calloc((size_t)(cols ? cols : 1), sizeof(*num));\n    int *cpot = calloc((size_t)(cols ? cols : 1), sizeof(*cpot));\n    if (t == NULL || num == NULL || cpot == NULL) {\n        free(a); free(t); free(num); free(cpot);\n        return 1; /* 任一工作数组分配失败都不能安全完成转置。 */\n    }\n    for (int p = 0; p < nnz; p++)\n        num[a[p].col]++; /* 统计列频数，前缀和得到0-based起始位置。 */\n    for (int c = 1; c < cols; c++)\n        cpot[c] = cpot[c - 1] + num[c - 1];\n    int write = 0;\n    for (int c = 0; c < cols; c++) {\n        for (int p = 0; p < nnz; p++) {\n            if (a[p].col == c) {\n                t[write].row = a[p].col;\n                t[write].col = a[p].row;\n                t[write].value = a[p].value;\n                write++; /* 只有属于当前原列的三元组才追加到转置表。 */\n            }\n        }\n    }\n    print_result(rows, cols, nnz, cpot, t);\n    free(a); free(t); free(num); free(cpot);\n    return 0;\n}",
+      "explain": [
+        "外层c就是转置后的行号，按c递增追加，保证T的行号有序。",
+        "每一列都必须从p=0重新扫描，否则会漏掉位于较早位置的三元组。",
+        "原表行优先，同一列的原行号自然递增，所以该列内部无需再排序。",
+        "cpot记录每行起始位置；朴素法不靠它定位，但仍输出它以统一题目格式。"
+      ]
+    },
+    "optimal": {
+      "title": "num计数 + cpot前缀和 + nextPos一次定位",
+      "tag": "考场推荐",
+      "idea": "第一趟扫描统计每列非零元数num[c]；前缀和求出转置表中第c行的起始位置cpot[c]；复制到nextPos后，再扫描原表一次，把每个三元组写入T[nextPos[col]++]。输入按行优先，因此同一列的元素按原行号递增写入。",
+      "complexity": "时间 O(nnz+cols)；辅助空间 O(cols)，另需 O(nnz) 存放转置三元组。",
+      "risk": "必须区分cpot起始位置和nextPos写入游标；若直接推进cpot，最后就无法输出原始起点表。",
+      "code": "#include <stdio.h>\n#include <stdlib.h>\n#define MAX_ROWS 100000\n#define MAX_COLS 200000\n#define MAX_NNZ 100000\ntypedef struct { int row; int col; int value; } Triple;\n\n/* 读取并检查行优先三元组，避免非法坐标或重复位置进入转置算法。 */\nstatic int read_input(int *rows, int *cols, int *nnz, Triple **a) {\n    if (scanf(\"%d %d %d\", rows, cols, nnz) != 3) return 0;\n    if (*rows < 0 || *rows > MAX_ROWS || *cols < 0 || *cols > MAX_COLS ||\n        *nnz < 0 || *nnz > MAX_NNZ ||\n        (long long)*nnz > (long long)*rows * *cols) return 0;\n    *a = malloc((size_t)(*nnz ? *nnz : 1) * sizeof(**a));\n    if (*a == NULL) return 0;\n    int previous_row = -1, previous_col = -1;\n    for (int i = 0; i < *nnz; i++) {\n        Triple *item = &(*a)[i];\n        if (scanf(\"%d %d %d\", &item->row, &item->col, &item->value) != 3) {\n            free(*a); *a = NULL;\n            return 0; /* 三元组缺字段，不能把未初始化数据用于转置。 */\n        }\n        if (item->row < 0 || item->row >= *rows ||\n            item->col < 0 || item->col >= *cols ||\n            item->value == 0 || item->value < -1000000000 ||\n            item->value > 1000000000 || item->row < previous_row ||\n            (item->row == previous_row && item->col <= previous_col)) {\n            free(*a); *a = NULL;\n            return 0; /* 坐标越界、零值、重复坐标或行优先次序错误。 */\n        }\n        previous_row = item->row;\n        previous_col = item->col;\n    }\n    return 1;\n}\n\n/* 输出时保留初始cpot，不能输出已经被写入过程推进的游标。 */\nstatic void print_result(int rows, int cols, int nnz,\n                         const int cpot[], const Triple t[]) {\n    for (int c = 0; c < cols; c++) {\n        if (c > 0) putchar(' ');\n        printf(\"%d\", cpot[c]);\n    }\n    putchar('\\n');\n    printf(\"%d %d %d\\n\", cols, rows, nnz);\n    for (int i = 0; i < nnz; i++)\n        printf(\"%d %d %d\\n\", t[i].row, t[i].col, t[i].value);\n}\n\n/* 快速转置：列计数、前缀和、按起始位置一次定位。 */\nint main(void) {\n    int rows, cols, nnz;\n    Triple *a = NULL;\n    if (!read_input(&rows, &cols, &nnz, &a)) {\n        fprintf(stderr, \"invalid input\\n\");\n        return 1; /* 输入不满足题目约束，不能继续按列访问。 */\n    }\n    Triple *t = malloc((size_t)(nnz ? nnz : 1) * sizeof(*t));\n    int *num = calloc((size_t)(cols ? cols : 1), sizeof(*num));\n    int *cpot = calloc((size_t)(cols ? cols : 1), sizeof(*cpot));\n    int *next_pos = malloc((size_t)(cols ? cols : 1) * sizeof(*next_pos));\n    if (t == NULL || num == NULL || cpot == NULL || next_pos == NULL) {\n        free(a); free(t); free(num); free(cpot); free(next_pos);\n        return 1; /* 任一工作数组分配失败都不能安全完成转置。 */\n    }\n    for (int p = 0; p < nnz; p++)\n        num[a[p].col]++; /* 原列c的非零元数，就是转置后第c行的长度。 */\n    for (int c = 1; c < cols; c++)\n        cpot[c] = cpot[c - 1] + num[c - 1];\n    for (int c = 0; c < cols; c++)\n        next_pos[c] = cpot[c]; /* 单独推进游标，保留cpot原始起点。 */\n    for (int p = 0; p < nnz; p++) {\n        int c = a[p].col;\n        int write = next_pos[c]++;\n        t[write].row = c;\n        t[write].col = a[p].row;\n        t[write].value = a[p].value;\n    }\n    print_result(rows, cols, nnz, cpot, t);\n    free(a); free(t); free(num); free(cpot); free(next_pos);\n    return 0;\n}",
+      "explain": [
+        "num[c]是原矩阵第c列的非零元数，也就是转置后第c行的长度。",
+        "cpot是0-based前缀和，cpot[c]指向转置表第c行的第一个位置。",
+        "nextPos单独推进，避免覆盖cpot；每次写入后该列游标加1。",
+        "同一原列在原表中按row递增出现，稳定写入后T自然按行优先排列。"
+      ]
+    },
+    "tips": [
+      "三元组表按行优先严格排序，是快速转置能在最后一趟扫描中保持同列行号递增的前提。",
+      "num[c]统计原第c列的非零元数；转置后它就是第c行的长度。",
+      "0-based cpot[0]=0；cpot[c]是起点，nextPos[c]才是不断前进的写入游标。",
+      "某列没有非零元时，相邻cpot值相等；nnz=0时所有cpot均为0。",
+      "只交换row和col而不重排，会破坏转置三元组的行优先顺序。"
+    ],
+    "variation": {
+      "question": "巩固题：使用列桶法完成变式样例3×4矩阵的转置。建立head/tail数组，每个原列一个链式桶；按输入顺序尾插三元组，再按列号遍历各桶。说明为何桶内顺序就是原行号递增。",
+      "idea": "扫描原三元组时按col将原下标p尾插到对应桶，head[c]和tail[c]记录桶首尾，next[p]连接同桶下一个元素。由于输入按row优先，尾插顺序就是原行号递增；最后按c递增遍历桶并交换行列，得到行优先的T。同步统计num并计算cpot，输出格式与主问题相同。",
+      "complexity": "时间 O(nnz+cols)；空间 O(nnz+cols)，包括head/tail/next、cpot和转置结果。",
+      "code": "#include <stdio.h>\n#include <stdlib.h>\n#define MAX_ROWS 100000\n#define MAX_COLS 200000\n#define MAX_NNZ 100000\ntypedef struct { int row; int col; int value; } Triple;\n\n/* 读取并检查行优先三元组，避免非法坐标或重复位置进入转置算法。 */\nstatic int read_input(int *rows, int *cols, int *nnz, Triple **a) {\n    if (scanf(\"%d %d %d\", rows, cols, nnz) != 3) return 0;\n    if (*rows < 0 || *rows > MAX_ROWS || *cols < 0 || *cols > MAX_COLS ||\n        *nnz < 0 || *nnz > MAX_NNZ ||\n        (long long)*nnz > (long long)*rows * *cols) return 0;\n    *a = malloc((size_t)(*nnz ? *nnz : 1) * sizeof(**a));\n    if (*a == NULL) return 0;\n    int previous_row = -1, previous_col = -1;\n    for (int i = 0; i < *nnz; i++) {\n        Triple *item = &(*a)[i];\n        if (scanf(\"%d %d %d\", &item->row, &item->col, &item->value) != 3) {\n            free(*a); *a = NULL;\n            return 0; /* 三元组缺字段，不能把未初始化数据用于转置。 */\n        }\n        if (item->row < 0 || item->row >= *rows ||\n            item->col < 0 || item->col >= *cols ||\n            item->value == 0 || item->value < -1000000000 ||\n            item->value > 1000000000 || item->row < previous_row ||\n            (item->row == previous_row && item->col <= previous_col)) {\n            free(*a); *a = NULL;\n            return 0; /* 坐标越界、零值、重复坐标或行优先次序错误。 */\n        }\n        previous_row = item->row;\n        previous_col = item->col;\n    }\n    return 1;\n}\n\n/* 输出时保留初始cpot，不能输出已经被写入过程推进的游标。 */\nstatic void print_result(int rows, int cols, int nnz,\n                         const int cpot[], const Triple t[]) {\n    for (int c = 0; c < cols; c++) {\n        if (c > 0) putchar(' ');\n        printf(\"%d\", cpot[c]);\n    }\n    putchar('\\n');\n    printf(\"%d %d %d\\n\", cols, rows, nnz);\n    for (int i = 0; i < nnz; i++)\n        printf(\"%d %d %d\\n\", t[i].row, t[i].col, t[i].value);\n}\n\n/* 列桶法：用head/tail/next稳定收集同一原列的三元组。 */\nint main(void) {\n    int rows, cols, nnz;\n    Triple *a = NULL;\n    if (!read_input(&rows, &cols, &nnz, &a)) {\n        fprintf(stderr, \"invalid input\\n\");\n        return 1; /* 输入不满足题目约束，不能继续按列访问。 */\n    }\n    Triple *t = malloc((size_t)(nnz ? nnz : 1) * sizeof(*t));\n    int *num = calloc((size_t)(cols ? cols : 1), sizeof(*num));\n    int *cpot = calloc((size_t)(cols ? cols : 1), sizeof(*cpot));\n    int *head = malloc((size_t)(cols ? cols : 1) * sizeof(*head));\n    int *tail = malloc((size_t)(cols ? cols : 1) * sizeof(*tail));\n    int *next = malloc((size_t)(nnz ? nnz : 1) * sizeof(*next));\n    if (t == NULL || num == NULL || cpot == NULL ||\n        head == NULL || tail == NULL || next == NULL) {\n        free(a); free(t); free(num); free(cpot); free(head); free(tail); free(next);\n        return 1; /* 任一桶或工作数组分配失败都不能安全转置。 */\n    }\n    for (int c = 0; c < cols; c++) {\n        head[c] = -1;\n        tail[c] = -1;\n    }\n    for (int p = 0; p < nnz; p++) {\n        next[p] = -1;\n        int c = a[p].col;\n        num[c]++;\n        if (head[c] == -1) {\n            head[c] = p; /* 第一个元素同时成为桶头和桶尾。 */\n            tail[c] = p;\n        } else {\n            next[tail[c]] = p; /* 尾插保持原行号递增，不破坏转置行内次序。 */\n            tail[c] = p;\n        }\n    }\n    for (int c = 1; c < cols; c++)\n        cpot[c] = cpot[c - 1] + num[c - 1];\n    int write = 0;\n    for (int c = 0; c < cols; c++) {\n        for (int p = head[c]; p != -1; p = next[p]) {\n            t[write].row = c;\n            t[write].col = a[p].row;\n            t[write].value = a[p].value;\n            write++; /* 按桶号输出，保证转置后的行号递增。 */\n        }\n    }\n    print_result(rows, cols, nnz, cpot, t);\n    free(a); free(t); free(num); free(cpot); free(head); free(tail); free(next);\n    return 0;\n}",
+      "explain": [
+        "head[c]与tail[c]分别指向原列c桶的首结点和尾结点，-1表示空桶。",
+        "尾插而非头插，才能保留输入中的原行号递增次序。",
+        "next[p]连接的是原三元组下标，不是矩阵坐标；遍历桶时据此取回原row和value。",
+        "按列号递增输出桶，保证转置后的row递增；同桶内稳定尾插保证col递增。"
+      ]
+    },
+    "animation": {
+      "layout": "array",
+      "brute": [
+        {
+          "array": [
+            1,
+            3,
+            0,
+            4,
+            1
+          ],
+          "pointers": {
+            "column": 0,
+            "scan": 0,
+            "write": 0
+          },
+          "active": [
+            0
+          ],
+          "text": "处理原列0，检查A[0]=(0,1,12)，列号不匹配。",
+          "diagram": "原三元组列号：[1,3,0,4,1]\n当前列0；T暂为空。"
+        },
+        {
+          "array": [
+            1,
+            3,
+            0,
+            4,
+            1
+          ],
+          "pointers": {
+            "column": 0,
+            "scan": 2,
+            "write": 0
+          },
+          "active": [
+            2
+          ],
+          "text": "扫描到A[2]=(2,0,-3)，命中原列0，写入T[0]=(0,2,-3)。",
+          "diagram": "原列0已收集：T[0]=(0,2,-3)。"
+        },
+        {
+          "array": [
+            1,
+            3,
+            0,
+            4,
+            1
+          ],
+          "pointers": {
+            "column": 1,
+            "scan": 0,
+            "write": 1
+          },
+          "active": [
+            0
+          ],
+          "text": "转到原列1，A[0]=(0,1,12)命中，追加到T[1]。",
+          "diagram": "原列1已收集：T[1]=(1,0,12)。"
+        },
+        {
+          "array": [
+            1,
+            3,
+            0,
+            4,
+            1
+          ],
+          "pointers": {
+            "column": 1,
+            "scan": 4,
+            "write": 2
+          },
+          "active": [
+            4
+          ],
+          "text": "继续扫描原列1，A[4]=(3,1,24)命中，追加到T[2]。",
+          "diagram": "原列1的两个元素按原行0、3排列：T[1]、T[2]。"
+        },
+        {
+          "array": [
+            1,
+            3,
+            0,
+            4,
+            1
+          ],
+          "pointers": {
+            "column": 2,
+            "scan": 5,
+            "write": 3
+          },
+          "active": [],
+          "text": "原列2扫描完整张表，没有非零元；write不变。",
+          "diagram": "原列2为空，对应转置行2没有三元组。"
+        },
+        {
+          "array": [
+            1,
+            3,
+            0,
+            4,
+            1
+          ],
+          "pointers": {
+            "column": 3,
+            "scan": 1,
+            "write": 3
+          },
+          "active": [
+            1
+          ],
+          "text": "原列3命中A[1]=(0,3,9)，追加到T[3]。",
+          "diagram": "T[3]=(3,0,9)，转置行号仍按列号递增。"
+        },
+        {
+          "array": [
+            1,
+            3,
+            0,
+            4,
+            1
+          ],
+          "pointers": {
+            "column": 4,
+            "scan": 3,
+            "write": 4
+          },
+          "active": [
+            3
+          ],
+          "text": "原列4命中A[3]=(2,4,14)，追加到T[4]，逐列扫描完成。",
+          "diagram": "最终T：(0,2,-3)、(1,0,12)、(1,3,24)、(3,0,9)、(4,2,14)。",
+          "done": true
+        }
+      ],
+      "optimal": [
+        {
+          "array": [
+            1,
+            3,
+            0,
+            4,
+            1
+          ],
+          "pointers": {
+            "phase": "count",
+            "p": 4,
+            "num": [
+              1,
+              2,
+              0,
+              1,
+              1
+            ]
+          },
+          "active": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "text": "第一趟扫描完成列计数，num=[1,2,0,1,1]。",
+          "diagram": "原列0有1项，列1有2项，列2有0项，列3有1项，列4有1项。"
+        },
+        {
+          "array": [
+            1,
+            3,
+            0,
+            4,
+            1
+          ],
+          "pointers": {
+            "phase": "prefix",
+            "p": 4,
+            "cpot": [
+              0,
+              1,
+              3,
+              3,
+              4
+            ]
+          },
+          "active": [],
+          "text": "对num做0-based前缀和，得到每个转置行的起始位置cpot。",
+          "diagram": "cpot=[0,1,3,3,4]；转置行区间依次为[0,1)、[1,3)、[3,3)、[3,4)、[4,5)。"
+        },
+        {
+          "array": [
+            1,
+            3,
+            0,
+            4,
+            1
+          ],
+          "pointers": {
+            "phase": "copy",
+            "p": -1,
+            "nextPos": [
+              0,
+              1,
+              3,
+              3,
+              4
+            ]
+          },
+          "active": [],
+          "text": "复制cpot到nextPos，后续推进写入游标而不改变起始位置表。",
+          "diagram": "cpot保留为[0,1,3,3,4]；nextPos初值相同。"
+        },
+        {
+          "array": [
+            1,
+            3,
+            0,
+            4,
+            1
+          ],
+          "pointers": {
+            "phase": "place",
+            "p": 0,
+            "column": 1,
+            "writeIndex": 1,
+            "nextPos": [
+              0,
+              2,
+              3,
+              3,
+              4
+            ]
+          },
+          "active": [
+            0
+          ],
+          "text": "A[0]=(0,1,12)，放入T[1]=(1,0,12)，nextPos[1]前进到2。",
+          "diagram": "T[1]=(1,0,12)；列1下一个位置为2。"
+        },
+        {
+          "array": [
+            1,
+            3,
+            0,
+            4,
+            1
+          ],
+          "pointers": {
+            "phase": "place",
+            "p": 1,
+            "column": 3,
+            "writeIndex": 3,
+            "nextPos": [
+              0,
+              2,
+              3,
+              4,
+              4
+            ]
+          },
+          "active": [
+            1
+          ],
+          "text": "A[1]=(0,3,9)，放入T[3]=(3,0,9)，nextPos[3]前进到4。",
+          "diagram": "T[3]=(3,0,9)；列3下一个位置为4。"
+        },
+        {
+          "array": [
+            1,
+            3,
+            0,
+            4,
+            1
+          ],
+          "pointers": {
+            "phase": "place",
+            "p": 2,
+            "column": 0,
+            "writeIndex": 0,
+            "nextPos": [
+              1,
+              2,
+              3,
+              4,
+              4
+            ]
+          },
+          "active": [
+            2
+          ],
+          "text": "A[2]=(2,0,-3)，放入T[0]=(0,2,-3)，nextPos[0]前进到1。",
+          "diagram": "T[0]=(0,2,-3)；列0区间已填满。"
+        },
+        {
+          "array": [
+            1,
+            3,
+            0,
+            4,
+            1
+          ],
+          "pointers": {
+            "phase": "place",
+            "p": 3,
+            "column": 4,
+            "writeIndex": 4,
+            "nextPos": [
+              1,
+              2,
+              3,
+              4,
+              5
+            ]
+          },
+          "active": [
+            3
+          ],
+          "text": "A[3]=(2,4,14)，放入T[4]=(4,2,14)，nextPos[4]前进到5。",
+          "diagram": "T[4]=(4,2,14)；列4区间已填满。"
+        },
+        {
+          "array": [
+            1,
+            3,
+            0,
+            4,
+            1
+          ],
+          "pointers": {
+            "phase": "place",
+            "p": 4,
+            "column": 1,
+            "writeIndex": 2,
+            "nextPos": [
+              1,
+              3,
+              3,
+              4,
+              5
+            ]
+          },
+          "active": [
+            4
+          ],
+          "text": "A[4]=(3,1,24)，放入T[2]=(1,3,24)，所有三元组一次定位完成。",
+          "diagram": "最终T：(0,2,-3)、(1,0,12)、(1,3,24)、(3,0,9)、(4,2,14)。",
+          "done": true
+        }
+      ],
+      "variation": [
+        {
+          "array": [
+            1,
+            3,
+            0,
+            4,
+            1
+          ],
+          "pointers": {
+            "phase": "init",
+            "p": -1,
+            "head": [
+              -1,
+              -1,
+              -1,
+              -1,
+              -1
+            ],
+            "tail": [
+              -1,
+              -1,
+              -1,
+              -1,
+              -1
+            ]
+          },
+          "active": [],
+          "text": "初始化5个列桶，head和tail均为-1。",
+          "diagram": "列桶：0:空；1:空；2:空；3:空；4:空。"
+        },
+        {
+          "array": [
+            1,
+            3,
+            0,
+            4,
+            1
+          ],
+          "pointers": {
+            "phase": "append",
+            "p": 0,
+            "column": 1,
+            "head": [
+              -1,
+              0,
+              -1,
+              -1,
+              -1
+            ],
+            "tail": [
+              -1,
+              0,
+              -1,
+              -1,
+              -1
+            ],
+            "next": [
+              -1,
+              -1,
+              -1,
+              -1,
+              -1
+            ]
+          },
+          "active": [
+            0
+          ],
+          "text": "A[0]属于列1，作为桶1的首结点。",
+          "diagram": "桶1：A[0]=(0,1,12)。"
+        },
+        {
+          "array": [
+            1,
+            3,
+            0,
+            4,
+            1
+          ],
+          "pointers": {
+            "phase": "append",
+            "p": 1,
+            "column": 3,
+            "head": [
+              -1,
+              0,
+              -1,
+              1,
+              -1
+            ],
+            "tail": [
+              -1,
+              0,
+              -1,
+              1,
+              -1
+            ],
+            "next": [
+              -1,
+              -1,
+              -1,
+              -1,
+              -1
+            ]
+          },
+          "active": [
+            1
+          ],
+          "text": "A[1]属于列3，作为桶3的首结点。",
+          "diagram": "桶1：A[0]；桶3：A[1]。"
+        },
+        {
+          "array": [
+            1,
+            3,
+            0,
+            4,
+            1
+          ],
+          "pointers": {
+            "phase": "append",
+            "p": 2,
+            "column": 0,
+            "head": [
+              2,
+              0,
+              -1,
+              1,
+              -1
+            ],
+            "tail": [
+              2,
+              0,
+              -1,
+              1,
+              -1
+            ],
+            "next": [
+              -1,
+              -1,
+              -1,
+              -1,
+              -1
+            ]
+          },
+          "active": [
+            2
+          ],
+          "text": "A[2]属于列0，作为桶0的首结点。",
+          "diagram": "桶0：A[2]；桶1：A[0]；桶3：A[1]。"
+        },
+        {
+          "array": [
+            1,
+            3,
+            0,
+            4,
+            1
+          ],
+          "pointers": {
+            "phase": "append",
+            "p": 3,
+            "column": 4,
+            "head": [
+              2,
+              0,
+              -1,
+              1,
+              3
+            ],
+            "tail": [
+              2,
+              0,
+              -1,
+              1,
+              3
+            ],
+            "next": [
+              -1,
+              -1,
+              -1,
+              -1,
+              -1
+            ]
+          },
+          "active": [
+            3
+          ],
+          "text": "A[3]属于列4，作为桶4的首结点。",
+          "diagram": "桶4：A[3]；其余已有桶保持不变。"
+        },
+        {
+          "array": [
+            1,
+            3,
+            0,
+            4,
+            1
+          ],
+          "pointers": {
+            "phase": "append",
+            "p": 4,
+            "column": 1,
+            "head": [
+              2,
+              0,
+              -1,
+              1,
+              3
+            ],
+            "tail": [
+              2,
+              4,
+              -1,
+              1,
+              3
+            ],
+            "next": [
+              -1,
+              -1,
+              -1,
+              -1,
+              -1
+            ]
+          },
+          "active": [
+            4
+          ],
+          "text": "A[4]也属于列1，尾插到A[0]之后，保持原行号顺序。",
+          "diagram": "桶1链：A[0]=(0,1,12) → A[4]=(3,1,24)。"
+        },
+        {
+          "array": [
+            1,
+            3,
+            0,
+            4,
+            1
+          ],
+          "pointers": {
+            "phase": "collect",
+            "column": 0,
+            "p": 2,
+            "write": 0
+          },
+          "active": [
+            2
+          ],
+          "text": "按列号遍历桶0，取出A[2]并写入T[0]。",
+          "diagram": "T[0]=(0,2,-3)；桶0已处理。"
+        },
+        {
+          "array": [
+            1,
+            3,
+            0,
+            4,
+            1
+          ],
+          "pointers": {
+            "phase": "collect",
+            "column": 1,
+            "p": 0,
+            "write": 1
+          },
+          "active": [
+            0
+          ],
+          "text": "遍历桶1首结点A[0]，写入T[1]=(1,0,12)。",
+          "diagram": "T已有T[0]=(0,2,-3)、T[1]=(1,0,12)。"
+        },
+        {
+          "array": [
+            1,
+            3,
+            0,
+            4,
+            1
+          ],
+          "pointers": {
+            "phase": "collect",
+            "column": 1,
+            "p": 4,
+            "write": 2
+          },
+          "active": [
+            4
+          ],
+          "text": "沿next从A[0]到A[4]，写入T[2]=(1,3,24)。",
+          "diagram": "桶1保持原行序，T[1]、T[2]连续存放。"
+        },
+        {
+          "array": [
+            1,
+            3,
+            0,
+            4,
+            1
+          ],
+          "pointers": {
+            "phase": "collect",
+            "column": 2,
+            "p": -1,
+            "write": 3
+          },
+          "active": [],
+          "text": "桶2为空，跳过后继续处理下一列。",
+          "diagram": "T仍为前三项；空桶不产生三元组。"
+        },
+        {
+          "array": [
+            1,
+            3,
+            0,
+            4,
+            1
+          ],
+          "pointers": {
+            "phase": "collect",
+            "column": 3,
+            "p": 1,
+            "write": 3
+          },
+          "active": [
+            1
+          ],
+          "text": "遍历桶3，写入T[3]=(3,0,9)。",
+          "diagram": "T[3]=(3,0,9)，转置行号为3。"
+        },
+        {
+          "array": [
+            1,
+            3,
+            0,
+            4,
+            1
+          ],
+          "pointers": {
+            "phase": "collect",
+            "column": 4,
+            "p": 3,
+            "write": 4
+          },
+          "active": [
+            3
+          ],
+          "text": "遍历桶4，写入T[4]=(4,2,14)，列桶转置完成。",
+          "diagram": "最终T：(0,2,-3)、(1,0,12)、(1,3,24)、(3,0,9)、(4,2,14)。",
+          "done": true
+        }
+      ]
+    }
   }
 ]

@@ -47,6 +47,11 @@ CASES = {
     "lc48-20261024": ("7 4 1\n8 5 2\n9 6 3", "3 6 9\n2 5 8\n1 4 7"),
     "two-stacks-one-array-20261120": ("固定分区：栈1溢出，但栈2一侧仍有空位\ntop1=3, top2=4, mid=4", "数组：10 20 30 40 50 70 80 90\ntop1=4, top2=5\n共享空间：两个栈顶相邻，整个数组已满", "Pop2=9\nPop1=3\nPop2=8\n栈1自底向顶：1 2\n栈2为空：是"),
     "sliding-window-max-20261121": ("3 3 5 5 6 7", "3 3 5 5 6 7", "3 3 5 5 6 7"),
+    "sparse-fast-transpose-20261122": (
+        "0 1 3 3 4\n5 4 5\n0 2 -3\n1 0 12\n1 3 24\n3 0 9\n4 2 14",
+        "0 1 3 3 4\n5 4 5\n0 2 -3\n1 0 12\n1 3 24\n3 0 9\n4 2 14",
+        "0 1 3 3\n4 3 4\n0 1 -2\n1 0 5\n1 2 7\n3 1 8",
+    ),
 }
 
 
@@ -68,6 +73,21 @@ def check_one(source, expected, key, stdin_data=""):
                 f"返回码 {run.returncode}，错误 {run.stderr[:500]}"
             )
 
+def check_rejected(source, key, stdin_data=""):
+    with tempfile.TemporaryDirectory() as td:
+        src = Path(td) / "test.c"
+        exe = Path(td) / "test"
+        src.write_text(source, encoding="utf-8")
+        cc = subprocess.run(
+            ["gcc", "-std=c11", "-Wall", "-Wextra", "-pedantic", str(src), "-o", str(exe)],
+            capture_output=True, text=True, timeout=15
+        )
+        if cc.returncode:
+            raise RuntimeError(f"{key}: 编译失败\n{cc.stderr[:2000]}")
+        run = subprocess.run([str(exe)], input=stdin_data, capture_output=True, text=True, timeout=5)
+        if run.returncode == 0:
+            raise RuntimeError(f"{key}: 非法输入被程序错误接受")
+
 
 def main():
     queue = json.loads((ROOT / "pending-lessons.json").read_text(encoding="utf-8"))
@@ -81,6 +101,7 @@ def main():
         "tree-level-order-20261119": "https://leetcode.cn/problems/binary-tree-level-order-traversal/description/",
         "two-stacks-one-array-20261120": "https://www.geeksforgeeks.org/dsa/implement-two-stacks-in-an-array/",
         "sliding-window-max-20261121": "https://leetcode.cn/problems/sliding-window-maximum/",
+        "sparse-fast-transpose-20261122": "https://blog.nerom.wang/2015/02/02/sparse-matrix",
         "original-insert-20261016": "https://en.oi-wiki.org/basic/insertion-sort/",
         "original-graph-bfs-20261017": "https://oi-wiki.org/graph/bfs/",
         "array-two-pointer-20261019": "https://leetcode.cn/problems/remove-duplicates-from-sorted-array/",
@@ -112,6 +133,7 @@ def main():
         "floyd-20261118": {"brute": 5, "optimal": 5, "variation": 4},
         "two-stacks-one-array-20261120": {"brute": 4, "optimal": 5, "variation": 9},
         "sliding-window-max-20261121": {"brute": 18, "optimal": 8, "variation": 8},
+        "sparse-fast-transpose-20261122": {"brute": 7, "optimal": 8, "variation": 12},
     }
     diagram_minimum = {
         "lc997-20261109": {"brute": 6, "optimal": 6},
@@ -123,6 +145,7 @@ def main():
         "quick-sort-20261117": {"optimal": 10, "variation": 7},
         "floyd-20261118": {"brute": 5, "optimal": 5, "variation": 4},
         "two-stacks-one-array-20261120": {"brute": 4, "optimal": 5, "variation": 9},
+        "sparse-fast-transpose-20261122": {"brute": 7, "optimal": 8, "variation": 12},
     }
     for lesson in queue:
         for method, minimum in diagram_minimum.get(lesson["id"], {}).items():
@@ -202,6 +225,7 @@ def main():
         "lc-hash-linear-20261116": ("brute", "optimal", "variation"),
         "two-stacks-one-array-20261120": ("brute", "optimal", "variation"),
         "sliding-window-max-20261121": ("brute", "optimal", "variation"),
+        "sparse-fast-transpose-20261122": ("brute", "optimal", "variation"),
     }
     reviewed_variations = {
         "lc997-20261109", "lc994-20261110", "kmp-20261111",
@@ -210,6 +234,7 @@ def main():
         "aoe-critical-20261115", "lc-hash-linear-20261116",
         "quick-sort-20261117", "floyd-20261118",
         "two-stacks-one-array-20261120", "sliding-window-max-20261121",
+        "sparse-fast-transpose-20261122",
     }
     for lesson in queue:
         if lesson["id"] in reviewed_variations and not lesson.get("variation", {}).get("complexity"):
@@ -491,6 +516,65 @@ def main():
         for index, frame in enumerate(frames):
             if not frame.get("diagram") or not isinstance(frame.get("active"), list):
                 raise ValueError(f"tree-level-order-20261119.{method}: 第{index + 1}帧缺少树连线或操作高亮")
+
+    sparse_lesson = next((x for x in queue if x["id"] == "sparse-fast-transpose-20261122"), None)
+    if sparse_lesson is None:
+        raise ValueError("缺少sparse-fast-transpose-20261122")
+    if sparse_lesson.get("source") != "https://blog.nerom.wang/2015/02/02/sparse-matrix":
+        raise ValueError("sparse-fast-transpose-20261122: 来源链接错误")
+    if not all(term in sparse_lesson.get("question", "") for term in ("输入格式：", "输出格式：")):
+        raise ValueError("sparse-fast-transpose-20261122: 缺少输入/输出格式")
+    if not all(term in sparse_lesson.get("sample", "") for term in ("正例：", "反例：", "边界：")):
+        raise ValueError("sparse-fast-transpose-20261122: 缺少正例、反例或边界样例")
+    if "cpot[0]=0" not in sparse_lesson.get("constraint", ""):
+        raise ValueError("sparse-fast-transpose-20261122: 未明确0-based cpot定义")
+    if not sparse_lesson.get("variation", {}).get("complexity"):
+        raise ValueError("sparse-fast-transpose-20261122: 变式缺少复杂度")
+    sparse_expected = {
+        "brute": [
+            {"column": 0, "scan": 0, "write": 0},
+            {"column": 0, "scan": 2, "write": 0},
+            {"column": 1, "scan": 0, "write": 1},
+            {"column": 1, "scan": 4, "write": 2},
+            {"column": 2, "scan": 5, "write": 3},
+            {"column": 3, "scan": 1, "write": 3},
+            {"column": 4, "scan": 3, "write": 4},
+        ],
+        "optimal": [
+            {"phase": "count", "p": 4, "num": [1, 2, 0, 1, 1]},
+            {"phase": "prefix", "p": 4, "cpot": [0, 1, 3, 3, 4]},
+            {"phase": "copy", "p": -1, "nextPos": [0, 1, 3, 3, 4]},
+            {"phase": "place", "p": 0, "column": 1, "writeIndex": 1, "nextPos": [0, 2, 3, 3, 4]},
+            {"phase": "place", "p": 1, "column": 3, "writeIndex": 3, "nextPos": [0, 2, 3, 4, 4]},
+            {"phase": "place", "p": 2, "column": 0, "writeIndex": 0, "nextPos": [1, 2, 3, 4, 4]},
+            {"phase": "place", "p": 3, "column": 4, "writeIndex": 4, "nextPos": [1, 2, 3, 4, 5]},
+            {"phase": "place", "p": 4, "column": 1, "writeIndex": 2, "nextPos": [1, 3, 3, 4, 5]},
+        ],
+        "variation": [
+            {"phase": "init", "p": -1, "head": [-1, -1, -1, -1, -1], "tail": [-1, -1, -1, -1, -1]},
+            {"phase": "append", "p": 0, "column": 1, "head": [-1, 0, -1, -1, -1], "tail": [-1, 0, -1, -1, -1], "next": [-1, -1, -1, -1, -1]},
+            {"phase": "append", "p": 1, "column": 3, "head": [-1, 0, -1, 1, -1], "tail": [-1, 0, -1, 1, -1], "next": [-1, -1, -1, -1, -1]},
+            {"phase": "append", "p": 2, "column": 0, "head": [2, 0, -1, 1, -1], "tail": [2, 0, -1, 1, -1], "next": [-1, -1, -1, -1, -1]},
+            {"phase": "append", "p": 3, "column": 4, "head": [2, 0, -1, 1, 3], "tail": [2, 0, -1, 1, 3], "next": [-1, -1, -1, -1, -1]},
+            {"phase": "append", "p": 4, "column": 1, "head": [2, 0, -1, 1, 3], "tail": [2, 4, -1, 1, 3], "next": [-1, -1, -1, -1, -1]},
+            {"phase": "collect", "column": 0, "p": 2, "write": 0},
+            {"phase": "collect", "column": 1, "p": 0, "write": 1},
+            {"phase": "collect", "column": 1, "p": 4, "write": 2},
+            {"phase": "collect", "column": 2, "p": -1, "write": 3},
+            {"phase": "collect", "column": 3, "p": 1, "write": 3},
+            {"phase": "collect", "column": 4, "p": 3, "write": 4},
+        ],
+    }
+    for method, expected in sparse_expected.items():
+        frames = sparse_lesson.get("animation", {}).get(method, [])
+        if [frame.get("pointers") for frame in frames] != expected:
+            raise ValueError(f"sparse-fast-transpose-20261122.{method}: 指针/桶位置与算法步骤不一致")
+        for index, frame in enumerate(frames):
+            if frame.get("array") != [1, 3, 0, 4, 1]:
+                raise ValueError(f"sparse-fast-transpose-20261122.{method}: 第{index + 1}帧输入列号数组错误")
+            if not frame.get("diagram") or not frame.get("text") or not isinstance(frame.get("active"), list):
+                raise ValueError(f"sparse-fast-transpose-20261122.{method}: 第{index + 1}帧缺少连线/说明/高亮")
+
     inputs = {
         "kmp-20261111": "ababcabcac\nabcac\n",
         "lc217-20261027": "4\n1 2 3 1\n",
@@ -501,11 +585,13 @@ def main():
         "quick-sort-20261117": "8\n5 1 8 3 2 7 4 6\n",
         "floyd-20261118": "4 5\n1 2 5\n1 3 10\n2 3 3\n2 4 9\n3 4 1\n",
         "sliding-window-max-20261121": "8 3\n1 3 -1 -3 5 3 6 7\n",
+        "sparse-fast-transpose-20261122": "4 5 5\n0 1 12\n0 3 9\n2 0 -3\n2 4 14\n3 1 24\n",
     }
     variant_inputs = { "kmp-20261111": "aaaaab\naaab\n","lc-hash-linear-20261116": "7 5\n5 20016 40027 17 20028 -3 8\n40027 5 99 -3 20028\n",
                       "lc997-20261109": "3 3\n1 3\n2 3\n3 1\n",
                       "lc994-20261110": "2 2\n2 0\n0 1\n",
-                      "lc503-20261106": "5\n3 8 4 1 2\n", "quick-sort-20261117": "6\n3 -1 3 0 -1 2\n", "floyd-20261118": "3 3\n1 2 4\n2 3 -2\n1 3 5\n", "sliding-window-max-20261121": "8 3\n1 3 -1 -3 5 3 6 7\n"}
+                      "lc503-20261106": "5\n3 8 4 1 2\n", "quick-sort-20261117": "6\n3 -1 3 0 -1 2\n", "floyd-20261118": "3 3\n1 2 4\n2 3 -2\n1 3 5\n", "sliding-window-max-20261121": "8 3\n1 3 -1 -3 5 3 6 7\n",
+                      "sparse-fast-transpose-20261122": "3 4 4\n0 1 5\n1 0 -2\n1 3 8\n2 1 7\n"}
     count = 0
     for x in queue:
         case = CASES.get(x["id"])
@@ -703,6 +789,34 @@ def main():
                 for label, data, expected in extra:
                     check_one(x[variant]["code"], expected,
                               x["id"] + "." + variant + "." + label, data)
+                    count += 1
+
+        if x["id"] == "sparse-fast-transpose-20261122":
+            extra_cases = [
+                ("empty_nnz", "3 4 0\n", "0 0 0 0\n4 3 0"),
+                ("zero_cols", "3 0 0\n", "\n0 3 0"),
+                ("one_col", "4 1 3\n0 0 7\n2 0 -5\n3 0 9\n",
+                 "0\n1 4 3\n0 0 7\n0 2 -5\n0 3 9"),
+                ("last_col", "3 4 3\n0 3 5\n1 3 -2\n2 3 8\n",
+                 "0 0 0 0\n4 3 3\n3 0 5\n3 1 -2\n3 2 8"),
+                ("single_cell", "1 1 1\n0 0 -1000000000\n",
+                 "0\n1 1 1\n0 0 -1000000000"),
+                ("full_matrix", "2 2 4\n0 0 1\n0 1 2\n1 0 3\n1 1 4\n",
+                 "0 2\n2 2 4\n0 0 1\n0 1 3\n1 0 2\n1 1 4"),
+            ]
+            for method in ("brute", "optimal", "variation"):
+                for label, data, expected in extra_cases:
+                    check_one(x[method]["code"], expected, x["id"] + "." + method + "." + label, data)
+                    count += 1
+            invalid_cases = [
+                ("unsorted", "2 2 2\n1 0 3\n0 1 4\n"),
+                ("duplicate", "2 2 2\n0 1 3\n0 1 4\n"),
+                ("zero_value", "1 1 1\n0 0 0\n"),
+                ("out_of_range", "2 2 1\n2 0 5\n"),
+            ]
+            for method in ("brute", "optimal", "variation"):
+                for label, data in invalid_cases:
+                    check_rejected(x[method]["code"], x["id"] + "." + method + "." + label, data)
                     count += 1
     # 历史正式题库中不在pending队列的题也要做回归，避免错误变式漏检。
     published = json.loads((ROOT / "lessons.json").read_text(encoding="utf-8"))
