@@ -81,10 +81,18 @@ def main():
         "tree-level-order-20261119": "https://leetcode.cn/problems/binary-tree-level-order-traversal/description/",
         "two-stacks-one-array-20261120": "https://www.geeksforgeeks.org/dsa/implement-two-stacks-in-an-array/",
         "sliding-window-max-20261121": "https://leetcode.cn/problems/sliding-window-maximum/",
+        "original-insert-20261016": "https://en.oi-wiki.org/basic/insertion-sort/",
+        "original-graph-bfs-20261017": "https://oi-wiki.org/graph/bfs/",
+        "array-two-pointer-20261019": "https://leetcode.cn/problems/remove-duplicates-from-sorted-array/",
+        "list-reverse-20261020": "https://leetcode.cn/problems/reverse-linked-list/",
+        "tree-leaves-20261021": "https://www.geeksforgeeks.org/dsa/write-a-c-program-to-get-count-of-leaf-nodes-in-a-binary-tree/",
     }
     for lesson in queue:
+        source = lesson.get("source")
+        if not isinstance(source, str) or not source.startswith(("http://", "https://")):
+            raise ValueError("{}: 缺少真实HTTP来源链接".format(lesson.get("id")))
         expected_source = expected_sources.get(lesson["id"])
-        if expected_source and lesson.get("source") != expected_source:
+        if expected_source and source != expected_source:
             raise ValueError("{}: 来源链接与已核验资料不一致".format(lesson.get("id")))
 
 
@@ -698,6 +706,13 @@ def main():
                     count += 1
     # 历史正式题库中不在pending队列的题也要做回归，避免错误变式漏检。
     published = json.loads((ROOT / "lessons.json").read_text(encoding="utf-8"))
+    for lesson in published:
+        source = lesson.get("source")
+        if not isinstance(source, str) or not source.startswith(("http://", "https://")):
+            raise ValueError("{}: 已发布课程缺少真实HTTP来源链接".format(lesson.get("id")))
+        expected_source = expected_sources.get(lesson["id"])
+        if expected_source and source != expected_source:
+            raise ValueError("{}: 已发布课程来源链接与已核验资料不一致".format(lesson.get("id")))
     historical_id = "lc200-20261025"
     historical = next((x for x in published if x["id"] == historical_id), None)
     if historical is None:
