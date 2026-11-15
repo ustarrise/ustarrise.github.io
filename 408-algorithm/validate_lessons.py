@@ -67,8 +67,8 @@ def check_one(source, expected, key, stdin_data=""):
         if cc.returncode:
             raise RuntimeError(f"{key}: 编译失败\n{cc.stderr[:2000]}")
         run = subprocess.run([str(exe)], input=stdin_data, capture_output=True, text=True, timeout=5)
-        actual = run.stdout.rstrip("\\r\\n")
-        expected_output = expected.rstrip("\\r\\n")
+        actual = run.stdout.rstrip()
+        expected_output = expected.rstrip()
         if run.returncode or actual != expected_output:
             raise RuntimeError(
                 f"{key}: 结果错误，预期 {expected_output!r}，实际 {actual!r}，"
