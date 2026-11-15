@@ -1,17 +1,18 @@
 {
   "schema_version": 1,
-  "last_audit_date": "2026-11-14",
+  "last_audit_date": "2026-11-15",
   "scope": "每日检查正式题库、备用队列、来源、题意、样例、约束、三份C程序、复杂度、注释与逐帧动画；优先当天及未来7天并持续回溯历史题目。",
-  "status_note": "11月14日检查完成。今日Dijkstra课程已发布且正式/备用副本一致；未来11/15—11/21连续7天备用覆盖。补齐Dijkstra、AOE、快速排序、Floyd四道题的变式逐帧动画；快速排序优化动画补齐10帧数组下标/枢轴/双指针图示；散列表来源更换为直接讲解线性探测的Harvey Mudd CS70资料，补齐输出格式标签和冲突覆盖反例；Floyd补充负权回路非法输入反例。首次验证因快速排序优化动画缺少diagram字段失败，补齐后master Actions 43539661236成功，40道备用题、240次C程序编译运行测试全部通过；Pages 43539661325成功。",
+  "status_note": "11月15日检查完成。今日AOE关键路径课程已发布；未来11/16—11/22连续7天备用覆盖。新增稀疏矩阵三元组快速转置题，提供逐列扫描、num/cpot快速转置、列桶稳定收集三份完整标准C程序；补齐7/8/12帧动画和精确指针/next链断言。回溯发现5道历史正式题缺来源链接，已为直接插入排序、图BFS连通块、数组去重、反转链表、二叉树叶子计数补齐资料链接，并让验证器检查所有正式/备用题均有HTTP来源。最终master Actions 43662323729成功：41道备用题、273次C程序编译运行测试全部通过；Pages 43662323009成功。两次中间验证失败分别是零列输出的前导空行比较和rstrip转义错误，均已修正并由最终运行验证通过。",
   "published_today": {
-    "date": "2026-11-14",
-    "id": "dijkstra-20261114",
+    "date": "2026-11-15",
+    "id": "aoe-critical-20261115",
     "present": true,
-    "review_note": "今日课程已存在于lessons.json，pending中同ID副本逐字段一致。复核非负权约束、重复松弛/Bellman-Ford式逐轮扫描、Dijkstra确定顶点顺序、源点距离0、不可达输出-1及负权反例；补齐变式图的5帧指针/距离状态动画，并同步正式/备用副本。"
+    "source": "https://m.biancheng.net/view/3417.html",
+    "review_note": "今日AOE关键路径课程已存在于lessons.json。复核AOE网DAG约束、源点到汇点的最长路径即工程最短工期、ve正推/vl逆推、关键活动判定和DFS枚举路径；明确输入/输出格式并补充单活动边界、环反例。"
   },
   "future_queue": {
-    "from": "2026-11-15",
-    "through": "2026-11-21",
+    "from": "2026-11-16",
+    "through": "2026-11-22",
     "continuous_days": 7,
     "shortfall_days": 0
   },
@@ -285,13 +286,32 @@
       ],
       "validation": "master Actions 43539661236成功：40道备用题全量检查，240次C程序编译运行测试通过；变式动画帧数、指针、数组/矩阵状态、连线和操作高亮断言通过。Pages 43539661325成功。",
       "note": "首次运行43539327779失败，定位为快速排序optimal动画缺少diagram字段；补齐10帧diagram后重跑成功。未将首次失败记为成功。"
+    },
+    {
+      "date": "2026-11-15",
+      "id": "aoe-critical-20261115 / sparse-fast-transpose-20261122 / historical-source-backfill",
+      "scope": "当天AOE复核并确认已发布；逐题核对11/16—11/22备用课，新增稀疏矩阵三元组快速转置。新题明确0-based cpot、行优先输入前提、num列计数、cpot前缀和、nextPos写入游标；朴素法O(cols×nnz+cols)、快速法O(nnz+cols)、列桶变式O(nnz+cols)。补齐正例、负值、空矩阵/零列边界及“仅交换行列不重排”的反例；动画为7/8/12帧，逐帧核对scan/write、num/cpot/nextPos、head/tail/next和高亮/连线。回溯发现5道历史题来源字段缺失，已补齐插入排序、图BFS、力扣26、力扣206、二叉树叶子计数来源，并增加正式/备用题库全量HTTP来源断言。",
+      "sources": [
+        "https://blog.nerom.wang/2015/02/02/sparse-matrix",
+        "https://en.oi-wiki.org/basic/insertion-sort/",
+        "https://oi-wiki.org/graph/bfs/",
+        "https://leetcode.cn/problems/remove-duplicates-from-sorted-array/",
+        "https://leetcode.cn/problems/reverse-linked-list/",
+        "https://www.geeksforgeeks.org/dsa/write-a-c-program-to-get-count-of-leaf-nodes-in-a-binary-tree/"
+      ],
+      "related_commits": [
+        "822629b8b290c56aeb9abb80ca16fd1d1e6ba7a1",
+        "5c1116c92aaedce4aa64148e4771d58634aeb5b5",
+        "ab56b3f5f7932249151d86219b5565f9c278a486",
+        "8193e09ab9bb73d5423dee58d0705e13c8b9932b"
+      ]
     }
   ],
   "validation": {
     "previous_actions_run_id": 42733107324,
     "previous_result": "第一轮候选PR验证43343117214成功，第二轮来源/样例候选PR验证43343724045成功；两轮均在候选分支通过后才合入master。合入后master运行43343821958再次完整验证成功。",
-    "new_commit_actions_result": "master运行43539661236成功：publish_daily.py --dry-run通过；validate_lessons.py对40道备用题执行结构/来源/样例/动画检查，并完成240次C程序编译运行测试；发布步骤确认北京时间2026-11-14课程已发布，无重复提交。首次运行43539327779因快速排序optimal动画缺少diagram字段失败，补齐10帧数组/枢轴/双指针图示后重跑成功。",
-    "local_modified_code": "第一轮：哈夫曼正式/备用副本修正朴素动画第3轮active下标并补充WPL=416错误反例；共享栈题补输入/输出、n=2满栈/空栈边界、固定分区反例、Push/Pop返回原因注释和9帧变式动画；新增力扣239滑动窗口最大值三份标准C程序、18/8/8帧动画、精确指针断言和k=1、k=n、全负数、全相等测试。第二轮：哈夫曼/散列表/Floyd来源更正为OI Wiki规范域名，快速排序改为Hoare划分专门资料；共享栈示例换行修复；Dijkstra增加不可达点-1边界，Floyd增加负权边无负环样例；验证器加入9道来源断言和样例检查。",
+    "new_commit_actions_result": "最终master Actions 43662323729成功：publish_daily.py --dry-run通过，确认北京时间2026-11-15的AOE课程已发布且未重复发布；41道备用题结构/来源/样例/动画检查通过，273次C程序编译运行测试通过。新稀疏矩阵题三份程序均核对样例、变式、6类边界和4类非法输入；验证器检查7/8/12帧精确指针轨迹。Pages 43662323009 build、artifact upload、deploy全部成功。",
+    "local_modified_code": "回溯补齐5道历史题来源：original-insert-20261016、original-graph-bfs-20261017、array-two-pointer-20261019、list-reverse-20261020、tree-leaves-20261021；validate_lessons.py新增正式题库和备用题库全量HTTP来源检查及这些已核验ID的精确来源断言。新增sparse-fast-transpose-20261122：三份完整C11 main程序，分别为逐列扫描、num/cpot/nextPos快速转置、head/tail/next列桶稳定收集；动画7/8/12帧，增加精确指针、桶链接和操作高亮断言。验证器增加6类有效边界和4类非法输入拒绝测试，每类对三份程序运行。",
     "commit_history": [
       "3da63b267ff9f703714b70d59e92eba34dc5553a",
       "b3d7646ed5766108a7864c8839e5c1c72f7a32af",
@@ -309,18 +329,22 @@
       "85d29aad3a28c6f43f49394916364bd2dabb5fb3",
       "d209a4fe3aa355664c3a7b944a601ebf9dffd4b9",
       "7f949fcb3fe628c1ef0f8dd8ea8e48c0dc98aed4",
-      "301593bdebedf35237c603696fd01da222f12514"
+      "301593bdebedf35237c603696fd01da222f12514",
+      "822629b8b290c56aeb9abb80ca16fd1d1e6ba7a1",
+      "5c1116c92aaedce4aa64148e4771d58634aeb5b5",
+      "ab56b3f5f7932249151d86219b5565f9c278a486",
+      "8193e09ab9bb73d5423dee58d0705e13c8b9932b"
     ],
-    "code_commit": "27e691771e768c27cd094ec8db974d27f71f27d1",
-    "validator_fix_commit": "490b3e3ac9290792e47eaf10f7e126ade2f24676",
-    "latest_actions_run_id": 43539661236,
-    "latest_result": "success：master最终提交301593bdebedf35237c603696fd01da222f12514；今日课程已发布，未来7天备用连续覆盖；40道备用题、240次C程序编译运行测试及新增变式动画逐帧断言全部通过。",
-    "pages_run_id": 43539661325,
-    "pages_result": "success：GitHub Pages build、artifact upload、deploy均成功，head SHA 301593bdebedf35237c603696fd01da222f12514。",
-    "source_commit": "7f949fcb3fe628c1ef0f8dd8ea8e48c0dc98aed4",
-    "latest_commit": "301593bdebedf35237c603696fd01da222f12514",
-    "current_master_head_before_audit_update": "301593bdebedf35237c603696fd01da222f12514",
-    "tree_boundary_tests": "新增6个C程序编译运行用例：朴素/优化/变式分别覆盖单结点与空树；全部通过。",
+    "code_commit": "5c1116c92aaedce4aa64148e4771d58634aeb5b5",
+    "validator_fix_commit": "8193e09ab9bb73d5423dee58d0705e13c8b9932b",
+    "latest_actions_run_id": 43662323729,
+    "latest_result": "success：master head 8193e09ab9bb73d5423dee58d0705e13c8b9932b；41道备用题、273次C程序编译运行测试通过；当天AOE课程已发布，未来7天连续覆盖；正式题库和备用题库均无缺失来源链接。",
+    "pages_run_id": 43662323009,
+    "pages_result": "success：GitHub Pages build、artifact upload、deploy均成功，head SHA 8193e09ab9bb73d5423dee58d0705e13c8b9932b。",
+    "source_commit": "822629b8b290c56aeb9abb80ca16fd1d1e6ba7a1",
+    "latest_commit": "8193e09ab9bb73d5423dee58d0705e13c8b9932b",
+    "current_master_head_before_audit_update": "8193e09ab9bb73d5423dee58d0705e13c8b9932b",
+    "tree_boundary_tests": "稀疏矩阵快速转置三份C程序：正例和变式样例通过；另对nnz=0、cols=0、单列、非零元全在最后一列、单元素极值、满矩阵6类边界各运行三份程序；对无序、重复坐标、零值、越界坐标4类非法输入各运行三份程序，均按预期输出或拒绝。全量Actions最终41道备用题、273次C程序编译运行测试通过。",
     "candidate_pr_validation_run_id": 43343117214,
     "candidate_pr_number": 1,
     "source_audit_pr_run_id": 43343724045,
@@ -332,12 +356,29 @@
       "correction_commit": "301593bdebedf35237c603696fd01da222f12514",
       "rerun_id": 43539661236,
       "rerun_result": "success"
-    }
+    },
+    "intermediate_failures": [
+      {
+        "run_id": 43662182573,
+        "result": "failure",
+        "cause": "零列边界用例预期字符串带有前导空行，但check_one原先比较方式未统一保留/去除首尾空白。",
+        "correction_commit": "ab56b3f5f7932249151d86219b5565f9c278a486",
+        "followup": "随后将比较逻辑改为rstrip()，保留有意义的前导空行。"
+      },
+      {
+        "run_id": 43662286808,
+        "result": "failure",
+        "cause": "第一次修正误将rstrip的参数转义成字面反斜杠字符，未移除输出末尾换行。",
+        "correction_commit": "8193e09ab9bb73d5423dee58d0705e13c8b9932b",
+        "rerun_id": 43662323729,
+        "rerun_result": "success"
+      }
+    ]
   },
   "next_priorities": [
-    "11/22优先补入稀疏矩阵三元组快速转置，重点检查非零元计数、起始位置、列主序和稳定写入；三份C程序与逐帧动画验证通过后入队。",
-    "继续减少链表与连续图题，补充排序、查找、栈、队列、矩阵/稀疏表示。",
-    "按67天计划持续审核未来课程，并回溯历史正式题库；比例按实际分类统计，不误标旧题凑45/35/20。"
+    "11/23补入至少1道新备用题，优先从栈/队列、排序/查找中选择，维持未来连续7天覆盖；减少链表和连续图题。",
+    "继续增加排序、查找、栈、队列、矩阵/稀疏表示题，按实际topic_group比例微调，不为凑比例误分类。",
+    "继续回溯历史正式题库，重点审核来源链接、题意与输入输出、样例/约束、三份C程序、复杂度、解释性注释和动画指针/连线；保留审核进度。"
   ],
   "commit_history": [
     "3da63b267ff9f703714b70d59e92eba34dc5553a",
@@ -363,19 +404,23 @@
     "85d29aad3a28c6f43f49394916364bd2dabb5fb3",
     "d209a4fe3aa355664c3a7b944a601ebf9dffd4b9",
     "7f949fcb3fe628c1ef0f8dd8ea8e48c0dc98aed4",
-    "301593bdebedf35237c603696fd01da222f12514"
+    "301593bdebedf35237c603696fd01da222f12514",
+    "822629b8b290c56aeb9abb80ca16fd1d1e6ba7a1",
+    "5c1116c92aaedce4aa64148e4771d58634aeb5b5",
+    "ab56b3f5f7932249151d86219b5565f9c278a486",
+    "8193e09ab9bb73d5423dee58d0705e13c8b9932b"
   ],
   "selection_balance": {
-    "current_unique_entries": 44,
+    "current_unique_entries": 45,
     "counts": {
       "经典方法": 20,
       "综合变式": 16,
-      "预测补盲": 8
+      "预测补盲": 9
     },
     "approximate_percent": {
-      "经典方法": 45.5,
-      "综合变式": 36.4,
-      "预测补盲": 18.2
+      "经典方法": 44.4,
+      "综合变式": 35.6,
+      "预测补盲": 20
     },
     "target_percent": {
       "经典方法": 45,
@@ -383,18 +428,18 @@
       "预测补盲": 20
     },
     "pending_queue": {
-      "total": 40,
+      "total": 41,
       "counts": {
         "经典方法": 18,
         "综合变式": 15,
-        "预测补盲": 7
+        "预测补盲": 8
       },
       "approximate_percent": {
-        "经典方法": 45,
-        "综合变式": 37.5,
-        "预测补盲": 17.5
+        "经典方法": 43.9,
+        "综合变式": 36.6,
+        "预测补盲": 19.5
       }
     },
-    "note": "按publish_daily.py的topic_group规则统计：正式+备用按ID去重44道，20/16/8；备用40道，18/15/7。新增11/21滑动窗口最大值后，11/14—11/21连续8天覆盖。"
+    "note": "按publish_daily.py的topic_group规则统计：正式+备用按ID去重45道，20/16/9；备用41道，18/15/8。合并后比例44.4%/35.6%/20.0%，备用比例43.9%/36.6%/19.5%，预测补盲已达到合并目标。"
   }
 }
