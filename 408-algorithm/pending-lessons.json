@@ -10963,5 +10963,307 @@
         }
       ]
     }
+  },
+  {
+    "id": "lc94-inorder-iterative-20261123",
+    "date": "2026-11-23",
+    "year": "408",
+    "number": "树遍历",
+    "category": "二叉树 · 中序遍历 · 栈",
+    "title": "二叉树中序遍历：从递归到显式栈",
+    "difficulty": "中等",
+    "time": "15–20分钟",
+    "source": "https://leetcode.com/problems/binary-tree-inorder-traversal/",
+    "question": "给定一棵二叉树，按中序遍历输出结点关键字序列（左子树→根→右子树）。先用递归实现，再不使用递归调用完成同样的遍历。输入格式：第一行 n root（1≤n≤100，root为根结点编号；空树时n=root=0）；随后n行，每行依次给出 data left right，结点编号为1..n，左右孩子用编号表示，0表示空。保证输入构成一棵合法二叉树。输出两行，分别为递归和非递归的中序遍历结果；空树输出空行。",
+    "constraint": "0≤n≤100；结点编号为1..n，0表示空指针；每个非根结点恰有一个父结点，且所有结点均从root可达。结点关键字为[-10^9,10^9]内的整数，可以重复。递归与非递归版本都必须按左子树、根、右子树的顺序输出。",
+    "sample": "输入：\n6 1\n1 2 3\n2 4 5\n3 0 6\n4 0 0\n5 0 0\n6 0 0\n输出：\n4 2 5 1 3 6\n4 2 5 1 3 6\n说明：先遍历根1的左子树2，得到4、2、5；再访问根1；最后遍历右子树3，得到3、6。",
+    "brute": {
+      "tag": "保底方法",
+      "title": "递归中序遍历",
+      "idea": "对当前结点，先递归遍历左子树，再访问当前结点，最后递归遍历右子树。空结点直接返回。递归调用天然保存了回溯位置，代码最贴合中序定义。",
+      "complexity": "时间O(n)；辅助空间O(h)，h为树高，最坏O(n)。",
+      "risk": "递归写法最简洁，但极度倾斜的树会形成较深的调用链；若题目明确要求非递归，则不能只交递归版本。",
+      "code": "#include <stdio.h>\n#define MAXN 105\n\ntypedef struct {\n    int data;                  // 当前结点保存的关键字\n    int left, right;            // 左、右孩子的结点编号，0表示空\n} Node;\n\nNode tree[MAXN];\n\n// first用于控制输出空格，避免首尾多余空格。\nvoid printValue(int x, int *first) {\n    if (!*first) putchar(' ');\n    printf(\"%d\", x);\n    *first = 0;\n}\n\n// 中序定义：左子树 -> 当前结点 -> 右子树。\nvoid inorder(int u, int *first) {\n    if (u == 0) return;         // 空结点没有内容，递归边界\n    inorder(tree[u].left, first); // 先完成整个左子树\n    printValue(tree[u].data, first); // 左子树结束后访问根\n    inorder(tree[u].right, first);   // 最后完成右子树\n}\n\nint main(void) {\n    int n, root;\n    if (scanf(\"%d%d\", &n, &root) != 2) return 1;\n    if (n < 0 || n >= MAXN) return 1;\n\n    for (int i = 1; i <= n; i++) {\n        if (scanf(\"%d%d%d\", &tree[i].data, &tree[i].left, &tree[i].right) != 3)\n            return 1;\n    }\n\n    int first = 1;\n    inorder(root, &first);      // 从根开始递归遍历\n    putchar('\\n');\n    return 0;\n}\n",
+      "explain": [
+        "遇到空结点立即返回，这是递归终止条件。",
+        "访问当前结点必须放在左子树递归之后、右子树递归之前。",
+        "递归系统栈会自动保存尚未完成的右子树位置，回溯后继续执行。"
+      ]
+    },
+    "optimal": {
+      "tag": "非递归考法",
+      "title": "显式栈模拟递归",
+      "idea": "沿当前结点的左指针一路向下，把经过的结点编号依次入栈。左边走到空时，弹出栈顶并访问它，再转向它的右子树；重复这一过程，直到当前结点为空且栈也为空。用数组栈显式保存递归回溯信息。",
+      "complexity": "时间O(n)，每个结点入栈、出栈各一次；辅助空间O(h)，最坏O(n)。",
+      "risk": "与递归法时间、空间渐进复杂度相同；优势是显式管理回溯过程，适合题目要求非递归遍历或不希望依赖系统递归栈的场景。",
+      "code": "#include <stdio.h>\n#define MAXN 105\n\ntypedef struct {\n    int data;\n    int left, right;\n} Node;\n\nNode tree[MAXN];\n\nvoid printValue(int x, int *first) {\n    if (!*first) putchar(' ');\n    printf(\"%d\", x);\n    *first = 0;\n}\n\n// 用数组栈保存尚未访问的根结点，模拟递归回溯。\nvoid inorderIterative(int root, int *first) {\n    int stack[MAXN];\n    int top = -1;\n    int cur = root;\n\n    // cur非空时继续向左；栈非空时还有结点等待访问。\n    while (cur != 0 || top != -1) {\n        while (cur != 0) {\n            stack[++top] = cur;       // 暂存当前结点，稍后再访问它\n            cur = tree[cur].left;     // 中序遍历先走左子树\n        }\n\n        cur = stack[top--];           // 左边到头，弹出最近的未访问结点\n        printValue(tree[cur].data, first); // 访问根结点\n        cur = tree[cur].right;        // 转向右子树，重复相同过程\n    }\n}\n\nint main(void) {\n    int n, root;\n    if (scanf(\"%d%d\", &n, &root) != 2) return 1;\n    if (n < 0 || n >= MAXN) return 1;\n\n    for (int i = 1; i <= n; i++) {\n        if (scanf(\"%d%d%d\", &tree[i].data, &tree[i].left, &tree[i].right) != 3)\n            return 1;\n    }\n\n    int first = 1;\n    inorderIterative(root, &first);\n    putchar('\\n');\n    return 0;\n}\n",
+      "explain": [
+        "沿左指针下降时先入栈，因为这些结点都要等左子树完成后才能访问。",
+        "左边走到空时弹栈，访问栈顶结点，再进入它的右子树。",
+        "循环条件是cur不为空或栈不为空；两者同时为空才表示遍历结束。"
+      ]
+    },
+    "variation": {
+      "question": "巩固题：给定同样的二叉树和正整数k，按中序遍历的访问顺序返回第k个结点的关键字；若k不合法或k大于结点总数，输出-1。结点关键字允许为-1，因此请用单独的found标志区分是否找到。",
+      "idea": "沿用显式栈中序遍历。每弹出并访问一个结点就令count加1；当count等于k时记录该结点关键字并结束。无需遍历后续结点，平均访问范围可缩短，但最坏仍需遍历整棵树。",
+      "complexity": "时间O(h+k)（找到第k个结点前的下降与访问过程），最坏O(n)；辅助空间O(h)。",
+      "code": "#include <stdio.h>\n#define MAXN 105\n\ntypedef struct {\n    int data;\n    int left, right;\n} Node;\n\nNode tree[MAXN];\n\nint kthInorder(int root, int k, int *found) {\n    int stack[MAXN], top = -1;\n    int cur = root, count = 0;\n    *found = 0;\n\n    while (cur != 0 || top != -1) {\n        while (cur != 0) {\n            stack[++top] = cur;\n            cur = tree[cur].left;\n        }\n        cur = stack[top--];\n        count++;                       // 当前结点是中序序列中的第count个\n        if (count == k) {\n            *found = 1;\n            return tree[cur].data;     // 已找到，无需遍历剩余结点\n        }\n        cur = tree[cur].right;\n    }\n    return -1;                         // 遍历结束仍未达到k\n}\n\nint main(void) {\n    int n, root, k;\n    if (scanf(\"%d%d%d\", &n, &root, &k) != 3) return 1;\n    if (n < 0 || n >= MAXN) return 1;\n    for (int i = 1; i <= n; i++) {\n        if (scanf(\"%d%d%d\", &tree[i].data, &tree[i].left, &tree[i].right) != 3)\n            return 1;\n    }\n\n    int found;\n    int answer = kthInorder(root, k, &found);\n    if (found) printf(\"%d\\n\", answer);\n    else puts(\"-1\");\n    return 0;\n}\n"
+    },
+    "animation": {
+      "layout": "diagram",
+      "brute": [
+        {
+          "diagram": "根结点1\n先进入左子树2，暂不输出1",
+          "pointers": {
+            "current": 1,
+            "output": []
+          },
+          "active": [
+            1
+          ],
+          "text": "中序遍历不能先访问根；先递归处理左子树。"
+        },
+        {
+          "diagram": "结点2继续进入左子树4",
+          "pointers": {
+            "current": 4,
+            "output": []
+          },
+          "active": [
+            1,
+            2,
+            4
+          ],
+          "text": "沿左指针不断深入，递归调用记录回溯位置。"
+        },
+        {
+          "diagram": "结点4的左孩子为空\n访问4",
+          "pointers": {
+            "current": 4,
+            "output": [
+              4
+            ]
+          },
+          "active": [
+            4
+          ],
+          "text": "遇到空孩子返回，结点4的左子树完成，输出4。"
+        },
+        {
+          "diagram": "回到结点2\n访问2，再进入右孩子5",
+          "pointers": {
+            "current": 2,
+            "output": [
+              4,
+              2
+            ]
+          },
+          "active": [
+            2,
+            5
+          ],
+          "text": "左子树结束后访问根2，然后处理右子树5。"
+        },
+        {
+          "diagram": "访问5后回到根1\n访问1",
+          "pointers": {
+            "current": 1,
+            "output": [
+              4,
+              2,
+              5,
+              1
+            ]
+          },
+          "active": [
+            1
+          ],
+          "text": "结点2的整棵子树完成，回到1并输出1。"
+        },
+        {
+          "diagram": "进入右子树3\n先访问3，再访问右孩子6",
+          "pointers": {
+            "current": 3,
+            "output": [
+              4,
+              2,
+              5,
+              1,
+              3
+            ]
+          },
+          "active": [
+            3,
+            6
+          ],
+          "text": "处理根1的右子树，结点3没有左孩子，因此先输出3。"
+        },
+        {
+          "diagram": "访问6\n遍历结束",
+          "pointers": {
+            "current": 0,
+            "output": [
+              4,
+              2,
+              5,
+              1,
+              3,
+              6
+            ]
+          },
+          "active": [
+            6
+          ],
+          "text": "输出6后所有递归调用返回，最终序列为4 2 5 1 3 6。"
+        }
+      ],
+      "optimal": [
+        {
+          "diagram": "cur=1，栈=[]，输出=[]",
+          "pointers": {
+            "current": 1,
+            "stack": [],
+            "output": []
+          },
+          "active": [
+            1
+          ],
+          "text": "初始化当前指针和空栈。"
+        },
+        {
+          "diagram": "一路向左：push 1、push 2、push 4\ncur=0",
+          "pointers": {
+            "current": 0,
+            "stack": [
+              1,
+              2,
+              4
+            ],
+            "output": []
+          },
+          "active": [
+            1,
+            2,
+            4
+          ],
+          "text": "左下降时把经过的结点压栈，保存回溯路径。"
+        },
+        {
+          "diagram": "pop 4，输出4\n转向4的右孩子0",
+          "pointers": {
+            "current": 0,
+            "stack": [
+              1,
+              2
+            ],
+            "output": [
+              4
+            ]
+          },
+          "active": [
+            4
+          ],
+          "text": "当前左子树已空，弹出4并访问；随后检查4的右子树。"
+        },
+        {
+          "diagram": "pop 2，输出2\ncur=5",
+          "pointers": {
+            "current": 5,
+            "stack": [
+              1
+            ],
+            "output": [
+              4,
+              2
+            ]
+          },
+          "active": [
+            2,
+            5
+          ],
+          "text": "回到2，访问2，再转向其右孩子5。"
+        },
+        {
+          "diagram": "push 5后立即pop 5\n输出4 2 5",
+          "pointers": {
+            "current": 0,
+            "stack": [
+              1
+            ],
+            "output": [
+              4,
+              2,
+              5
+            ]
+          },
+          "active": [
+            5
+          ],
+          "text": "5没有左孩子，直接弹出访问；右子树也为空。"
+        },
+        {
+          "diagram": "pop 1，输出1\ncur=3",
+          "pointers": {
+            "current": 3,
+            "stack": [],
+            "output": [
+              4,
+              2,
+              5,
+              1
+            ]
+          },
+          "active": [
+            1,
+            3
+          ],
+          "text": "回到根1，左子树已完成，访问1并转向右子树3。"
+        },
+        {
+          "diagram": "push 3，输出3\n转向6",
+          "pointers": {
+            "current": 6,
+            "stack": [],
+            "output": [
+              4,
+              2,
+              5,
+              1,
+              3
+            ]
+          },
+          "active": [
+            3,
+            6
+          ],
+          "text": "3没有左孩子，弹出访问3，然后处理右孩子6。"
+        },
+        {
+          "diagram": "push 6后pop 6\ncur=0，栈=[]",
+          "pointers": {
+            "current": 0,
+            "stack": [],
+            "output": [
+              4,
+              2,
+              5,
+              1,
+              3,
+              6
+            ]
+          },
+          "active": [
+            6
+          ],
+          "text": "访问6后当前指针与栈同时为空，循环结束。"
+        }
+      ]
+    },
+    "tips": [
+      "中序遍历顺序固定为左子树、根、右子树；不要与先序或后序混淆。",
+      "非递归写法的核心是：左下降时入栈，左边结束后弹栈访问，再转向右子树。",
+      "递归与显式栈版本都是O(n)时间、O(h)辅助空间；迭代版并没有改变渐进复杂度。",
+      "若输入是一棵二叉搜索树且关键字互异，中序遍历结果严格递增；普通二叉树不保证有序。"
+    ]
   }
 ]
