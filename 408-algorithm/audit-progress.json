@@ -1,18 +1,18 @@
 {
   "schema_version": 1,
-  "last_audit_date": "2026-11-15",
+  "last_audit_date": "2026-11-16",
   "scope": "每日检查正式题库、备用队列、来源、题意、样例、约束、三份C程序、复杂度、注释与逐帧动画；优先当天及未来7天并持续回溯历史题目。",
-  "status_note": "11月15日检查完成。今日AOE关键路径课程已发布；未来11/16—11/22连续7天备用覆盖。新增稀疏矩阵三元组快速转置题，提供逐列扫描、num/cpot快速转置、列桶稳定收集三份完整标准C程序；补齐7/8/12帧动画和精确指针/next链断言。回溯发现5道历史正式题缺来源链接，已为直接插入排序、图BFS连通块、数组去重、反转链表、二叉树叶子计数补齐资料链接，并让验证器检查所有正式/备用题均有HTTP来源。最终master Actions 43662323729成功：41道备用题、273次C程序编译运行测试全部通过；Pages 43662323009成功。两次中间验证失败分别是零列输出的前导空行比较和rstrip转义错误，均已修正并由最终运行验证通过。",
+  "status_note": "11月16日检查完成。今日散列表线性探测课程已发布且与备用副本逐字段一致；未来11/17—11/23连续7天备用覆盖。复核今日及未来7道课程的来源、题意、输入输出、约束、正反/边界样例、三份C程序、复杂度、注释和动画。修复11/23中序遍历题的题意与独立程序输出不一致：明确每个版本单独输出一行；将结点值约束对齐力扣94范围；补充空树、单结点、先序反例；补充n/root/结点数据检查与return原因注释；第k个中序结点变式改为FOUND x/失败-1，补齐found标志与5帧动画。修复快速排序朴素冒泡动画缺少diagram的问题，补齐6帧数组图示；为散列表、快速排序、双栈、滑动窗口和中序遍历变式补充解释。验证器新增中序来源、题面、动画精确指针/栈状态和空树、单结点负值、k=0、k>n、100结点右斜树测试。最终master Actions 43783683514成功：42道备用题、288次C程序编译运行测试通过；确认11/16已发布且无重复发布，未来7天覆盖；Pages 43783683290成功。两次中间失败均由验证器拦截并修复，详见validation.intermediate_failures。",
   "published_today": {
-    "date": "2026-11-15",
-    "id": "aoe-critical-20261115",
+    "date": "2026-11-16",
+    "id": "lc-hash-linear-20261116",
     "present": true,
-    "source": "https://m.biancheng.net/view/3417.html",
-    "review_note": "今日AOE关键路径课程已存在于lessons.json。复核AOE网DAG约束、源点到汇点的最长路径即工程最短工期、ve正推/vl逆推、关键活动判定和DFS枚举路径；明确输入/输出格式并补充单活动边界、环反例。"
+    "source": "https://www.cs.hmc.edu/courses/current.then/cs70/lessons/week12/lesson2/linearprobing/",
+    "review_note": "今日散列表查找课程已存在于lessons.json，和pending-lessons.json副本逐字段一致。复核线性探测冲突保留、负数模规范化、未命中遇空槽终止、查询原始1-based位置及变式探测次数。"
   },
   "future_queue": {
-    "from": "2026-11-16",
-    "through": "2026-11-22",
+    "from": "2026-11-17",
+    "through": "2026-11-23",
     "continuous_days": 7,
     "shortfall_days": 0
   },
@@ -305,13 +305,35 @@
         "ab56b3f5f7932249151d86219b5565f9c278a486",
         "8193e09ab9bb73d5423dee58d0705e13c8b9932b"
       ]
+    },
+    {
+      "date": "2026-11-16",
+      "id": "lc-hash-linear-20261116 / quick-sort-20261117 / floyd-20261118 / tree-level-order-20261119 / two-stacks-one-array-20261120 / sliding-window-max-20261121 / sparse-fast-transpose-20261122 / lc94-inorder-iterative-20261123",
+      "scope": "逐题复核今日及未来7天课程。散列表：核对线性探测、负数模、未命中、原始位置与探测次数变式。快速排序：再次核对Hoare i/j/pivot及重复值推进，发现朴素冒泡6帧缺少diagram，已补齐数组图示并保留精确指针/数组断言。Floyd：核对k外层、负权边允许但无负权回路、不可达输出。层序遍历：核对空树/单结点与递归层次。双栈：核对top1/top2相邻满栈和下溢。滑动窗口：核对过期下标、负数窗口及最大堆惰性删除。稀疏矩阵：核对0-based cpot、num/nextPos和稳定列桶。新增中序遍历题：修正题面输出格式与独立C程序一致；约束与力扣94节点数/值域一致；增加边界和先序错误反例；三份程序增加输入范围检查与return原因注释；第k结点变式使用found标志并输出FOUND x/失败-1；增加5帧变式动画。为散列表、快速排序、双栈、滑动窗口、中序遍历变式补齐解释数组。",
+      "source": "https://leetcode.com/problems/binary-tree-inorder-traversal/",
+      "sources": [
+        "https://www.cs.hmc.edu/courses/current.then/cs70/lessons/week12/lesson2/linearprobing/",
+        "https://www.geeksforgeeks.org/dsa/hoare-s-partition-algorithm/",
+        "https://oi-wiki.org/graph/shortest-path/",
+        "https://leetcode.cn/problems/binary-tree-level-order-traversal/description/",
+        "https://www.geeksforgeeks.org/dsa/implement-two-stacks-in-an-array/",
+        "https://leetcode.cn/problems/sliding-window-maximum/",
+        "https://blog.nerom.wang/2015/02/02/sparse-matrix",
+        "https://leetcode.com/problems/binary-tree-inorder-traversal/"
+      ],
+      "related_commits": [
+        "05e5810587e1fa542f34ea35ee8a9528fe42a0bd",
+        "19a924f31d9d4c454cdec512653e192dc311195e"
+      ],
+      "validation": "master Actions 43783683514成功：42道备用题、288次C程序编译运行测试通过；publish_daily dry-run确认北京时间2026-11-16已发布39道、今日待发布0、未来后备7道；今日散列表课已存在且未重复发布。Pages 43783683290 build、artifact upload、deploy均成功。",
+      "note": "scheduled run 43779371211失败：新加入11/23题后validate_lessons.py缺少CASES预期输出，未进入发布步骤；05e581补上三份程序样例测试。候选运行43783565275再次失败：新增边界测试把换行写成字面反斜杠n，导致单结点输入读取失败；19a924修正Python测试字符串并增加更多边界，最终43783683514全部通过。"
     }
   ],
   "validation": {
     "previous_actions_run_id": 42733107324,
     "previous_result": "第一轮候选PR验证43343117214成功，第二轮来源/样例候选PR验证43343724045成功；两轮均在候选分支通过后才合入master。合入后master运行43343821958再次完整验证成功。",
-    "new_commit_actions_result": "最终master Actions 43662323729成功：publish_daily.py --dry-run通过，确认北京时间2026-11-15的AOE课程已发布且未重复发布；41道备用题结构/来源/样例/动画检查通过，273次C程序编译运行测试通过。新稀疏矩阵题三份程序均核对样例、变式、6类边界和4类非法输入；验证器检查7/8/12帧精确指针轨迹。Pages 43662323009 build、artifact upload、deploy全部成功。",
-    "local_modified_code": "回溯补齐5道历史题来源：original-insert-20261016、original-graph-bfs-20261017、array-two-pointer-20261019、list-reverse-20261020、tree-leaves-20261021；validate_lessons.py新增正式题库和备用题库全量HTTP来源检查及这些已核验ID的精确来源断言。新增sparse-fast-transpose-20261122：三份完整C11 main程序，分别为逐列扫描、num/cpot/nextPos快速转置、head/tail/next列桶稳定收集；动画7/8/12帧，增加精确指针、桶链接和操作高亮断言。验证器增加6类有效边界和4类非法输入拒绝测试，每类对三份程序运行。",
+    "new_commit_actions_result": "最终master Actions 43783683514成功：publish_daily.py --dry-run显示已发布39道、今日待发布0、后备7；validate_lessons.py显示42道题、288次C程序编译运行测试通过；发布步骤确认今日已发布，无需重复提交。",
+    "local_modified_code": "修订lc94-inorder-iterative-20261123：题面改为每个独立实现各输出一行；输入范围与力扣94节点数0..100和值域-100..100对齐；补充空树、单结点-1、先序反例；三份标准C程序增加validHeader/readNodes边界检查和return原因注释；第k个结点变式输出FOUND x/失败-1，found标志区分合法-1值。增加5帧变式动画和精确current/stack/count/found/result断言。修复quick-sort-20261117朴素冒泡6帧diagram；为hash、quicksort、双栈、滑动窗口、中序变式补充explain。validate_lessons.py新增力扣94来源断言、题面/样例检查、三种动画状态断言，以及空树、单结点负值、k=0、k>n、100结点右斜树运行测试。",
     "commit_history": [
       "3da63b267ff9f703714b70d59e92eba34dc5553a",
       "b3d7646ed5766108a7864c8839e5c1c72f7a32af",
@@ -333,17 +355,19 @@
       "822629b8b290c56aeb9abb80ca16fd1d1e6ba7a1",
       "5c1116c92aaedce4aa64148e4771d58634aeb5b5",
       "ab56b3f5f7932249151d86219b5565f9c278a486",
-      "8193e09ab9bb73d5423dee58d0705e13c8b9932b"
+      "8193e09ab9bb73d5423dee58d0705e13c8b9932b",
+      "05e5810587e1fa542f34ea35ee8a9528fe42a0bd",
+      "19a924f31d9d4c454cdec512653e192dc311195e"
     ],
-    "code_commit": "5c1116c92aaedce4aa64148e4771d58634aeb5b5",
-    "validator_fix_commit": "8193e09ab9bb73d5423dee58d0705e13c8b9932b",
-    "latest_actions_run_id": 43662323729,
-    "latest_result": "success：master head 8193e09ab9bb73d5423dee58d0705e13c8b9932b；41道备用题、273次C程序编译运行测试通过；当天AOE课程已发布，未来7天连续覆盖；正式题库和备用题库均无缺失来源链接。",
-    "pages_run_id": 43662323009,
-    "pages_result": "success：GitHub Pages build、artifact upload、deploy均成功，head SHA 8193e09ab9bb73d5423dee58d0705e13c8b9932b。",
+    "code_commit": "19a924f31d9d4c454cdec512653e192dc311195e",
+    "validator_fix_commit": "19a924f31d9d4c454cdec512653e192dc311195e",
+    "latest_actions_run_id": 43783683514,
+    "latest_result": "success：master head 19a924f31d9d4c454cdec512653e192dc311195e；42道备用题、288次C程序编译运行测试全部通过；北京时间2026-11-16散列表课程已发布，未来11/17—11/23连续7天备用覆盖。",
+    "pages_run_id": 43783683290,
+    "pages_result": "success：GitHub Pages build、artifact upload、deploy全部成功，head SHA 19a924f31d9d4c454cdec512653e192dc311195e。",
     "source_commit": "822629b8b290c56aeb9abb80ca16fd1d1e6ba7a1",
-    "latest_commit": "8193e09ab9bb73d5423dee58d0705e13c8b9932b",
-    "current_master_head_before_audit_update": "8193e09ab9bb73d5423dee58d0705e13c8b9932b",
+    "latest_commit": "19a924f31d9d4c454cdec512653e192dc311195e",
+    "current_master_head_before_audit_update": "19a924f31d9d4c454cdec512653e192dc311195e",
     "tree_boundary_tests": "稀疏矩阵快速转置三份C程序：正例和变式样例通过；另对nnz=0、cols=0、单列、非零元全在最后一列、单元素极值、满矩阵6类边界各运行三份程序；对无序、重复坐标、零值、越界坐标4类非法输入各运行三份程序，均按预期输出或拒绝。全量Actions最终41道备用题、273次C程序编译运行测试通过。",
     "candidate_pr_validation_run_id": 43343117214,
     "candidate_pr_number": 1,
@@ -372,12 +396,28 @@
         "correction_commit": "8193e09ab9bb73d5423dee58d0705e13c8b9932b",
         "rerun_id": 43662323729,
         "rerun_result": "success"
+      },
+      {
+        "run_id": 43779371211,
+        "result": "failure",
+        "cause": "11/23中序遍历题加入备用队列后，validate_lessons.py缺少该题CASES预期输出，导致在编译阶段前停止。",
+        "correction_commit": "05e5810587e1fa542f34ea35ee8a9528fe42a0bd",
+        "rerun_id": 43783565275,
+        "rerun_result": "failure"
+      },
+      {
+        "run_id": 43783565275,
+        "result": "failure",
+        "cause": "新增中序遍历边界测试中的Python输入字符串换行被双重转义，程序收到字面反斜杠n而非多行输入。",
+        "correction_commit": "19a924f31d9d4c454cdec512653e192dc311195e",
+        "rerun_id": 43783683514,
+        "rerun_result": "success"
       }
     ]
   },
   "next_priorities": [
-    "11/23补入至少1道新备用题，优先从栈/队列、排序/查找中选择，维持未来连续7天覆盖；减少链表和连续图题。",
-    "继续增加排序、查找、栈、队列、矩阵/稀疏表示题，按实际topic_group比例微调，不为凑比例误分类。",
+    "11/24补入至少1道新备用题，维持未来连续7天覆盖；优先经典查找/排序，减少链表和连续图题。",
+    "继续增加排序、查找、栈、队列和矩阵/稀疏表示题；当前备用比例42.9%/38.1%/19.0%，适度补经典题，不为凑比例误分类。",
     "继续回溯历史正式题库，重点审核来源链接、题意与输入输出、样例/约束、三份C程序、复杂度、解释性注释和动画指针/连线；保留审核进度。"
   ],
   "commit_history": [
@@ -411,16 +451,16 @@
     "8193e09ab9bb73d5423dee58d0705e13c8b9932b"
   ],
   "selection_balance": {
-    "current_unique_entries": 45,
+    "current_unique_entries": 46,
     "counts": {
       "经典方法": 20,
-      "综合变式": 16,
+      "综合变式": 17,
       "预测补盲": 9
     },
     "approximate_percent": {
-      "经典方法": 44.4,
-      "综合变式": 35.6,
-      "预测补盲": 20
+      "经典方法": 43.5,
+      "综合变式": 37,
+      "预测补盲": 19.6
     },
     "target_percent": {
       "经典方法": 45,
@@ -428,18 +468,18 @@
       "预测补盲": 20
     },
     "pending_queue": {
-      "total": 41,
+      "total": 42,
       "counts": {
         "经典方法": 18,
-        "综合变式": 15,
+        "综合变式": 16,
         "预测补盲": 8
       },
       "approximate_percent": {
-        "经典方法": 43.9,
-        "综合变式": 36.6,
-        "预测补盲": 19.5
+        "经典方法": 42.9,
+        "综合变式": 38.1,
+        "预测补盲": 19
       }
     },
-    "note": "按publish_daily.py的topic_group规则统计：正式+备用按ID去重45道，20/16/9；备用41道，18/15/8。合并后比例44.4%/35.6%/20.0%，备用比例43.9%/36.6%/19.5%，预测补盲已达到合并目标。"
+    "note": "按publish_daily.py的topic_group规则：正式+备用按ID去重46道，20/17/9（43.5%/37.0%/19.6%）；备用42道，18/16/8（42.9%/38.1%/19.0%）。与45%/35%/20%相比，经典题偏少、综合变式偏多；下一轮优先补经典排序/查找，不为凑比例误分类。"
   }
 }
