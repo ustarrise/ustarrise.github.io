@@ -7133,7 +7133,12 @@
       "question": "沿用同一组关键字和查询，但改为输出每次查询检查过的槽位数。每检查一个槽位计数一次；查找失败时，最后检查到的第一个空槽也计入次数。",
       "idea": "在线性探测中累加检查次数。命中时返回命中槽位的探测次数；未命中时，检查到第一个空槽后返回当前次数。",
       "code": "#include <stdio.h>\n#define MOD 20011\nstatic int key[MOD], used[MOD];\n\nint hashKey(int x) {\n    int h = x % MOD;\n    if (h < 0) h += MOD;\n    return h;\n}\n\nint probeCount(int x) {\n    int pos = hashKey(x);\n    int count = 0;\n    // 每检查一个槽位就计数，空槽也是确认查找失败的一次检查。\n    while (count < MOD) {\n        count++;\n        if (!used[pos] || key[pos] == x) return count;\n        pos = (pos + 1) % MOD;\n    }\n    return count; // 防御性处理：本题n远小于MOD，不会走满整张表。\n}\n\nint main(void) {\n    int n, q;\n    if (scanf(\"%d%d\", &n, &q) != 2) return 1;\n    for (int i = 0; i < n; i++) {\n        int x;\n        if (scanf(\"%d\", &x) != 1) return 1;\n        int pos = hashKey(x);\n        while (used[pos]) pos = (pos + 1) % MOD;\n        used[pos] = 1;\n        key[pos] = x;\n    }\n    for (int k = 0; k < q; k++) {\n        int x;\n        if (scanf(\"%d\", &x) != 1) return 1;\n        printf(\"%d\\n\", probeCount(x));\n    }\n    return 0;\n}\n",
-      "complexity": "期望时间 O(n+q)；最坏时间 O(n²+nq)；额外空间 O(M)。"
+      "complexity": "期望时间 O(n+q)；最坏时间 O(n²+nq)；额外空间 O(M)。",
+      "explain": [
+        "每检查一个槽位就把探测次数加一；空槽也必须计入，因为它正是确认查找失败的那次检查。",
+        "负数取模可能得到负下标，先加M并再次取模，才能把地址规范化到[0,M-1]。",
+        "本题没有删除操作且M>n，查找遇到第一个空槽即可判定不存在，不必继续绕表。"
+      ]
     },
     "animation": {
       "layout": "diagram",
@@ -7483,7 +7488,13 @@
       "question": "输入格式同主问题。数组包含负数和重复值时，快速排序是否仍然正确？输入3、-1、3、0、-1、2，输出应为-1、-1、0、2、3、3。重点观察：当a[i]和a[j]都等于pivot时，为什么交换后必须让两个指针继续移动？",
       "idea": "沿用Hoare双向划分。相等值不会被扫描跳过，但在i≤j时仍交换并令i++、j--，因此不会停在相等元素上反复循环；负数只参与普通大小比较，不影响划分正确性。",
       "code": "/*\n * 变式：数组含负数和重复值时仍使用Hoare双向快速排序。\n * 两个扫描指针遇到等于pivot的元素时不会无限停留；\n * 只要i≤j就交换并推进i、j，确保每轮划分都有进展。\n */\n#include <stdio.h>\n#define MAX 100\n\nvoid quickSort(int a[], int low, int high) {\n    if (low >= high) {\n        return; /* 子区间只有0或1个元素时已经有序。 */\n    }\n\n    int i = low, j = high;\n    int pivot = a[low + (high - low) / 2]; /* pivot保存数值，不保存数组下标。 */\n\n    while (i <= j) {\n        while (a[i] < pivot) {\n            i++; /* 跳过已在左侧的较小元素。 */\n        }\n        while (a[j] > pivot) {\n            j--; /* 跳过已在右侧的较大元素。 */\n        }\n        if (i <= j) {\n            int temp = a[i];\n            a[i] = a[j];\n            a[j] = temp;\n            i++;\n            j--; /* 相等值也要推进指针，否则全相等数组可能卡住。 */\n        }\n    }\n\n    if (low < j) {\n        quickSort(a, low, j); /* 只递归仍含至少两个元素的左区间。 */\n    }\n    if (i < high) {\n        quickSort(a, i, high); /* 只递归仍含至少两个元素的右区间。 */\n    }\n}\n\nint main(void) {\n    int n, a[MAX];\n    if (scanf(\"%d\", &n) != 1 || n < 1 || n > MAX) {\n        return 1; /* n不合法时退出，避免访问越界数组。 */\n    }\n    for (int i = 0; i < n; i++) {\n        if (scanf(\"%d\", &a[i]) != 1) {\n            return 1; /* 输入不完整时退出，避免使用未初始化元素。 */\n        }\n    }\n\n    quickSort(a, 0, n - 1);\n    for (int i = 0; i < n; i++) {\n        printf(\"%d%c\", a[i], i == n - 1 ? '\\n' : ' ');\n    }\n    return 0;\n}",
-      "complexity": "平均O(n log n)时间、最坏O(n²)时间；平均递归栈O(log n)，最坏O(n)。"
+      "complexity": "平均O(n log n)时间、最坏O(n²)时间；平均递归栈O(log n)，最坏O(n)。",
+      "explain": [
+        "pivot保存的是枢轴数值，不是枢轴下标；划分过程交换数组元素后，原下标可能已经不再保存枢轴。",
+        "i跳过小于pivot的元素，j跳过大于pivot的元素；两者相遇或交错后，当前区间完成划分。",
+        "遇到等于pivot的元素也要推进i和j，否则全相等数组可能停在同一位置。",
+        "Hoare划分后递归处理[low,j]与[i,high]，不能假设pivot已经落在最终位置。"
+      ]
     },
     "animation": {
       "layout": "array",
@@ -7508,7 +7519,8 @@
             "j": 0,
             "swapped": false
           },
-          "text": "初始数组。第一趟处理未排序区间[0,7]，j从0开始；逆序相邻项才交换。"
+          "text": "初始数组。第一趟处理未排序区间[0,7]，j从0开始；逆序相邻项才交换。",
+          "diagram": "初始数组：[5,1,8,3,2,7,4,6]\nend=7，j=0；比较下标0和1，5>1，交换"
         },
         {
           "array": [
@@ -7530,7 +7542,8 @@
             "j": 6,
             "swapped": true
           },
-          "text": "第一趟结束：最后一次比较下标6、7，8已冒到下标7；本趟发生过交换。"
+          "text": "第一趟结束：最后一次比较下标6、7，8已冒到下标7；本趟发生过交换。",
+          "diagram": "第一趟结束：[1,5,3,2,7,4,6,8]\n最后比较下标6和7后交换，最大值8固定在末尾"
         },
         {
           "array": [
@@ -7552,7 +7565,8 @@
             "j": 5,
             "swapped": true
           },
-          "text": "第二趟结束：未排序区间缩短为[0,6]，7到达下标6；本趟仍发生交换。"
+          "text": "第二趟结束：未排序区间缩短为[0,6]，7到达下标6；本趟仍发生交换。",
+          "diagram": "第二趟结束：[1,3,2,5,4,6,7,8]\n未排序区间缩为[0,6]，7固定在下标6"
         },
         {
           "array": [
@@ -7574,7 +7588,8 @@
             "j": 4,
             "swapped": true
           },
-          "text": "第三趟结束：最后比较下标4、5；数组已整体有序，但本趟仍发生过交换。"
+          "text": "第三趟结束：最后比较下标4、5；数组已整体有序，但本趟仍发生过交换。",
+          "diagram": "第三趟结束：[1,2,3,4,5,6,7,8]\n最后比较下标4和5，本趟仍发生过交换"
         },
         {
           "array": [
@@ -7596,7 +7611,8 @@
             "j": 3,
             "swapped": false
           },
-          "text": "第四趟扫描下标0至3，最后比较3、4，没有任何交换，swapped仍为0，触发提前结束。"
+          "text": "第四趟扫描下标0至3，最后比较3、4，没有任何交换，swapped仍为0，触发提前结束。",
+          "diagram": "第四趟最后比较下标3和4\n没有交换，swapped=false，触发提前结束"
         },
         {
           "array": [
@@ -7615,7 +7631,8 @@
             "j": 3,
             "swapped": false
           },
-          "text": "排序完成。提前结束标志避免有序数组继续做无意义的冒泡扫描。"
+          "text": "排序完成。提前结束标志避免有序数组继续做无意义的冒泡扫描。",
+          "diagram": "数组已整体有序\n提前结束标志避免继续进行无意义的冒泡扫描"
         }
       ],
       "optimal": [
@@ -8690,7 +8707,13 @@
       "question": "巩固题：长度为6的共享栈依次执行Push1(1)、Push2(9)、Push1(2)、Pop2()、Push2(8)、Push1(3)、Pop1()、Pop2()。写出两次出栈及最后两个栈中的元素。",
       "idea": "栈1从左端存放1、2、3；栈2从右端先存放9，弹出后再压入8。两次Pop1和Pop2分别输出3和8；题目中第一次Pop2输出9。最终栈1自底向顶为1、2，栈2为空。所有操作均未溢出或下溢。",
       "complexity": "每次入栈或出栈 O(1)，总时间 O(k)，其中k为操作数；数组空间 O(n)。",
-      "code": "/*\n * 巩固题：按给定顺序执行两个共享栈的操作并输出出栈结果。\n */\n#include <stdio.h>\n#define MAXN 100\n\ntypedef struct {\n    int data[MAXN];\n    int n;\n    int top1;\n    int top2;\n} SharedStacks;\n\nvoid init(SharedStacks *s, int n) {\n    s->n = n;\n    s->top1 = -1;\n    s->top2 = n;\n}\n\nint push1(SharedStacks *s, int x) {\n    if (s->top1 + 1 == s->top2) return 0; // 两栈顶相邻，已没有可用单元\n    s->data[++s->top1] = x;\n    return 1; // 成功压入栈1\n}\n\nint push2(SharedStacks *s, int x) {\n    if (s->top1 + 1 == s->top2) return 0; // 两栈顶相邻，已没有可用单元\n    s->data[--s->top2] = x;\n    return 1; // 成功压入栈2\n}\n\nint pop1(SharedStacks *s, int *x) {\n    if (s->top1 == -1) return 0;           // 栈1为空，不能弹出\n    *x = s->data[s->top1--];\n    return 1;                              // 成功取出栈1栈顶\n}\n\nint pop2(SharedStacks *s, int *x) {\n    if (s->top2 == s->n) return 0;         // 栈2为空，不能弹出\n    *x = s->data[s->top2++];\n    return 1;                              // 成功取出栈2栈顶\n}\n\nint main(void) {\n    SharedStacks s;\n    int x;\n\n    init(&s, 6);                           // 两个栈共用6个位置\n    push1(&s, 1);\n    push2(&s, 9);\n    push1(&s, 2);\n\n    if (pop2(&s, &x)) printf(\"Pop2=%d\\n\", x); // 输出9\n    push2(&s, 8);\n    push1(&s, 3);\n\n    if (pop1(&s, &x)) printf(\"Pop1=%d\\n\", x); // 输出3\n    if (pop2(&s, &x)) printf(\"Pop2=%d\\n\", x); // 输出8\n\n    printf(\"栈1自底向顶：\");\n    for (int i = 0; i <= s.top1; i++) {\n        if (i > 0) putchar(' ');\n        printf(\"%d\", s.data[i]);\n    }\n    putchar('\\n');\n\n    printf(\"栈2为空：%s\\n\", s.top2 == s.n ? \"是\" : \"否\");\n    return 0;                              // 最终栈1为[1,2]，栈2为空\n}"
+      "code": "/*\n * 巩固题：按给定顺序执行两个共享栈的操作并输出出栈结果。\n */\n#include <stdio.h>\n#define MAXN 100\n\ntypedef struct {\n    int data[MAXN];\n    int n;\n    int top1;\n    int top2;\n} SharedStacks;\n\nvoid init(SharedStacks *s, int n) {\n    s->n = n;\n    s->top1 = -1;\n    s->top2 = n;\n}\n\nint push1(SharedStacks *s, int x) {\n    if (s->top1 + 1 == s->top2) return 0; // 两栈顶相邻，已没有可用单元\n    s->data[++s->top1] = x;\n    return 1; // 成功压入栈1\n}\n\nint push2(SharedStacks *s, int x) {\n    if (s->top1 + 1 == s->top2) return 0; // 两栈顶相邻，已没有可用单元\n    s->data[--s->top2] = x;\n    return 1; // 成功压入栈2\n}\n\nint pop1(SharedStacks *s, int *x) {\n    if (s->top1 == -1) return 0;           // 栈1为空，不能弹出\n    *x = s->data[s->top1--];\n    return 1;                              // 成功取出栈1栈顶\n}\n\nint pop2(SharedStacks *s, int *x) {\n    if (s->top2 == s->n) return 0;         // 栈2为空，不能弹出\n    *x = s->data[s->top2++];\n    return 1;                              // 成功取出栈2栈顶\n}\n\nint main(void) {\n    SharedStacks s;\n    int x;\n\n    init(&s, 6);                           // 两个栈共用6个位置\n    push1(&s, 1);\n    push2(&s, 9);\n    push1(&s, 2);\n\n    if (pop2(&s, &x)) printf(\"Pop2=%d\\n\", x); // 输出9\n    push2(&s, 8);\n    push1(&s, 3);\n\n    if (pop1(&s, &x)) printf(\"Pop1=%d\\n\", x); // 输出3\n    if (pop2(&s, &x)) printf(\"Pop2=%d\\n\", x); // 输出8\n\n    printf(\"栈1自底向顶：\");\n    for (int i = 0; i <= s.top1; i++) {\n        if (i > 0) putchar(' ');\n        printf(\"%d\", s.data[i]);\n    }\n    putchar('\\n');\n\n    printf(\"栈2为空：%s\\n\", s.top2 == s.n ? \"是\" : \"否\");\n    return 0;                              // 最终栈1为[1,2]，栈2为空\n}",
+      "explain": [
+        "栈1的top1向右增长，栈2的top2向左增长；只有top1+1==top2时，整个共享数组才真正满。",
+        "Push前先检查两栈顶是否相邻，失败时不能改动数组或栈顶。",
+        "Pop1在top1==-1时下溢；Pop2在top2==n时下溢，失败都应保留原状态。",
+        "每次Push或Pop只访问一个数组单元，因此成功操作的时间复杂度为O(1)。"
+      ]
     },
     "animation": {
       "layout": "array",
@@ -9126,7 +9149,12 @@
       "question": "巩固题：使用最大堆求每个滑动窗口最大值。输入数组[1,3,-1,-3,5,3,6,7]、k=3，输出3 3 5 5 6 7。堆中保存数值和下标，只在过期元素到达堆顶时惰性删除。",
       "idea": "每读入一个元素就将(数值,下标)压入最大堆。若堆顶下标小于当前窗口左端点，就弹出；重复直到堆顶有效。窗口形成后，堆顶就是最大值。惰性删除使堆最多保存n个元素。",
       "complexity": "时间 O(n log n)，额外空间 O(n)；每个元素入堆一次，最多出堆一次。",
-      "code": "/*\n * 变式：使用最大堆保存(数值,下标)，堆顶始终是当前最大候选。\n * 过期元素采用惰性删除：只有到达堆顶时才弹出。\n */\n#include <stdio.h>\n#define MAXN 100000\n\ntypedef struct {\n    int value;\n    int index;\n} Item;\n\nItem heap[MAXN];\nint heapSize = 0;\n\nint higher(Item a, Item b) {\n    if (a.value != b.value) return a.value > b.value;\n    return a.index > b.index; // 数值相同优先保留较新的下标\n}\n\nvoid push(Item x) {\n    int i = heapSize++;\n    while (i > 0) {\n        int parent = (i - 1) / 2;\n        if (!higher(x, heap[parent])) break;\n        heap[i] = heap[parent];\n        i = parent;\n    }\n    heap[i] = x;\n}\n\nItem popMax(void) {\n    Item result = heap[0];\n    Item last = heap[--heapSize];\n    int i = 0;\n\n    while (i * 2 + 1 < heapSize) {\n        int child = i * 2 + 1;\n        if (child + 1 < heapSize && higher(heap[child + 1], heap[child]))\n            child++;\n        if (!higher(heap[child], last)) break;\n        heap[i] = heap[child];\n        i = child;\n    }\n    if (heapSize > 0) heap[i] = last;\n    return result; // 返回原堆顶，供调用者检查是否过期\n}\n\nint main(void) {\n    int n, k, a[MAXN], answer[MAXN];\n    if (scanf(\"%d%d\", &n, &k) != 2) return 0; // 没有读到完整的n和k\n    if (n < 1 || n > MAXN || k < 1 || k > n) {\n        fprintf(stderr, \"invalid n or k\\n\");\n        return 1; // 窗口长度必须在数组长度范围内\n    }\n    for (int i = 0; i < n; i++) {\n        if (scanf(\"%d\", &a[i]) != 1) return 1; // 输入元素不完整\n    }\n\n    int out = 0;\n    for (int i = 0; i < n; i++) {\n        Item x = {a[i], i};\n        push(x);\n        // 堆顶若已滑出窗口就删除；循环处理连续的过期堆顶。\n        while (heapSize > 0 && heap[0].index <= i - k)\n            (void)popMax();\n        if (i >= k - 1)\n            answer[out++] = heap[0].value;\n    }\n\n    for (int i = 0; i < out; i++)\n        printf(\"%d%c\", answer[i], i + 1 == out ? '\\n' : ' ');\n    return 0; // 所有完整窗口的最大值均已输出\n}"
+      "code": "/*\n * 变式：使用最大堆保存(数值,下标)，堆顶始终是当前最大候选。\n * 过期元素采用惰性删除：只有到达堆顶时才弹出。\n */\n#include <stdio.h>\n#define MAXN 100000\n\ntypedef struct {\n    int value;\n    int index;\n} Item;\n\nItem heap[MAXN];\nint heapSize = 0;\n\nint higher(Item a, Item b) {\n    if (a.value != b.value) return a.value > b.value;\n    return a.index > b.index; // 数值相同优先保留较新的下标\n}\n\nvoid push(Item x) {\n    int i = heapSize++;\n    while (i > 0) {\n        int parent = (i - 1) / 2;\n        if (!higher(x, heap[parent])) break;\n        heap[i] = heap[parent];\n        i = parent;\n    }\n    heap[i] = x;\n}\n\nItem popMax(void) {\n    Item result = heap[0];\n    Item last = heap[--heapSize];\n    int i = 0;\n\n    while (i * 2 + 1 < heapSize) {\n        int child = i * 2 + 1;\n        if (child + 1 < heapSize && higher(heap[child + 1], heap[child]))\n            child++;\n        if (!higher(heap[child], last)) break;\n        heap[i] = heap[child];\n        i = child;\n    }\n    if (heapSize > 0) heap[i] = last;\n    return result; // 返回原堆顶，供调用者检查是否过期\n}\n\nint main(void) {\n    int n, k, a[MAXN], answer[MAXN];\n    if (scanf(\"%d%d\", &n, &k) != 2) return 0; // 没有读到完整的n和k\n    if (n < 1 || n > MAXN || k < 1 || k > n) {\n        fprintf(stderr, \"invalid n or k\\n\");\n        return 1; // 窗口长度必须在数组长度范围内\n    }\n    for (int i = 0; i < n; i++) {\n        if (scanf(\"%d\", &a[i]) != 1) return 1; // 输入元素不完整\n    }\n\n    int out = 0;\n    for (int i = 0; i < n; i++) {\n        Item x = {a[i], i};\n        push(x);\n        // 堆顶若已滑出窗口就删除；循环处理连续的过期堆顶。\n        while (heapSize > 0 && heap[0].index <= i - k)\n            (void)popMax();\n        if (i >= k - 1)\n            answer[out++] = heap[0].value;\n    }\n\n    for (int i = 0; i < out; i++)\n        printf(\"%d%c\", answer[i], i + 1 == out ? '\\n' : ' ');\n    return 0; // 所有完整窗口的最大值均已输出\n}",
+      "explain": [
+        "最大堆保存(value,index)，堆顶给出当前候选最大值；index用于判断元素是否已滑出窗口。",
+        "只需惰性删除堆顶的过期元素：非堆顶元素即使过期，也不会影响当前最大值，等它升到堆顶再删除。",
+        "每个元素最多入堆一次、出堆一次，所以总时间O(n log n)，额外空间O(n)。"
+      ]
     },
     "animation": {
       "layout": "array",
@@ -11007,7 +11035,12 @@
       "question": "巩固题：给定同样的二叉树和整数k，按中序遍历访问顺序返回第k个结点的关键字。若1≤k≤n且找到，输出“FOUND x”（x为关键字）；若k≤0或k大于结点总数，输出-1。结点关键字允许为-1，因此必须用单独的found标志区分“找到值-1”和“没有找到”。输入格式在n root后增加k，后续结点行不变。",
       "idea": "沿用显式栈中序遍历。每弹出并访问一个结点就令count加1；当count等于k时记录该结点关键字并结束。无需遍历后续结点，平均访问范围可缩短，但最坏仍需遍历整棵树。",
       "complexity": "找到第k个结点时，时间O(h+k)；若k>n需遍历整棵树，最坏O(n)；辅助空间O(h)，最坏O(n)。",
-      "code": "#include <stdio.h>\n#define MAXN 105\n\ntypedef struct {\n    int data;                  // 当前结点保存的关键字\n    int left, right;           // 左、右孩子编号，0表示空\n} Node;\n\nNode tree[MAXN];\n\n// 先检查结点数和根编号，避免后续访问数组越界。\nint validHeader(int n, int root) {\n    if (n < 0 || n > 100) return 0;\n    if (n == 0) return root == 0;\n    return root >= 1 && root <= n;\n}\n\n// 读取并检查每个结点；题目保证整体结构是一棵合法二叉树。\nint readNodes(int n) {\n    for (int i = 1; i <= n; i++) {\n        if (scanf(\"%d%d%d\", &tree[i].data, &tree[i].left, &tree[i].right) != 3)\n            return 0; // 输入行不完整，不能继续使用未初始化的孩子编号\n        if (tree[i].data < -100 || tree[i].data > 100 ||\n            tree[i].left < 0 || tree[i].left > n ||\n            tree[i].right < 0 || tree[i].right > n)\n            return 0; // 关键字或孩子编号超出题目约束\n    }\n    return 1;\n}\n\n// first控制空格：只有输出过一个数后，才在下一个数前打印空格。\nvoid printValue(int x, int *first) {\n    if (!*first) putchar(' ');\n    printf(\"%d\", x);\n    *first = 0;\n}\n\n// 显式栈中序遍历；found区分“关键字恰为-1”和“没有第k个结点”。\nint kthInorder(int root, int k, int *found) {\n    int stack[MAXN], top = -1;\n    int cur = root, count = 0;\n    *found = 0;\n\n    if (k <= 0) return -1; // k必须从1开始，非法k不可能对应任何访问位置\n\n    while (cur != 0 || top != -1) {\n        while (cur != 0) {\n            stack[++top] = cur;\n            cur = tree[cur].left;\n        }\n        cur = stack[top--];\n        count++; // 当前结点是中序序列中的第count个\n        if (count == k) {\n            *found = 1;\n            return tree[cur].data; // 已找到目标，后续结点不可能改变答案\n        }\n        cur = tree[cur].right;\n    }\n    return -1; // 遍历结束仍未达到k，调用者根据found判断失败\n}\n\nint main(void) {\n    int n, root, k;\n    if (scanf(\"%d%d%d\", &n, &root, &k) != 3) return 1; // 缺少n、root或k\n    if (!validHeader(n, root)) return 1;               // 拒绝非法规模或根编号\n    if (!readNodes(n)) return 1;                       // 拒绝不完整或越界的结点数据\n\n    int found;\n    int answer = kthInorder(root, k, &found);\n    if (found) printf(\"FOUND %d\\n\", answer); // 即使关键字为-1，也明确表示已找到\n    else puts(\"-1\");                         // k非法或超过结点数\n    return 0;\n}"
+      "code": "#include <stdio.h>\n#define MAXN 105\n\ntypedef struct {\n    int data;                  // 当前结点保存的关键字\n    int left, right;           // 左、右孩子编号，0表示空\n} Node;\n\nNode tree[MAXN];\n\n// 先检查结点数和根编号，避免后续访问数组越界。\nint validHeader(int n, int root) {\n    if (n < 0 || n > 100) return 0;\n    if (n == 0) return root == 0;\n    return root >= 1 && root <= n;\n}\n\n// 读取并检查每个结点；题目保证整体结构是一棵合法二叉树。\nint readNodes(int n) {\n    for (int i = 1; i <= n; i++) {\n        if (scanf(\"%d%d%d\", &tree[i].data, &tree[i].left, &tree[i].right) != 3)\n            return 0; // 输入行不完整，不能继续使用未初始化的孩子编号\n        if (tree[i].data < -100 || tree[i].data > 100 ||\n            tree[i].left < 0 || tree[i].left > n ||\n            tree[i].right < 0 || tree[i].right > n)\n            return 0; // 关键字或孩子编号超出题目约束\n    }\n    return 1;\n}\n\n// first控制空格：只有输出过一个数后，才在下一个数前打印空格。\nvoid printValue(int x, int *first) {\n    if (!*first) putchar(' ');\n    printf(\"%d\", x);\n    *first = 0;\n}\n\n// 显式栈中序遍历；found区分“关键字恰为-1”和“没有第k个结点”。\nint kthInorder(int root, int k, int *found) {\n    int stack[MAXN], top = -1;\n    int cur = root, count = 0;\n    *found = 0;\n\n    if (k <= 0) return -1; // k必须从1开始，非法k不可能对应任何访问位置\n\n    while (cur != 0 || top != -1) {\n        while (cur != 0) {\n            stack[++top] = cur;\n            cur = tree[cur].left;\n        }\n        cur = stack[top--];\n        count++; // 当前结点是中序序列中的第count个\n        if (count == k) {\n            *found = 1;\n            return tree[cur].data; // 已找到目标，后续结点不可能改变答案\n        }\n        cur = tree[cur].right;\n    }\n    return -1; // 遍历结束仍未达到k，调用者根据found判断失败\n}\n\nint main(void) {\n    int n, root, k;\n    if (scanf(\"%d%d%d\", &n, &root, &k) != 3) return 1; // 缺少n、root或k\n    if (!validHeader(n, root)) return 1;               // 拒绝非法规模或根编号\n    if (!readNodes(n)) return 1;                       // 拒绝不完整或越界的结点数据\n\n    int found;\n    int answer = kthInorder(root, k, &found);\n    if (found) printf(\"FOUND %d\\n\", answer); // 即使关键字为-1，也明确表示已找到\n    else puts(\"-1\");                         // k非法或超过结点数\n    return 0;\n}",
+      "explain": [
+        "沿左指针下降时先入栈，弹出并访问的次序就是中序次序；count记录已经访问了多少个结点。",
+        "count达到k立即返回，不再处理后续右子树，因此找到时只需走过一条左下降路径和前k个访问结点。",
+        "found单独记录是否找到，避免把合法关键字-1误判成失败；输出FOUND -1与失败输出-1不同。"
+      ]
     },
     "animation": {
       "layout": "diagram",

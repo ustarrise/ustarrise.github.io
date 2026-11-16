@@ -143,7 +143,6 @@ def main():
         "sliding-window-max-20261121": {"brute": 18, "optimal": 8, "variation": 8},
         "sparse-fast-transpose-20261122": {"brute": 7, "optimal": 8, "variation": 12},
         "lc94-inorder-iterative-20261123": {"brute": 7, "optimal": 8, "variation": 5},
-        "lc94-inorder-iterative-20261123": {"brute": 7, "optimal": 8, "variation": 5},
     }
     diagram_minimum = {
         "lc997-20261109": {"brute": 6, "optimal": 6},
@@ -152,7 +151,7 @@ def main():
         "huffman-20261113": {"brute": 5, "optimal": 5},
         "dijkstra-20261114": {"brute": 5, "optimal": 6, "variation": 5},
         "aoe-critical-20261115": {"brute": 5, "optimal": 9, "variation": 8},
-        "quick-sort-20261117": {"optimal": 10, "variation": 7},
+        "quick-sort-20261117": {"brute": 6, "optimal": 10, "variation": 7},
         "floyd-20261118": {"brute": 5, "optimal": 5, "variation": 4},
         "two-stacks-one-array-20261120": {"brute": 4, "optimal": 5, "variation": 9},
         "sparse-fast-transpose-20261122": {"brute": 7, "optimal": 8, "variation": 12},
@@ -280,6 +279,7 @@ def main():
         "two-stacks-one-array-20261120": ("brute", "optimal", "variation"),
         "sliding-window-max-20261121": ("brute", "optimal", "variation"),
         "sparse-fast-transpose-20261122": ("brute", "optimal", "variation"),
+        "lc94-inorder-iterative-20261123": ("brute", "optimal", "variation"),
     }
     reviewed_variations = {
         "lc997-20261109", "lc994-20261110", "kmp-20261111",
@@ -289,6 +289,7 @@ def main():
         "quick-sort-20261117", "floyd-20261118",
         "two-stacks-one-array-20261120", "sliding-window-max-20261121",
         "sparse-fast-transpose-20261122",
+        "lc94-inorder-iterative-20261123",
     }
     for lesson in queue:
         if lesson["id"] in reviewed_variations and not lesson.get("variation", {}).get("complexity"):
@@ -670,29 +671,29 @@ def main():
         count += 1
         if x["id"] == "lc94-inorder-iterative-20261123":
             for method in ("brute", "optimal"):
-                check_one(x[method]["code"], "", x["id"] + "." + method + ".empty_tree", "0 0\\n")
+                check_one(x[method]["code"], "", x["id"] + "." + method + ".empty_tree", "0 0\n")
                 count += 1
-            check_one(x["variation"]["code"], "-1", x["id"] + ".variation.empty_tree", "0 0 1\\n")
+            check_one(x["variation"]["code"], "-1", x["id"] + ".variation.empty_tree", "0 0 1\n")
             count += 1
 
-            single = "1 1\\n-1 0 0\\n"
+            single = "1 1\n-1 0 0\n"
             for method in ("brute", "optimal"):
                 check_one(x[method]["code"], "-1", x["id"] + "." + method + ".single_minus_one", single)
                 count += 1
             check_one(x["variation"]["code"], "FOUND -1",
-                      x["id"] + ".variation.found_negative_one", "1 1 1\\n-1 0 0\\n")
+                      x["id"] + ".variation.found_negative_one", "1 1 1\n-1 0 0\n")
             count += 1
             check_one(x["variation"]["code"], "-1", x["id"] + ".variation.k_zero",
-                      "1 1 0\\n-1 0 0\\n")
+                      "1 1 0\n-1 0 0\n")
             count += 1
             check_one(x["variation"]["code"], "-1", x["id"] + ".variation.k_too_large",
-                      "1 1 2\\n-1 0 0\\n")
+                      "1 1 2\n-1 0 0\n")
             count += 1
 
-            chain_rows = "\\n".join(
+            chain_rows = "\n".join(
                 f"{i} 0 {i + 1 if i < 100 else 0}" for i in range(1, 101)
             )
-            chain_input = "100 1\\n" + chain_rows + "\\n"
+            chain_input = "100 1\n" + chain_rows + "\n"
             chain_output = " ".join(str(i) for i in range(1, 101))
             for method in ("brute", "optimal"):
                 check_one(x[method]["code"], chain_output,
@@ -700,11 +701,11 @@ def main():
                 count += 1
             check_one(x["variation"]["code"], "FOUND 100",
                       x["id"] + ".variation.k_equals_n",
-                      "100 1 100\\n" + chain_rows + "\\n")
+                      "100 1 100\n" + chain_rows + "\n")
             count += 1
             check_one(x["variation"]["code"], "-1",
                       x["id"] + ".variation.k_greater_than_n",
-                      "100 1 101\\n" + chain_rows + "\\n")
+                      "100 1 101\n" + chain_rows + "\n")
             count += 1
         if x["id"] == "tree-level-order-20261119":
             sample_tree = """Node tree[] = {
