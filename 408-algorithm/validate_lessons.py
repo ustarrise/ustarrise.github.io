@@ -52,6 +52,11 @@ CASES = {
         "0 1 3 3 4\n5 4 5\n0 2 -3\n1 0 12\n1 3 24\n3 0 9\n4 2 14",
         "0 1 3 3\n4 3 4\n0 1 -2\n1 0 5\n1 2 7\n3 1 8",
     ),
+    "lc94-inorder-iterative-20261123": (
+        "4 2 5 1 3 6",
+        "4 2 5 1 3 6",
+        "FOUND 5",
+    ),
 }
 
 
@@ -104,6 +109,7 @@ def main():
         "two-stacks-one-array-20261120": "https://www.geeksforgeeks.org/dsa/implement-two-stacks-in-an-array/",
         "sliding-window-max-20261121": "https://leetcode.cn/problems/sliding-window-maximum/",
         "sparse-fast-transpose-20261122": "https://blog.nerom.wang/2015/02/02/sparse-matrix",
+        "lc94-inorder-iterative-20261123": "https://leetcode.com/problems/binary-tree-inorder-traversal/",
         "original-insert-20261016": "https://en.oi-wiki.org/basic/insertion-sort/",
         "original-graph-bfs-20261017": "https://oi-wiki.org/graph/bfs/",
         "array-two-pointer-20261019": "https://leetcode.cn/problems/remove-duplicates-from-sorted-array/",
@@ -136,6 +142,8 @@ def main():
         "two-stacks-one-array-20261120": {"brute": 4, "optimal": 5, "variation": 9},
         "sliding-window-max-20261121": {"brute": 18, "optimal": 8, "variation": 8},
         "sparse-fast-transpose-20261122": {"brute": 7, "optimal": 8, "variation": 12},
+        "lc94-inorder-iterative-20261123": {"brute": 7, "optimal": 8, "variation": 5},
+        "lc94-inorder-iterative-20261123": {"brute": 7, "optimal": 8, "variation": 5},
     }
     diagram_minimum = {
         "lc997-20261109": {"brute": 6, "optimal": 6},
@@ -148,6 +156,7 @@ def main():
         "floyd-20261118": {"brute": 5, "optimal": 5, "variation": 4},
         "two-stacks-one-array-20261120": {"brute": 4, "optimal": 5, "variation": 9},
         "sparse-fast-transpose-20261122": {"brute": 7, "optimal": 8, "variation": 12},
+        "lc94-inorder-iterative-20261123": {"brute": 7, "optimal": 8, "variation": 5},
     }
     for lesson in queue:
         for method, minimum in diagram_minimum.get(lesson["id"], {}).items():
@@ -161,6 +170,49 @@ def main():
                     raise ValueError(
                         f"{lesson['id']}.{method}: 第{index + 1}帧缺少图/树连线说明"
                     )
+    inorder_lesson = next((x for x in queue if x["id"] == "lc94-inorder-iterative-20261123"), None)
+    if inorder_lesson is None:
+        raise ValueError("缺少lc94-inorder-iterative-20261123")
+    if inorder_lesson.get("source") != "https://leetcode.com/problems/binary-tree-inorder-traversal/":
+        raise ValueError("lc94-inorder-iterative-20261123: 来源必须指向力扣94官方题面")
+    if not all(term in inorder_lesson.get("question", "") for term in ("输入格式：", "输出格式：")):
+        raise ValueError("lc94-inorder-iterative-20261123: 输入/输出格式不完整")
+    if not all(term in inorder_lesson.get("sample", "") for term in ("边界：", "反例：")):
+        raise ValueError("lc94-inorder-iterative-20261123: 缺少边界或错误遍历顺序反例")
+    expected_inorder_pointers = {
+        "brute": [
+            {"current": 1, "output": []}, {"current": 4, "output": []},
+            {"current": 4, "output": [4]}, {"current": 2, "output": [4, 2]},
+            {"current": 1, "output": [4, 2, 5, 1]},
+            {"current": 3, "output": [4, 2, 5, 1, 3]},
+            {"current": 0, "output": [4, 2, 5, 1, 3, 6]},
+        ],
+        "optimal": [
+            {"current": 1, "stack": [], "output": []},
+            {"current": 0, "stack": [1, 2, 4], "output": []},
+            {"current": 0, "stack": [1, 2], "output": [4]},
+            {"current": 5, "stack": [1], "output": [4, 2]},
+            {"current": 0, "stack": [1], "output": [4, 2, 5]},
+            {"current": 3, "stack": [], "output": [4, 2, 5, 1]},
+            {"current": 6, "stack": [], "output": [4, 2, 5, 1, 3]},
+            {"current": 0, "stack": [], "output": [4, 2, 5, 1, 3, 6]},
+        ],
+        "variation": [
+            {"current": 1, "stack": [], "count": 0, "k": 3, "found": False, "result": None},
+            {"current": 0, "stack": [1, 2, 4], "count": 0, "k": 3, "found": False, "result": None},
+            {"current": 0, "stack": [1, 2], "count": 1, "k": 3, "found": False, "result": None},
+            {"current": 5, "stack": [1], "count": 2, "k": 3, "found": False, "result": None},
+            {"current": 5, "stack": [1], "count": 3, "k": 3, "found": True, "result": 5},
+        ],
+    }
+    for method, expected in expected_inorder_pointers.items():
+        frames = inorder_lesson.get("animation", {}).get(method, [])
+        if [frame.get("pointers") for frame in frames] != expected:
+            raise ValueError(f"lc94-inorder-iterative-20261123.{method}: 指针/栈/访问序列与中序执行步骤不一致")
+        for index, frame in enumerate(frames):
+            if not frame.get("diagram") or not frame.get("text") or not isinstance(frame.get("active"), list):
+                raise ValueError(f"lc94-inorder-iterative-20261123.{method}: 第{index + 1}帧缺少连线、说明或操作高亮")
+
     for lesson in queue:
         if lesson["id"] == "lc994-20261110":
             frames = lesson.get("animation", {}).get("optimal", [])
@@ -588,12 +640,14 @@ def main():
         "floyd-20261118": "4 5\n1 2 5\n1 3 10\n2 3 3\n2 4 9\n3 4 1\n",
         "sliding-window-max-20261121": "8 3\n1 3 -1 -3 5 3 6 7\n",
         "sparse-fast-transpose-20261122": "4 5 5\n0 1 12\n0 3 9\n2 0 -3\n2 4 14\n3 1 24\n",
+        "lc94-inorder-iterative-20261123": "6 1\n1 2 3\n2 4 5\n3 0 6\n4 0 0\n5 0 0\n6 0 0\n",
     }
     variant_inputs = { "kmp-20261111": "aaaaab\naaab\n","lc-hash-linear-20261116": "7 5\n5 20016 40027 17 20028 -3 8\n40027 5 99 -3 20028\n",
                       "lc997-20261109": "3 3\n1 3\n2 3\n3 1\n",
                       "lc994-20261110": "2 2\n2 0\n0 1\n",
                       "lc503-20261106": "5\n3 8 4 1 2\n", "quick-sort-20261117": "6\n3 -1 3 0 -1 2\n", "floyd-20261118": "3 3\n1 2 4\n2 3 -2\n1 3 5\n", "sliding-window-max-20261121": "8 3\n1 3 -1 -3 5 3 6 7\n",
-                      "sparse-fast-transpose-20261122": "3 4 4\n0 1 5\n1 0 -2\n1 3 8\n2 1 7\n"}
+                      "sparse-fast-transpose-20261122": "3 4 4\n0 1 5\n1 0 -2\n1 3 8\n2 1 7\n",
+                      "lc94-inorder-iterative-20261123": "6 1 3\n1 2 3\n2 4 5\n3 0 6\n4 0 0\n5 0 0\n6 0 0\n"}
     count = 0
     for x in queue:
         case = CASES.get(x["id"])
@@ -614,6 +668,44 @@ def main():
         check_one(x["variation"]["code"], expected_variation, x["id"] + ".variation",
                   variant_inputs.get(x["id"], ""))
         count += 1
+        if x["id"] == "lc94-inorder-iterative-20261123":
+            for method in ("brute", "optimal"):
+                check_one(x[method]["code"], "", x["id"] + "." + method + ".empty_tree", "0 0\\n")
+                count += 1
+            check_one(x["variation"]["code"], "-1", x["id"] + ".variation.empty_tree", "0 0 1\\n")
+            count += 1
+
+            single = "1 1\\n-1 0 0\\n"
+            for method in ("brute", "optimal"):
+                check_one(x[method]["code"], "-1", x["id"] + "." + method + ".single_minus_one", single)
+                count += 1
+            check_one(x["variation"]["code"], "FOUND -1",
+                      x["id"] + ".variation.found_negative_one", "1 1 1\\n-1 0 0\\n")
+            count += 1
+            check_one(x["variation"]["code"], "-1", x["id"] + ".variation.k_zero",
+                      "1 1 0\\n-1 0 0\\n")
+            count += 1
+            check_one(x["variation"]["code"], "-1", x["id"] + ".variation.k_too_large",
+                      "1 1 2\\n-1 0 0\\n")
+            count += 1
+
+            chain_rows = "\\n".join(
+                f"{i} 0 {i + 1 if i < 100 else 0}" for i in range(1, 101)
+            )
+            chain_input = "100 1\\n" + chain_rows + "\\n"
+            chain_output = " ".join(str(i) for i in range(1, 101))
+            for method in ("brute", "optimal"):
+                check_one(x[method]["code"], chain_output,
+                          x["id"] + "." + method + ".right_skew_100", chain_input)
+                count += 1
+            check_one(x["variation"]["code"], "FOUND 100",
+                      x["id"] + ".variation.k_equals_n",
+                      "100 1 100\\n" + chain_rows + "\\n")
+            count += 1
+            check_one(x["variation"]["code"], "-1",
+                      x["id"] + ".variation.k_greater_than_n",
+                      "100 1 101\\n" + chain_rows + "\\n")
+            count += 1
         if x["id"] == "tree-level-order-20261119":
             sample_tree = """Node tree[] = {
         {'A', 1, 2},
