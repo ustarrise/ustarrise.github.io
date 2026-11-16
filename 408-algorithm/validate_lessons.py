@@ -9,6 +9,7 @@ ROOT = Path(__file__).resolve().parent
 CASES = {
     "aoe-critical-20261115": ("9\n1->3->4->6", "8\n1->2->4->6"),
     "quick-sort-20261117": ("1 2 3 4 5 6 7 8", "-1 -1 0 2 3 3"),
+    "radix-sort-20261124": ("2 24 45 66 75 90 170 802", "2 24 45 66 75 90 170 802", "初始：329 457 657 839 436 720 355\n第1趟（exp=1）：720 355 436 457 657 329 839\n第2趟（exp=10）：720 329 436 839 355 457 657\n第3趟（exp=100）：329 355 436 457 657 720 839"),
     "floyd-20261118": ("0 5 8 9\n-1 0 3 4\n-1 -1 0 1\n-1 -1 -1 0", "0 4 2\n-1 0 -2\n-1 -1 0"),
     "kmp-20261111": ("5", "2"),
     "prim-20261112": ("16", "6"),
@@ -110,6 +111,7 @@ def main():
         "sliding-window-max-20261121": "https://leetcode.cn/problems/sliding-window-maximum/",
         "sparse-fast-transpose-20261122": "https://blog.nerom.wang/2015/02/02/sparse-matrix",
         "lc94-inorder-iterative-20261123": "https://leetcode.com/problems/binary-tree-inorder-traversal/",
+        "radix-sort-20261124": "https://algs4.cs.princeton.edu/51radix/",
         "original-insert-20261016": "https://en.oi-wiki.org/basic/insertion-sort/",
         "original-graph-bfs-20261017": "https://oi-wiki.org/graph/bfs/",
         "array-two-pointer-20261019": "https://leetcode.cn/problems/remove-duplicates-from-sorted-array/",
@@ -143,6 +145,7 @@ def main():
         "sliding-window-max-20261121": {"brute": 18, "optimal": 8, "variation": 8},
         "sparse-fast-transpose-20261122": {"brute": 7, "optimal": 8, "variation": 12},
         "lc94-inorder-iterative-20261123": {"brute": 7, "optimal": 8, "variation": 5},
+        "radix-sort-20261124": {"brute": 4, "optimal": 4, "variation": 4},
     }
     diagram_minimum = {
         "lc997-20261109": {"brute": 6, "optimal": 6},
@@ -280,6 +283,7 @@ def main():
         "sliding-window-max-20261121": ("brute", "optimal", "variation"),
         "sparse-fast-transpose-20261122": ("brute", "optimal", "variation"),
         "lc94-inorder-iterative-20261123": ("brute", "optimal", "variation"),
+        "radix-sort-20261124": ("brute", "optimal", "variation"),
     }
     reviewed_variations = {
         "lc997-20261109", "lc994-20261110", "kmp-20261111",
@@ -289,7 +293,7 @@ def main():
         "quick-sort-20261117", "floyd-20261118",
         "two-stacks-one-array-20261120", "sliding-window-max-20261121",
         "sparse-fast-transpose-20261122",
-        "lc94-inorder-iterative-20261123",
+        "lc94-inorder-iterative-20261123", "radix-sort-20261124",
     }
     for lesson in queue:
         if lesson["id"] in reviewed_variations and not lesson.get("variation", {}).get("complexity"):
@@ -642,6 +646,7 @@ def main():
         "sliding-window-max-20261121": "8 3\n1 3 -1 -3 5 3 6 7\n",
         "sparse-fast-transpose-20261122": "4 5 5\n0 1 12\n0 3 9\n2 0 -3\n2 4 14\n3 1 24\n",
         "lc94-inorder-iterative-20261123": "6 1\n1 2 3\n2 4 5\n3 0 6\n4 0 0\n5 0 0\n6 0 0\n",
+        "radix-sort-20261124": "8\n170 45 75 90 802 24 2 66\n",
     }
     variant_inputs = { "kmp-20261111": "aaaaab\naaab\n","lc-hash-linear-20261116": "7 5\n5 20016 40027 17 20028 -3 8\n40027 5 99 -3 20028\n",
                       "lc997-20261109": "3 3\n1 3\n2 3\n3 1\n",
