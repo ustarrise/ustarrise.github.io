@@ -8800,5 +8800,320 @@
       "枢轴选中间下标不代表选中中位数，不能据此声称最坏复杂度为O(n log n)。",
       "与归并排序对比：快排通常原地划分、平均O(n log n)，但最坏O(n²)；归并排序最坏O(n log n)，需要辅助数组。"
     ]
+  },
+  {
+    "id": "floyd-20261118",
+    "date": "2026-11-18",
+    "year": "原创408练习",
+    "number": "02",
+    "category": "图 · 多源最短路径",
+    "title": "多源最短路径：从枚举简单路径到Floyd",
+    "difficulty": "中等",
+    "time": "25–30分钟",
+    "source": "https://oi-wiki.org/graph/shortest-path/",
+    "question": "给定一个含n个顶点的有向带权图，顶点编号为1至n。求每一对有序顶点之间的最短路径长度；若两点之间不可达，输出-1。输入格式：第一行两个整数n m；接下来m行，每行三个整数u v w，表示一条u→v、权值为w的有向边。输出格式：输出n行，每行n个整数，第i行第j个数表示i到j的最短距离。先用DFS枚举简单路径，再用Floyd算法优化。",
+    "constraint": "1≤n≤8，0≤m≤n(n−1)，−10≤w≤20；不含自环，每对有序顶点至多一条边；图中不存在负权回路。负权边允许出现。",
+    "sample": "输入：\n4 5\n1 2 5\n1 3 10\n2 3 3\n2 4 9\n3 4 1\n输出：\n0 5 8 9\n-1 0 3 4\n-1 -1 0 1\n-1 -1 -1 0\n\n负权边示例（无负权回路）：n=3，边1→2(4)、2→3(-2)、1→3(5)。输出矩阵：\n0 4 2\n-1 0 -2\n-1 -1 0\n边界：n=1、m=0时只输出0。\n反例：n=2，边1→2(-1)、2→1(-1)构成负权回路，路径长度可无限下降，最短路不存在有限最小值，因此不属于本题合法输入。",
+    "brute": {
+      "title": "DFS枚举所有简单路径",
+      "tag": "最直观保底",
+      "idea": "固定源点，DFS枚举所有不重复顶点的路径，并更新到达各点的最小代价。无负环时，最短路可以取为简单路径，因此枚举不会漏解。",
+      "complexity": "时间最坏 O(n²·(n−1)!)；空间 O(n²)，另有 O(n) 递归栈。仅适合本题n≤8的小规模基准。",
+      "risk": "visited必须在递归返回后恢复；不能把已经访问过的顶点再次加入当前路径。",
+      "code": "/*\n * 朴素法：从每个源点出发，DFS枚举所有不重复顶点的简单路径。\n * 无负环时，总存在一条不含重复顶点的最短路，因此枚举简单路径足够。\n * best[v]记录当前源点到v的最小路径长度；visited保证路径不重复顶点。\n */\n#include <stdio.h>\n#include <string.h>\n#include <limits.h>\n\n#define MAXN 8\n#define INF (LLONG_MAX / 4)\n\nint n;\nlong long edge[MAXN][MAXN];\nlong long best[MAXN];\nint visited[MAXN];\n\nvoid dfs(int u, long long cost) {\n    if (cost < best[u]) best[u] = cost;\n    for (int v = 0; v < n; v++) {\n        if (edge[u][v] == INF || visited[v]) continue;\n        visited[v] = 1;\n        dfs(v, cost + edge[u][v]);\n        visited[v] = 0;\n    }\n}\n\nint main(void) {\n    int m;\n    if (scanf(\"%d%d\", &n, &m) != 2) return 1;\n    for (int i = 0; i < n; i++) {\n        for (int j = 0; j < n; j++) {\n            edge[i][j] = (i == j ? 0 : INF);\n        }\n    }\n    for (int e = 0; e < m; e++) {\n        int u, v;\n        long long w;\n        if (scanf(\"%d%d%lld\", &u, &v, &w) != 3) return 1;\n        edge[u - 1][v - 1] = w;\n    }\n\n    long long answer[MAXN][MAXN];\n    for (int s = 0; s < n; s++) {\n        for (int v = 0; v < n; v++) best[v] = INF;\n        memset(visited, 0, sizeof(visited));\n        visited[s] = 1;\n        dfs(s, 0);\n        for (int v = 0; v < n; v++) answer[s][v] = best[v];\n    }\n\n    for (int i = 0; i < n; i++) {\n        for (int j = 0; j < n; j++) {\n            if (answer[i][j] == INF) printf(\"-1\");\n            else printf(\"%lld\", answer[i][j]);\n            printf(j + 1 == n ? \"\\n\" : \" \");\n        }\n    }\n    return 0;\n}",
+      "explain": [
+        "每次DFS代表一条从源点出发的简单路径，cost是该路径的总权值。",
+        "到达u时，用cost更新best[u]；继续访问尚未在当前路径出现的顶点。",
+        "对每个源点重复DFS，得到整张全源最短距离矩阵。"
+      ]
+    },
+    "optimal": {
+      "title": "Floyd三重循环",
+      "tag": "重点掌握",
+      "idea": "动态规划地逐个开放中间顶点k。对每一对(i,j)，比较原距离dist[i][j]与经过k的dist[i][k]+dist[k][j]，取较小值。",
+      "complexity": "时间 O(n³)；空间 O(n²)。",
+      "risk": "k必须是最外层循环；不可达的INF不能直接参与加法；允许负边的前提是不存在负环。",
+      "code": "/*\n * Floyd：dist[i][j]表示当前允许使用的中间顶点集合下，i到j的最短距离。\n * 外层k逐个开放中间顶点；比较不经过k与经过k两种情况。\n * 允许负边，但题目保证没有负环；INF参与加法前必须先判可达。\n */\n#include <stdio.h>\n#include <limits.h>\n\n#define MAXN 8\n#define INF (LLONG_MAX / 4)\n\nint main(void) {\n    int n, m;\n    long long dist[MAXN][MAXN];\n    if (scanf(\"%d%d\", &n, &m) != 2) return 1;\n\n    // 初始化：自己到自己为0，其余顶点对暂时不可达。\n    for (int i = 0; i < n; i++) {\n        for (int j = 0; j < n; j++) {\n            dist[i][j] = (i == j ? 0 : INF);\n        }\n    }\n    // 读入有向边，直接记录边权。\n    for (int e = 0; e < m; e++) {\n        int u, v;\n        long long w;\n        if (scanf(\"%d%d%lld\", &u, &v, &w) != 3) return 1;\n        dist[u - 1][v - 1] = w;\n    }\n\n    // k必须放在最外层：逐步允许顶点k作为路径中间点。\n    for (int k = 0; k < n; k++) {\n        for (int i = 0; i < n; i++) {\n            if (dist[i][k] == INF) continue;\n            for (int j = 0; j < n; j++) {\n                if (dist[k][j] == INF) continue;\n                long long through = dist[i][k] + dist[k][j];\n                if (through < dist[i][j]) dist[i][j] = through;\n            }\n        }\n    }\n\n    // 输出距离矩阵；不可达统一输出-1。\n    for (int i = 0; i < n; i++) {\n        for (int j = 0; j < n; j++) {\n            if (dist[i][j] == INF) printf(\"-1\");\n            else printf(\"%lld\", dist[i][j]);\n            printf(j + 1 == n ? \"\\n\" : \" \");\n        }\n    }\n    return 0;\n}",
+      "explain": [
+        "初始化邻接矩阵：对角线为0，有边填权值，无边填INF。",
+        "固定中间点k，尝试用i→k→j改进i→j；每轮后允许的中间点集合扩大。",
+        "三轮循环结束后，dist[i][j]就是任意两点间的最短距离。"
+      ]
+    },
+    "tips": [
+      "dist[i][i]初始化为0；无边用INF表示，不能用0表示无边。",
+      "Floyd的k循环必须放在最外层，体现动态规划阶段。",
+      "负权边可以处理，但存在负环时最短路径长度不再有有限最小值。",
+      "n较小且要查询所有点对时适合Floyd；只求单源且边权非负时优先考虑Dijkstra。"
+    ],
+    "variation": {
+      "question": "巩固题：给定3个顶点和3条有向边：1→2权值4、2→3权值−2、1→3权值5。图中没有负环。按主题输入格式求所有顶点对的最短距离矩阵，并说明负权边为什么不妨碍Floyd。",
+      "idea": "经由顶点2，1到3的距离由5更新为4+(−2)=2。输出矩阵为0 4 2 / −1 0 −2 / −1 −1 0。Floyd允许负边，只要求不存在负环。",
+      "code": "/*\n * 巩固：图中含有负权边，但没有负权环。Floyd仍能正确求出所有顶点对的距离。\n * 外层k逐个开放中间顶点；比较不经过k与经过k两种情况。\n * 允许负边，但题目保证没有负环；INF参与加法前必须先判可达。\n */\n#include <stdio.h>\n#include <limits.h>\n\n#define MAXN 8\n#define INF (LLONG_MAX / 4)\n\nint main(void) {\n    int n, m;\n    long long dist[MAXN][MAXN];\n    if (scanf(\"%d%d\", &n, &m) != 2) return 1;\n\n    // 初始化：自己到自己为0，其余顶点对暂时不可达。\n    for (int i = 0; i < n; i++) {\n        for (int j = 0; j < n; j++) {\n            dist[i][j] = (i == j ? 0 : INF);\n        }\n    }\n    // 读入有向边，直接记录边权。\n    for (int e = 0; e < m; e++) {\n        int u, v;\n        long long w;\n        if (scanf(\"%d%d%lld\", &u, &v, &w) != 3) return 1;\n        dist[u - 1][v - 1] = w;\n    }\n\n    // k必须放在最外层：逐步允许顶点k作为路径中间点。\n    for (int k = 0; k < n; k++) {\n        for (int i = 0; i < n; i++) {\n            if (dist[i][k] == INF) continue;\n            for (int j = 0; j < n; j++) {\n                if (dist[k][j] == INF) continue;\n                long long through = dist[i][k] + dist[k][j];\n                if (through < dist[i][j]) dist[i][j] = through;\n            }\n        }\n    }\n\n    // 输出距离矩阵；不可达统一输出-1。\n    for (int i = 0; i < n; i++) {\n        for (int j = 0; j < n; j++) {\n            if (dist[i][j] == INF) printf(\"-1\");\n            else printf(\"%lld\", dist[i][j]);\n            printf(j + 1 == n ? \"\\n\" : \" \");\n        }\n    }\n    return 0;\n}",
+      "complexity": "时间 O(n³)；空间 O(n²)。"
+    },
+    "animation": {
+      "layout": "array",
+      "brute": [
+        {
+          "diagram": "源点1；当前best=[0, INF, INF, INF]\n边：1→2(5)，1→3(10)，2→3(3)，2→4(9)，3→4(1)",
+          "pointers": {
+            "source": 1
+          },
+          "active": [
+            0
+          ],
+          "text": "固定源点1，开始枚举不重复顶点的路径。"
+        },
+        {
+          "diagram": "路径：1→2\ncost=5；best=[0, 5, INF, INF]",
+          "pointers": {
+            "source": 1,
+            "current": 2
+          },
+          "active": [
+            0,
+            1
+          ],
+          "text": "沿边1→2到达顶点2，更新best[2]=5。"
+        },
+        {
+          "diagram": "路径：1→2→3\ncost=5+3=8；best=[0, 5, 8, INF]",
+          "pointers": {
+            "source": 1,
+            "current": 3
+          },
+          "active": [
+            0,
+            1,
+            2
+          ],
+          "text": "继续到顶点3，累计代价8，更新best[3]。"
+        },
+        {
+          "diagram": "路径：1→2→3→4\ncost=5+3+1=9；best=[0, 5, 8, 9]",
+          "pointers": {
+            "source": 1,
+            "current": 4
+          },
+          "active": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "text": "到达顶点4，当前找到的路径代价为9。"
+        },
+        {
+          "diagram": "另一条路径：1→3→4\ncost=10+1=11；没有改进\n源点1最终距离：0 5 8 9",
+          "pointers": {
+            "source": 1,
+            "current": 4
+          },
+          "active": [
+            0,
+            2,
+            3
+          ],
+          "text": "枚举直接从1到3的分支，距离10和11都更差；最终得到源点1这一行。"
+        }
+      ],
+      "optimal": [
+        {
+          "diagram": "初始dist矩阵\n0  5  10  INF\nINF 0  3   9\nINF INF 0  1\nINF INF INF 0",
+          "pointers": {
+            "k": 0
+          },
+          "active": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "text": "初始化邻接矩阵，对角线为0，不可达位置为INF。"
+        },
+        {
+          "diagram": "开放中间点k=1\n矩阵暂不变化",
+          "pointers": {
+            "k": 1
+          },
+          "active": [
+            0
+          ],
+          "text": "允许顶点1作为中间点；本例没有因此缩短的路径。"
+        },
+        {
+          "diagram": "开放中间点k=2\n1→3：min(10, 5+3)=8\n1→4：min(INF, 5+9)=14",
+          "pointers": {
+            "k": 2,
+            "i": 1,
+            "j": 3
+          },
+          "active": [
+            0,
+            2,
+            3
+          ],
+          "text": "经过顶点2，更新dist[1][3]=8，并暂时得到dist[1][4]=14。"
+        },
+        {
+          "diagram": "开放中间点k=3\n1→4：min(14, 8+1)=9\n2→4：min(9, 3+1)=4",
+          "pointers": {
+            "k": 3,
+            "i": 2,
+            "j": 4
+          },
+          "active": [
+            3,
+            7
+          ],
+          "text": "经过顶点3，再把1到4更新为9、2到4更新为4。"
+        },
+        {
+          "diagram": "最终最短距离矩阵\n0 5 8 9\n-1 0 3 4\n-1 -1 0 1\n-1 -1 -1 0",
+          "pointers": {
+            "k": 4
+          },
+          "active": [
+            0,
+            2,
+            3,
+            7
+          ],
+          "text": "所有中间点均已开放，矩阵中每个元素都是对应点对的最短距离。"
+        }
+      ],
+      "variation": [
+        {
+          "array": [
+            [
+              0,
+              4,
+              5
+            ],
+            [
+              "∞",
+              0,
+              -2
+            ],
+            [
+              "∞",
+              "∞",
+              0
+            ]
+          ],
+          "active": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "pointers": {
+            "k": -1,
+            "i": -1,
+            "j": -1
+          },
+          "text": "初始化距离矩阵：对角线为0，不可达为∞，边2→3权值为-2。",
+          "diagram": "初始dist矩阵\n0  4   5\n∞  0  -2\n∞  ∞   0"
+        },
+        {
+          "array": [
+            [
+              0,
+              4,
+              5
+            ],
+            [
+              "∞",
+              0,
+              -2
+            ],
+            [
+              "∞",
+              "∞",
+              0
+            ]
+          ],
+          "active": [
+            0,
+            1,
+            2
+          ],
+          "pointers": {
+            "k": 0,
+            "i": 0,
+            "j": 0
+          },
+          "text": "开放中间顶点1；没有路径因此变短，矩阵保持不变。",
+          "diagram": "k=1（代码下标0）\n本轮无更新\n0  4   5\n∞  0  -2\n∞  ∞   0"
+        },
+        {
+          "array": [
+            [
+              0,
+              4,
+              2
+            ],
+            [
+              "∞",
+              0,
+              -2
+            ],
+            [
+              "∞",
+              "∞",
+              0
+            ]
+          ],
+          "active": [
+            2
+          ],
+          "pointers": {
+            "k": 1,
+            "i": 0,
+            "j": 2
+          },
+          "text": "开放中间顶点2：1→2→3的长度为4+(-2)=2，小于直接边5，更新dist[1][3]。",
+          "diagram": "k=2（代码下标1）\ndist[1][3]=min(5,4+(-2))=2\n0  4   2\n∞  0  -2\n∞  ∞   0"
+        },
+        {
+          "array": [
+            [
+              0,
+              4,
+              2
+            ],
+            [
+              "∞",
+              0,
+              -2
+            ],
+            [
+              "∞",
+              "∞",
+              0
+            ]
+          ],
+          "active": [
+            0,
+            2,
+            5,
+            8
+          ],
+          "pointers": {
+            "k": 2,
+            "i": 0,
+            "j": 2
+          },
+          "text": "开放中间顶点3，没有更短路径；最终矩阵已得到所有点对最短距离。",
+          "diagram": "最终dist矩阵\n0  4   2\n∞  0  -2\n∞  ∞   0\n不可达位置输出-1"
+        }
+      ]
+    }
   }
 ]
