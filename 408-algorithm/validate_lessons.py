@@ -111,7 +111,7 @@ def main():
         "sliding-window-max-20261121": "https://leetcode.cn/problems/sliding-window-maximum/",
         "sparse-fast-transpose-20261122": "https://blog.nerom.wang/2015/02/02/sparse-matrix",
         "lc94-inorder-iterative-20261123": "https://leetcode.com/problems/binary-tree-inorder-traversal/",
-        "radix-sort-20261124": "https://algs4.cs.princeton.edu/51radix/",
+        "radix-sort-20261124": "https://oi-wiki.org/basic/radix-sort/",
         "original-insert-20261016": "https://en.oi-wiki.org/basic/insertion-sort/",
         "original-graph-bfs-20261017": "https://oi-wiki.org/graph/bfs/",
         "array-two-pointer-20261019": "https://leetcode.cn/problems/remove-duplicates-from-sorted-array/",
@@ -145,7 +145,7 @@ def main():
         "sliding-window-max-20261121": {"brute": 18, "optimal": 8, "variation": 8},
         "sparse-fast-transpose-20261122": {"brute": 7, "optimal": 8, "variation": 12},
         "lc94-inorder-iterative-20261123": {"brute": 7, "optimal": 8, "variation": 5},
-        "radix-sort-20261124": {"brute": 4, "optimal": 4, "variation": 4},
+        "radix-sort-20261124": {"brute": 4, "optimal": 10, "variation": 10},
     }
     diagram_minimum = {
         "lc997-20261109": {"brute": 6, "optimal": 6},
@@ -159,6 +159,7 @@ def main():
         "two-stacks-one-array-20261120": {"brute": 4, "optimal": 5, "variation": 9},
         "sparse-fast-transpose-20261122": {"brute": 7, "optimal": 8, "variation": 12},
         "lc94-inorder-iterative-20261123": {"brute": 7, "optimal": 8, "variation": 5},
+        "radix-sort-20261124": {"brute": 4, "optimal": 10, "variation": 10},
     }
     for lesson in queue:
         for method, minimum in diagram_minimum.get(lesson["id"], {}).items():
@@ -172,6 +173,90 @@ def main():
                     raise ValueError(
                         f"{lesson['id']}.{method}: 第{index + 1}帧缺少图/树连线说明"
                     )
+
+    radix_lesson = next((x for x in queue if x["id"] == "radix-sort-20261124"), None)
+    if radix_lesson is None:
+        raise ValueError("缺少radix-sort-20261124")
+    if radix_lesson.get("source") != "https://oi-wiki.org/basic/radix-sort/":
+        raise ValueError("radix-sort-20261124: 来源必须直接覆盖LSD基数排序")
+    if not all(term in radix_lesson.get("question", "") for term in ("输入格式：", "输出格式：")):
+        raise ValueError("radix-sort-20261124: 输入/输出格式不完整")
+    if not all(term in radix_lesson.get("sample", "") for term in ("边界：", "反例：")):
+        raise ValueError("radix-sort-20261124: 缺少边界或稳定性反例")
+    expected_radix_pointers = {
+        "brute": [
+            {"i": 1, "j": 0, "key": 45},
+            {"i": 1, "j": -1, "key": 45},
+            {"i": 5, "j": -1, "key": 24},
+            {"i": 7, "j": 2, "key": 66},
+        ],
+        "optimal": [
+            {"pass": 1, "exp": 1, "phase": "count", "i": 0, "digit": 0, "writeIndex": None},
+            {"pass": 1, "exp": 1, "phase": "place", "i": 7, "digit": 6, "writeIndex": 7},
+            {"pass": 1, "exp": 1, "phase": "copy", "i": -1, "digit": None, "writeIndex": 0},
+            {"pass": 1, "exp": 10, "phase": "count", "i": 0, "digit": 7, "writeIndex": None},
+            {"pass": 2, "exp": 10, "phase": "place", "i": 7, "digit": 6, "writeIndex": 4},
+            {"pass": 2, "exp": 10, "phase": "copy", "i": -1, "digit": None, "writeIndex": 0},
+            {"pass": 2, "exp": 100, "phase": "count", "i": 0, "digit": 8, "writeIndex": None},
+            {"pass": 3, "exp": 100, "phase": "place", "i": 7, "digit": 0, "writeIndex": 5},
+            {"pass": 3, "exp": 100, "phase": "copy", "i": -1, "digit": None, "writeIndex": 0},
+            {"pass": 3, "exp": 1000, "phase": "done", "i": 8, "digit": None, "writeIndex": None},
+        ],
+        "variation": [
+            {"pass": 1, "exp": 1, "phase": "count", "i": 0, "digit": 9, "writeIndex": None},
+            {"pass": 1, "exp": 1, "phase": "place", "i": 6, "digit": 5, "writeIndex": 1},
+            {"pass": 1, "exp": 1, "phase": "print", "i": 7, "digit": None, "writeIndex": None},
+            {"pass": 1, "exp": 10, "phase": "print-complete", "i": 7, "digit": None, "writeIndex": None},
+            {"pass": 2, "exp": 10, "phase": "place", "i": 6, "digit": 3, "writeIndex": 3},
+            {"pass": 2, "exp": 10, "phase": "print", "i": 7, "digit": None, "writeIndex": None},
+            {"pass": 2, "exp": 100, "phase": "print-complete", "i": 7, "digit": None, "writeIndex": None},
+            {"pass": 3, "exp": 100, "phase": "place", "i": 6, "digit": 6, "writeIndex": 4},
+            {"pass": 3, "exp": 100, "phase": "print", "i": 7, "digit": None, "writeIndex": None},
+            {"pass": 3, "exp": 1000, "phase": "done", "i": 7, "digit": None, "writeIndex": None},
+        ],
+    }
+    expected_radix_arrays = {
+        "brute": [
+            [170, 45, 75, 90, 802, 24, 2, 66],
+            [45, 170, 75, 90, 802, 24, 2, 66],
+            [24, 45, 75, 90, 170, 802, 2, 66],
+            [2, 24, 45, 66, 75, 90, 170, 802],
+        ],
+        "optimal": [
+            [170, 45, 75, 90, 802, 24, 2, 66],
+            [170, 45, 75, 90, 802, 24, 2, 66],
+            [170, 45, 75, 90, 802, 24, 2, 66],
+            [170, 90, 802, 2, 24, 45, 75, 66],
+            [170, 90, 802, 2, 24, 45, 75, 66],
+            [170, 90, 802, 2, 24, 45, 75, 66],
+            [802, 2, 24, 45, 66, 170, 75, 90],
+            [802, 2, 24, 45, 66, 170, 75, 90],
+            [802, 2, 24, 45, 66, 170, 75, 90],
+            [2, 24, 45, 66, 75, 90, 170, 802],
+        ],
+        "variation": [
+            [329, 457, 657, 839, 436, 720, 355],
+            [329, 457, 657, 839, 436, 720, 355],
+            [720, 355, 436, 457, 657, 329, 839],
+            [720, 355, 436, 457, 657, 329, 839],
+            [720, 355, 436, 457, 657, 329, 839],
+            [720, 329, 436, 839, 355, 457, 657],
+            [720, 329, 436, 839, 355, 457, 657],
+            [720, 329, 436, 839, 355, 457, 657],
+            [329, 355, 436, 457, 657, 720, 839],
+            [329, 355, 436, 457, 657, 720, 839],
+        ],
+    }
+    for method, expected in expected_radix_pointers.items():
+        frames = radix_lesson.get("animation", {}).get(method, [])
+        if [frame.get("pointers") for frame in frames] != expected:
+            raise ValueError(f"radix-sort-20261124.{method}: 指针、数位或写入位置与实际循环不一致")
+        if [frame.get("array") for frame in frames] != expected_radix_arrays[method]:
+            raise ValueError(f"radix-sort-20261124.{method}: 数组状态与逐趟排序结果不一致")
+        for index, frame in enumerate(frames):
+            if not frame.get("diagram") or not frame.get("text") or not isinstance(frame.get("active"), list):
+                raise ValueError(f"radix-sort-20261124.{method}: 第{index + 1}帧缺少状态连线或操作高亮")
+
     inorder_lesson = next((x for x in queue if x["id"] == "lc94-inorder-iterative-20261123"), None)
     if inorder_lesson is None:
         raise ValueError("缺少lc94-inorder-iterative-20261123")
@@ -890,6 +975,23 @@ def main():
                     check_one(x[variant]["code"], expected,
                               x["id"] + "." + variant + "." + label, data)
                     count += 1
+
+
+        if x["id"] == "radix-sort-20261124":
+            extra = [
+                ("single_zero", "1\n0\n", "0"),
+                ("all_zero", "4\n0 0 0 0\n", "0 0 0 0"),
+                ("repeated_and_zero", "6\n5 50 5 500 0 50\n", "0 5 5 50 50 500"),
+                ("six_digit_boundaries", "5\n999999 0 100000 10 1\n", "0 1 10 100000 999999"),
+            ]
+            for variant in ("brute", "optimal"):
+                for label, data, expected in extra:
+                    check_one(x[variant]["code"], expected,
+                              x["id"] + "." + variant + "." + label, data)
+                    count += 1
+                check_rejected(x[variant]["code"], x["id"] + "." + variant + ".negative_input",
+                               "2\n-1 0\n")
+                count += 1
 
         if x["id"] == "sparse-fast-transpose-20261122":
             extra_cases = [
