@@ -1,18 +1,18 @@
 {
   "schema_version": 1,
-  "last_audit_date": "2026-11-17",
+  "last_audit_date": "2026-11-18",
   "scope": "每日检查正式题库、备用队列、来源、题意、样例、约束、三份C程序、复杂度、注释与逐帧动画；优先当天及未来7天并持续回溯历史题目。",
-  "status_note": "11月17日检查完成。今日快速排序课程quick-sort-20261117已存在于lessons.json，和pending副本逐字段一致；publish_daily dry-run确认今日待发布0、未来11/18—11/24连续7天备用覆盖。逐题复核当天及未来7道课程：Hoare快速排序、Floyd、二叉树层序遍历、双栈共享数组、滑动窗口最大值、稀疏矩阵快速转置、中序遍历、LSD基数排序。发现11/24基数排序来源原指向Princeton字符串基数排序页面，不能直接支持本题非负整数LSD，已更换为OI Wiki基数排序页；发现朴素插入排序动画j指针状态不准确（插入45后j=-1、插入24后j=-1、插入66后j=2），已修正。原LSD优化和变式动画仅4帧、缺少diagram/计数与写入指针，已扩为10帧，逐帧展示count频数、前缀结束位置、从右向左稳定分配、写入下标、复制及每趟数组状态。补充单元素0、全0、重复值、999999边界和负数非法反例。validate_lessons.py增加来源、输入输出、边界/反例、三种动画逐帧指针/数组/连线/高亮精确断言，以及8组有效输入和2组非法输入回归。未修改C程序正文；Actions仍对43道备用题全部编译运行，最终301次测试通过。今日课程无重复发布，Pages部署成功。",
+  "status_note": "11月18日检查完成。今日正式课程floyd-20261118已存在于lessons.json，并与pending副本逐字段一致；未来11/19—11/25连续7天均有备用课。逐题复核当天Floyd及未来7道：二叉树层序遍历、双栈共享数组、滑动窗口最大值、稀疏矩阵快速转置、中序遍历、LSD基数排序、希尔排序。发现11/25希尔排序原来源是北大课程详情页，与希尔排序算法内容不直接对应，已换成OI Wiki希尔排序专页；发现n=1时gap=n/2为0，优化程序不输出任何结果，已补单元素输出和输入/输出说明；原希尔排序朴素/优化/变式动画仅3/4/3帧，缺少逐次插入的i/j/key/gap指针，已扩为10/9/5帧，并增加数组状态、连线说明和操作高亮逐帧断言。validate_lessons.py同步增加来源断言、CASES预期输出、输入样例、动画帧数/指针/数组精确断言、负数/重复/已排序/逆序/INT32极值/n=1/n=1000及非法n拒绝测试。今日正式课未修改，因为已正确发布。",
   "published_today": {
-    "date": "2026-11-17",
-    "id": "quick-sort-20261117",
+    "date": "2026-11-18",
+    "id": "floyd-20261118",
     "present": true,
-    "source": "https://www.geeksforgeeks.org/dsa/hoare-s-partition-algorithm/",
-    "review_note": "今日快速排序课程已存在于lessons.json，与pending-lessons.json副本逐字段一致。核对Hoare双向划分、pivot取值、i/j推进、递归区间与冒泡排序对照动画；未发现今日正式题目需修复。"
+    "source": "https://oi-wiki.org/graph/shortest-path/",
+    "review_note": "今日Floyd课程已存在于lessons.json，并与pending-lessons.json同ID副本逐字段一致。核对Floyd的k外层、允许负权边但禁止负权回路、不可达输出-1及矩阵样例。"
   },
   "future_queue": {
-    "from": "2026-11-18",
-    "through": "2026-11-24",
+    "from": "2026-11-19",
+    "through": "2026-11-25",
     "continuous_days": 7,
     "shortfall_days": 0
   },
@@ -345,12 +345,33 @@
       ],
       "commit": "aec19916f804fbef898a3c5d23aa9c300c675996",
       "validation": "master Actions 43993140411成功：43道备用题、301次C程序编译运行测试通过；publish_daily dry-run确认北京时间2026-11-17已发布40道、今日待发布0、未来后备7道；今日快速排序课程已发布且与备用副本一致。Pages 43993138802成功。"
+    },
+    {
+      "date": "2026-11-18",
+      "id": "floyd-20261118 / tree-level-order-20261119 / two-stacks-one-array-20261120 / sliding-window-max-20261121 / sparse-fast-transpose-20261122 / lc94-inorder-iterative-20261123 / radix-sort-20261124 / shell-sort-20261125",
+      "scope": "复核当天正式Floyd课及未来7道备用课的来源、题意、输入输出、约束、样例、三份C程序、复杂度、中文注释和动画。未来7道结构检查均有来源、题意、约束、样例、朴素/优化/变式main、复杂度和逐帧状态。希尔排序：来源更换为OI Wiki专页；补充n=1输出；将直接插入、折半增量和不稳定性变式动画扩为10/9/5帧，逐帧断言i/j/key/gap、数组、active和diagram。",
+      "source": "https://oi-wiki.org/basic/shell-sort/",
+      "sources": [
+        "https://oi-wiki.org/basic/shell-sort/",
+        "https://cp-algorithms.com/graph/all-pair-shortest-path-floyd-warshall.html",
+        "https://leetcode.cn/problems/binary-tree-level-order-traversal/description/",
+        "https://www.geeksforgeeks.org/dsa/implement-two-stacks-in-an-array/",
+        "https://leetcode.cn/problems/sliding-window-maximum/",
+        "https://blog.nerom.wang/2015/02/02/sparse-matrix",
+        "https://leetcode.com/problems/binary-tree-inorder-traversal/",
+        "https://oi-wiki.org/basic/radix-sort/"
+      ],
+      "related_commits": [
+        "09b25d702453b7e60311fce622a97bf048065ecd"
+      ],
+      "validation": "本地GCC 14.2，三份希尔排序C程序均以-std=c11 -Wall -Wextra -Werror -pedantic编译通过；19次运行测试全部通过，覆盖主样例、n=1、负数与重复、已排序、逆序、INT32极值、n=1000和n=0/n=1001非法输入。结构检查确认未来7道均有三份main、复杂度和完整动画字段。PR #3已合入master。当前可用GitHub连接器未提供push触发Actions运行列表/检查详情，因此本轮不声称master Actions或Pages已通过。",
+      "note": "master最终代码提交09b25d702453b7e60311fce622a97bf048065ecd。未修改lessons.json；pending-lessons.json与validate_lessons.py已同步修复。"
     }
   ],
   "validation": {
     "previous_actions_run_id": 42733107324,
     "previous_result": "第一轮候选PR验证43343117214成功，第二轮来源/样例候选PR验证43343724045成功；两轮均在候选分支通过后才合入master。合入后master运行43343821958再次完整验证成功。",
-    "new_commit_actions_result": "master Actions 43993140411成功：publish_daily.py --dry-run显示备用队列43道，分类19/16/8，今日已发布40道、待发布0、未来后备7道；validate_lessons.py显示43道题、301次C程序编译运行测试通过；发布步骤确认今日已发布，无需重复提交。",
+    "new_commit_actions_result": "Not independently verifiable through the available connector; do not report as passed.",
     "local_modified_code": "本轮未修改任何C程序正文。修订radix-sort-20261124来源为OI Wiki LSD基数排序专页；补充n=1/0、全0、重复值、最大6位数及负数非法输入样例。修正直接插入排序动画的j指针：插入45和24后j=-1，插入66后j=2。LSD优化/变式动画从4帧扩为10帧，逐帧展示count频数、前缀结束位置、逆序稳定分配、writeIndex、复制和逐趟数组；validate_lessons.py增加精确pointers/array/diagram/active断言及4类有效边界×2种算法、2类非法输入×2种算法，共10次新增编译运行回归。",
     "commit_history": [
       "3da63b267ff9f703714b70d59e92eba34dc5553a",
@@ -378,18 +399,18 @@
       "19a924f31d9d4c454cdec512653e192dc311195e",
       "aec19916f804fbef898a3c5d23aa9c300c675996"
     ],
-    "code_commit": "19a924f31d9d4c454cdec512653e192dc311195e",
-    "validator_fix_commit": "19a924f31d9d4c454cdec512653e192dc311195e",
+    "code_commit": "09b25d702453b7e60311fce622a97bf048065ecd",
+    "validator_fix_commit": "09b25d702453b7e60311fce622a97bf048065ecd",
     "latest_actions_run_id": 43993140411,
-    "latest_result": "success：master head aec19916f804fbef898a3c5d23aa9c300c675996；43道备用题、301次C程序编译运行测试全部通过；北京时间2026-11-17快速排序课程已发布，今日待发布0，未来11/18—11/24连续7天备用覆盖。",
+    "latest_result": "PR #3 merged to master as 09b25d702453b7e60311fce622a97bf048065ecd. Local C compilation and 19 Shell sort tests passed. The available GitHub connector exposes PR workflow runs only and did not expose push-triggered Actions/Pages run details; those remote results remain unverified.",
     "pages_run_id": 43993138802,
-    "pages_result": "success：GitHub Pages build、artifact upload、deploy全部成功，head SHA aec19916f804fbef898a3c5d23aa9c300c675996。",
+    "pages_result": "Not independently verifiable for this commit through the available connector; previous Pages run is not evidence for this commit.",
     "source_commit": "822629b8b290c56aeb9abb80ca16fd1d1e6ba7a1",
-    "latest_commit": "aec19916f804fbef898a3c5d23aa9c300c675996",
-    "current_master_head_before_audit_update": "aec19916f804fbef898a3c5d23aa9c300c675996",
+    "latest_commit": "09b25d702453b7e60311fce622a97bf048065ecd",
+    "current_master_head_before_audit_update": "09b25d702453b7e60311fce622a97bf048065ecd",
     "tree_boundary_tests": "稀疏矩阵快速转置三份C程序：正例和变式样例通过；另对nnz=0、cols=0、单列、非零元全在最后一列、单元素极值、满矩阵6类边界各运行三份程序；对无序、重复坐标、零值、越界坐标4类非法输入各运行三份程序，均按预期输出或拒绝。全量Actions最终41道备用题、273次C程序编译运行测试通过。",
     "candidate_pr_validation_run_id": 43343117214,
-    "candidate_pr_number": 1,
+    "candidate_pr_number": 3,
     "source_audit_pr_run_id": 43343724045,
     "source_audit_pr_number": 2,
     "intermediate_failure": {
@@ -433,7 +454,10 @@
         "rerun_result": "success"
       }
     ],
-    "last_run_intermediate_failures": []
+    "last_run_intermediate_failures": [],
+    "candidate_pr_url": "https://github.com/ustarrise/ustarrise.github.io/pull/3",
+    "local_shell_sort_validation": "GCC 14.2 C11 strict compile (Wall/Wextra/Werror/pedantic) passed for brute/optimal/variation; 19 runtime cases passed, including sample, n=1, negative/duplicates, sorted, reverse, INT32 extremes, n=1000, n=0 and n=1001.",
+    "master_push_actions_run_id": null
   },
   "next_priorities": [
     "11/25补入至少1道新备用题，维持未来连续7天覆盖；优先经典查找/排序，避免连续链表和图题。",
@@ -469,19 +493,20 @@
     "5c1116c92aaedce4aa64148e4771d58634aeb5b5",
     "ab56b3f5f7932249151d86219b5565f9c278a486",
     "8193e09ab9bb73d5423dee58d0705e13c8b9932b",
-    "aec19916f804fbef898a3c5d23aa9c300c675996"
+    "aec19916f804fbef898a3c5d23aa9c300c675996",
+    "09b25d702453b7e60311fce622a97bf048065ecd"
   ],
   "selection_balance": {
-    "current_unique_entries": 47,
+    "current_unique_entries": 48,
     "counts": {
-      "经典方法": 21,
+      "经典方法": 22,
       "综合变式": 17,
       "预测补盲": 9
     },
     "approximate_percent": {
-      "经典方法": 44.7,
-      "综合变式": 36.2,
-      "预测补盲": 19.1
+      "经典方法": 45.8,
+      "综合变式": 35.4,
+      "预测补盲": 18.8
     },
     "target_percent": {
       "经典方法": 45,
@@ -489,18 +514,18 @@
       "预测补盲": 20
     },
     "pending_queue": {
-      "total": 43,
+      "total": 44,
       "counts": {
-        "经典方法": 19,
+        "经典方法": 20,
         "综合变式": 16,
         "预测补盲": 8
       },
       "approximate_percent": {
-        "经典方法": 44.2,
-        "综合变式": 37.2,
-        "预测补盲": 18.6
+        "经典方法": 45.5,
+        "综合变式": 36.4,
+        "预测补盲": 18.2
       }
     },
-    "note": "按publish_daily.py的topic_group规则：正式+备用按ID去重47道，21/17/9（44.7%/36.2%/19.1%）；备用43道，19/16/8（44.2%/37.2%/18.6%）。经典题和预测补盲略低，综合变式略高；下一轮优先补经典查找/排序与适量补盲，不为凑比例误分类。"
+    "note": "按publish_daily.py的topic_group规则：正式+备用按ID去重48道，22/17/9（45.8%/35.4%/18.8%）；备用44道，20/16/8（45.5%/36.4%/18.2%）。与45/35/20目标接近，补盲略少；下一轮优先补队列/查找/排序，避免链表堆积。"
   }
 }
