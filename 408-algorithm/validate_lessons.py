@@ -10,6 +10,7 @@ CASES = {
     "aoe-critical-20261115": ("9\n1->3->4->6", "8\n1->2->4->6"),
     "quick-sort-20261117": ("1 2 3 4 5 6 7 8", "-1 -1 0 2 3 3"),
     "radix-sort-20261124": ("2 24 45 66 75 90 170 802", "2 24 45 66 75 90 170 802", "初始：329 457 657 839 436 720 355\n第1趟（exp=1）：720 355 436 457 657 329 839\n第2趟（exp=10）：720 329 436 839 355 457 657\n第3趟（exp=100）：329 355 436 457 657 720 839"),
+    "shell-sort-20261125": ("4 13 27 38 49 49 55 65 76 97", "13 27 49 55 4 49 38 65 97 76\n4 27 13 49 38 55 49 65 97 76\n4 13 27 38 49 49 55 65 76 97", "(2,A) (2,B) (3,Y) (3,X)"),
     "floyd-20261118": ("0 5 8 9\n-1 0 3 4\n-1 -1 0 1\n-1 -1 -1 0", "0 4 2\n-1 0 -2\n-1 -1 0"),
     "kmp-20261111": ("5", "2"),
     "prim-20261112": ("16", "6"),
@@ -112,6 +113,7 @@ def main():
         "sparse-fast-transpose-20261122": "https://blog.nerom.wang/2015/02/02/sparse-matrix",
         "lc94-inorder-iterative-20261123": "https://leetcode.com/problems/binary-tree-inorder-traversal/",
         "radix-sort-20261124": "https://oi-wiki.org/basic/radix-sort/",
+        "shell-sort-20261125": "https://oi-wiki.org/basic/shell-sort/",
         "original-insert-20261016": "https://en.oi-wiki.org/basic/insertion-sort/",
         "original-graph-bfs-20261017": "https://oi-wiki.org/graph/bfs/",
         "array-two-pointer-20261019": "https://leetcode.cn/problems/remove-duplicates-from-sorted-array/",
@@ -146,6 +148,7 @@ def main():
         "sparse-fast-transpose-20261122": {"brute": 7, "optimal": 8, "variation": 12},
         "lc94-inorder-iterative-20261123": {"brute": 7, "optimal": 8, "variation": 5},
         "radix-sort-20261124": {"brute": 4, "optimal": 10, "variation": 10},
+        "shell-sort-20261125": {"brute": 10, "optimal": 9, "variation": 5},
     }
     diagram_minimum = {
         "lc997-20261109": {"brute": 6, "optimal": 6},
@@ -160,6 +163,7 @@ def main():
         "sparse-fast-transpose-20261122": {"brute": 7, "optimal": 8, "variation": 12},
         "lc94-inorder-iterative-20261123": {"brute": 7, "optimal": 8, "variation": 5},
         "radix-sort-20261124": {"brute": 4, "optimal": 10, "variation": 10},
+        "shell-sort-20261125": {"brute": 10, "optimal": 9, "variation": 5},
     }
     for lesson in queue:
         for method, minimum in diagram_minimum.get(lesson["id"], {}).items():
@@ -256,6 +260,104 @@ def main():
         for index, frame in enumerate(frames):
             if not frame.get("diagram") or not frame.get("text") or not isinstance(frame.get("active"), list):
                 raise ValueError(f"radix-sort-20261124.{method}: 第{index + 1}帧缺少状态连线或操作高亮")
+
+
+    shell_lesson = next((x for x in queue if x["id"] == "shell-sort-20261125"), None)
+    if shell_lesson is None:
+        raise ValueError("缺少shell-sort-20261125")
+    if shell_lesson.get("source") != "https://oi-wiki.org/basic/shell-sort/":
+        raise ValueError("shell-sort-20261125: 来源必须直接覆盖希尔排序与增量插入")
+    if not all(term in shell_lesson.get("question", "") for term in ("输入格式：", "输出格式：", "n=1")):
+        raise ValueError("shell-sort-20261125: 输入/输出或单元素处理说明不完整")
+    if not all(term in shell_lesson.get("sample", "") for term in ("负数与重复值：", "边界：", "反例：")):
+        raise ValueError("shell-sort-20261125: 缺少负数、边界或稳定性反例")
+    if "最坏时间 O(n²)" not in shell_lesson["optimal"].get("complexity", ""):
+        raise ValueError("shell-sort-20261125: 折半增量最坏复杂度说明不准确")
+    if "if (n == 1)" not in shell_lesson["optimal"]["code"]:
+        raise ValueError("shell-sort-20261125: n=1时必须输出唯一元素")
+    expected_shell_brute_pointers = [
+        {"i": 1, "j": 0, "key": 38, "phase": "compare"},
+        {"i": 1, "j": -1, "key": 38, "phase": "inserted"},
+        {"i": 2, "j": 1, "key": 65, "phase": "inserted"},
+        {"i": 3, "j": 2, "key": 97, "phase": "inserted"},
+        {"i": 4, "j": 2, "key": 76, "phase": "inserted"},
+        {"i": 5, "j": -1, "key": 13, "phase": "inserted"},
+        {"i": 6, "j": 0, "key": 27, "phase": "inserted"},
+        {"i": 7, "j": 3, "key": 49, "phase": "inserted"},
+        {"i": 8, "j": 4, "key": 55, "phase": "inserted"},
+        {"i": 9, "j": -1, "key": 4, "phase": "inserted"},
+    ]
+    expected_shell_brute_arrays = [
+        [49,38,65,97,76,13,27,49,55,4],
+        [38,49,65,97,76,13,27,49,55,4],
+        [38,49,65,97,76,13,27,49,55,4],
+        [38,49,65,97,76,13,27,49,55,4],
+        [38,49,65,76,97,13,27,49,55,4],
+        [13,38,49,65,76,97,27,49,55,4],
+        [13,27,38,49,65,76,97,49,55,4],
+        [13,27,38,49,49,65,76,97,55,4],
+        [13,27,38,49,49,55,65,76,97,4],
+        [4,13,27,38,49,49,55,65,76,97],
+    ]
+    shell_brute_frames = shell_lesson["animation"]["brute"]
+    if [f.get("pointers") for f in shell_brute_frames] != expected_shell_brute_pointers:
+        raise ValueError("shell-sort-20261125.brute: i/j/key指针与直接插入排序步骤不一致")
+    if [f.get("array") for f in shell_brute_frames] != expected_shell_brute_arrays:
+        raise ValueError("shell-sort-20261125.brute: 逐帧数组状态错误")
+
+    expected_shell_optimal_pointers = [
+        {"gap":5,"i":5,"j":0,"key":13,"phase":"compare"},
+        {"gap":5,"i":5,"j":-5,"key":13,"phase":"inserted"},
+        {"gap":5,"i":10,"j":-1,"key":4,"phase":"pass_done"},
+        {"gap":2,"i":2,"j":0,"key":49,"phase":"compare"},
+        {"gap":2,"i":4,"j":-2,"key":4,"phase":"inserted"},
+        {"gap":2,"i":10,"j":7,"key":76,"phase":"pass_done"},
+        {"gap":1,"i":1,"j":0,"key":27,"phase":"compare"},
+        {"gap":1,"i":2,"j":0,"key":13,"phase":"inserted"},
+        {"gap":1,"i":10,"j":7,"key":76,"phase":"pass_done"},
+    ]
+    expected_shell_optimal_arrays = [
+        [49,38,65,97,76,13,27,49,55,4],
+        [13,38,65,97,76,49,27,49,55,4],
+        [13,27,49,55,4,49,38,65,97,76],
+        [13,27,49,55,4,49,38,65,97,76],
+        [4,27,13,55,49,49,38,65,97,76],
+        [4,27,13,49,38,55,49,65,97,76],
+        [4,27,13,49,38,55,49,65,97,76],
+        [4,13,27,49,38,55,49,65,97,76],
+        [4,13,27,38,49,49,55,65,76,97],
+    ]
+    shell_optimal_frames = shell_lesson["animation"]["optimal"]
+    if [f.get("pointers") for f in shell_optimal_frames] != expected_shell_optimal_pointers:
+        raise ValueError("shell-sort-20261125.optimal: gap/i/j/key指针与实际增量趟不一致")
+    if [f.get("array") for f in shell_optimal_frames] != expected_shell_optimal_arrays:
+        raise ValueError("shell-sort-20261125.optimal: 每趟及中间数组状态错误")
+
+    expected_shell_variation_pointers = [
+        {"gap":2,"i":2,"j":0,"key":"(3,Y)","phase":"compare"},
+        {"gap":2,"i":3,"j":1,"key":"(2,B)","phase":"compare"},
+        {"gap":2,"i":3,"j":-1,"key":"(2,B)","phase":"shifted"},
+        {"gap":2,"i":3,"j":-1,"key":"(2,B)","phase":"inserted"},
+        {"gap":1,"i":4,"j":2,"key":"(3,X)","phase":"pass_done"},
+    ]
+    expected_shell_variation_arrays = [
+        [2,3,3,2],
+        [2,3,3,2],
+        [2,3,3,3],
+        [2,2,3,3],
+        [2,2,3,3],
+    ]
+    shell_variation_frames = shell_lesson["animation"]["variation"]
+    if [f.get("pointers") for f in shell_variation_frames] != expected_shell_variation_pointers:
+        raise ValueError("shell-sort-20261125.variation: 标签记录的i/j/key指针不准确")
+    if [f.get("array") for f in shell_variation_frames] != expected_shell_variation_arrays:
+        raise ValueError("shell-sort-20261125.variation: 不稳定性演示的记录状态错误")
+    for method in ("brute", "optimal", "variation"):
+        for index, frame in enumerate(shell_lesson["animation"][method]):
+            if not frame.get("diagram") or not frame.get("text") or not isinstance(frame.get("active"), list):
+                raise ValueError(f"shell-sort-20261125.{method}: 第{index + 1}帧缺少图示/说明/操作高亮")
+            if any(i < 0 or i >= len(frame.get("array", [])) for i in frame["active"]):
+                raise ValueError(f"shell-sort-20261125.{method}: 第{index + 1}帧高亮下标越界")
 
     inorder_lesson = next((x for x in queue if x["id"] == "lc94-inorder-iterative-20261123"), None)
     if inorder_lesson is None:
@@ -369,6 +471,7 @@ def main():
         "sparse-fast-transpose-20261122": ("brute", "optimal", "variation"),
         "lc94-inorder-iterative-20261123": ("brute", "optimal", "variation"),
         "radix-sort-20261124": ("brute", "optimal", "variation"),
+        "shell-sort-20261125": ("brute", "optimal", "variation"),
     }
     reviewed_variations = {
         "lc997-20261109", "lc994-20261110", "kmp-20261111",
@@ -379,6 +482,7 @@ def main():
         "two-stacks-one-array-20261120", "sliding-window-max-20261121",
         "sparse-fast-transpose-20261122",
         "lc94-inorder-iterative-20261123", "radix-sort-20261124",
+        "shell-sort-20261125",
     }
     for lesson in queue:
         if lesson["id"] in reviewed_variations and not lesson.get("variation", {}).get("complexity"):
@@ -732,6 +836,7 @@ def main():
         "sparse-fast-transpose-20261122": "4 5 5\n0 1 12\n0 3 9\n2 0 -3\n2 4 14\n3 1 24\n",
         "lc94-inorder-iterative-20261123": "6 1\n1 2 3\n2 4 5\n3 0 6\n4 0 0\n5 0 0\n6 0 0\n",
         "radix-sort-20261124": "8\n170 45 75 90 802 24 2 66\n",
+        "shell-sort-20261125": "10\n49 38 65 97 76 13 27 49 55 4\n",
     }
     variant_inputs = { "kmp-20261111": "aaaaab\naaab\n","lc-hash-linear-20261116": "7 5\n5 20016 40027 17 20028 -3 8\n40027 5 99 -3 20028\n",
                       "lc997-20261109": "3 3\n1 3\n2 3\n3 1\n",
@@ -992,6 +1097,43 @@ def main():
                 check_rejected(x[variant]["code"], x["id"] + "." + variant + ".negative_input",
                                "2\n-1 0\n")
                 count += 1
+
+
+        if x["id"] == "shell-sort-20261125":
+            extra_cases = [
+                ("single", "1\n7\n", "7", "7"),
+                ("negative_duplicates", "6\n-3 0 -3 2 0 -1\n",
+                 "-3 -3 -1 0 0 2", "-3 0 -3 2 0 -1\n-3 -3 -1 0 0 2"),
+                ("already_sorted", "5\n1 2 3 4 5\n",
+                 "1 2 3 4 5", "1 2 3 4 5\n1 2 3 4 5"),
+                ("reverse", "5\n5 4 3 2 1\n",
+                 "1 2 3 4 5", "1 2 3 4 5\n1 2 3 4 5"),
+                ("int_extremes", "5\n2147483647 -2147483648 0 -1 2147483647\n",
+                 "-2147483648 -1 0 2147483647 2147483647",
+                 "0 -2147483648 2147483647 -1 2147483647\n-2147483648 -1 0 2147483647 2147483647"),
+            ]
+            for label, data, brute_expected, shell_expected in extra_cases:
+                check_one(x["brute"]["code"], brute_expected,
+                          x["id"] + ".brute." + label, data)
+                count += 1
+                check_one(x["optimal"]["code"], shell_expected,
+                          x["id"] + ".optimal." + label, data)
+                count += 1
+            for method in ("brute", "optimal"):
+                check_rejected(x[method]["code"], x["id"] + "." + method + ".n_zero", "0\n")
+                count += 1
+                check_rejected(x[method]["code"], x["id"] + "." + method + ".n_over_limit",
+                               "1001\n")
+                count += 1
+            max_values = list(range(1000))
+            max_data = "1000\n" + " ".join(map(str, max_values)) + "\n"
+            max_sorted = " ".join(map(str, max_values))
+            check_one(x["brute"]["code"], max_sorted, x["id"] + ".brute.max_n", max_data)
+            count += 1
+            max_shell_expected = "\n".join([max_sorted] * 9)
+            check_one(x["optimal"]["code"], max_shell_expected,
+                      x["id"] + ".optimal.max_n", max_data)
+            count += 1
 
         if x["id"] == "sparse-fast-transpose-20261122":
             extra_cases = [
