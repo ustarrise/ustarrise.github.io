@@ -2,7 +2,7 @@
   "schema_version": 1,
   "last_audit_date": "2026-11-18",
   "scope": "每日检查正式题库、备用队列、来源、题意、样例、约束、三份C程序、复杂度、注释与逐帧动画；优先当天及未来7天并持续回溯历史题目。",
-  "status_note": "11月18日检查完成。今日正式课程floyd-20261118已存在于lessons.json，并与pending副本逐字段一致；未来11/19—11/25连续7天均有备用课。逐题复核当天Floyd及未来7道：二叉树层序遍历、双栈共享数组、滑动窗口最大值、稀疏矩阵快速转置、中序遍历、LSD基数排序、希尔排序。发现11/25希尔排序原来源是北大课程详情页，与希尔排序算法内容不直接对应，已换成OI Wiki希尔排序专页；发现n=1时gap=n/2为0，优化程序不输出任何结果，已补单元素输出和输入/输出说明；原希尔排序朴素/优化/变式动画仅3/4/3帧，缺少逐次插入的i/j/key/gap指针，已扩为10/9/5帧，并增加数组状态、连线说明和操作高亮逐帧断言。validate_lessons.py同步增加来源断言、CASES预期输出、输入样例、动画帧数/指针/数组精确断言、负数/重复/已排序/逆序/INT32极值/n=1/n=1000及非法n拒绝测试。今日正式课未修改，因为已正确发布。",
+  "status_note": "11月18日检查完成。今日正式课程floyd-20261118已存在于lessons.json，并与pending副本逐字段一致；未来11/19—11/25连续7天均有备用课。逐题复核当天Floyd及未来7道：二叉树层序遍历、双栈共享数组、滑动窗口最大值、稀疏矩阵快速转置、中序遍历、LSD基数排序、希尔排序。发现11/25希尔排序原来源是北大课程详情页，与希尔排序算法内容不直接对应，已换成OI Wiki希尔排序专页；发现n=1时gap=n/2为0，优化程序不输出任何结果，已补单元素输出和输入/输出说明；原希尔排序朴素/优化/变式动画仅3/4/3帧，缺少逐次插入的i/j/key/gap指针，已扩为10/9/5帧，并增加数组状态、连线说明和操作高亮逐帧断言。validate_lessons.py同步增加来源断言、CASES预期输出、输入样例、动画帧数/指针/数组精确断言、负数/重复/已排序/逆序/INT32极值/n=1/n=1000及非法n拒绝测试。今日正式课未修改，因为已正确发布。 master推送后的408 Daily Publish and Validate运行44214304595成功：备用队列44道，分类20/16/8；北京时间2026-11-18已发布41道、今日待发布0、未来后备7道；validate_lessons.py全量验证44道题、320次C程序编译运行测试通过；发布步骤确认今天已有Floyd课程，没有重复发布。Pages运行44214302308的build、artifact upload、deploy均成功；审核进度提交a46c17ebf1d9734ffb2d497b37d06a20a6311329对应的Pages运行44214442325也全部成功。",
   "published_today": {
     "date": "2026-11-18",
     "id": "floyd-20261118",
@@ -371,7 +371,7 @@
   "validation": {
     "previous_actions_run_id": 42733107324,
     "previous_result": "第一轮候选PR验证43343117214成功，第二轮来源/样例候选PR验证43343724045成功；两轮均在候选分支通过后才合入master。合入后master运行43343821958再次完整验证成功。",
-    "new_commit_actions_result": "Not independently verifiable through the available connector; do not report as passed.",
+    "new_commit_actions_result": "success：Actions run 44214304595，build job全部步骤成功；选题队列检查通过，44道备用题、320次C程序编译运行测试通过，今日课程已发布无需重复提交。",
     "local_modified_code": "本轮未修改任何C程序正文。修订radix-sort-20261124来源为OI Wiki LSD基数排序专页；补充n=1/0、全0、重复值、最大6位数及负数非法输入样例。修正直接插入排序动画的j指针：插入45和24后j=-1，插入66后j=2。LSD优化/变式动画从4帧扩为10帧，逐帧展示count频数、前缀结束位置、逆序稳定分配、writeIndex、复制和逐趟数组；validate_lessons.py增加精确pointers/array/diagram/active断言及4类有效边界×2种算法、2类非法输入×2种算法，共10次新增编译运行回归。",
     "commit_history": [
       "3da63b267ff9f703714b70d59e92eba34dc5553a",
@@ -401,10 +401,10 @@
     ],
     "code_commit": "09b25d702453b7e60311fce622a97bf048065ecd",
     "validator_fix_commit": "09b25d702453b7e60311fce622a97bf048065ecd",
-    "latest_actions_run_id": 43993140411,
-    "latest_result": "PR #3 merged to master as 09b25d702453b7e60311fce622a97bf048065ecd. Local C compilation and 19 Shell sort tests passed. The available GitHub connector exposes PR workflow runs only and did not expose push-triggered Actions/Pages run details; those remote results remain unverified.",
-    "pages_run_id": 43993138802,
-    "pages_result": "Not independently verifiable for this commit through the available connector; previous Pages run is not evidence for this commit.",
+    "latest_actions_run_id": 44214304595,
+    "latest_result": "success：master代码提交09b25d702453b7e60311fce622a97bf048065ecd；publish_daily dry-run确认备用44道、分类20/16/8、已发布41道、今日待发布0、未来后备7道；validate_lessons.py全量验证44道题、320次C程序编译运行测试通过；发布步骤确认2026-11-18 Floyd课程已存在，无重复发布。",
+    "pages_run_id": 44214302308,
+    "pages_result": "success：Actions run 44214302308，Pages build、artifact upload、deploy全部成功。",
     "source_commit": "822629b8b290c56aeb9abb80ca16fd1d1e6ba7a1",
     "latest_commit": "09b25d702453b7e60311fce622a97bf048065ecd",
     "current_master_head_before_audit_update": "09b25d702453b7e60311fce622a97bf048065ecd",
@@ -456,8 +456,11 @@
     ],
     "last_run_intermediate_failures": [],
     "candidate_pr_url": "https://github.com/ustarrise/ustarrise.github.io/pull/3",
-    "local_shell_sort_validation": "GCC 14.2 C11 strict compile (Wall/Wextra/Werror/pedantic) passed for brute/optimal/variation; 19 runtime cases passed, including sample, n=1, negative/duplicates, sorted, reverse, INT32 extremes, n=1000, n=0 and n=1001.",
-    "master_push_actions_run_id": null
+    "local_shell_sort_validation": "GCC 14.2 C11 strict compile (-Wall -Wextra -Werror -pedantic) passed for brute/optimal/variation; 19 runtime cases passed, including sample, n=1, negative/duplicates, sorted, reverse, INT32 extremes, n=1000, n=0 and n=1001.",
+    "master_push_actions_run_id": 44214304595,
+    "master_push_pages_run_id": 44214302308,
+    "audit_progress_pages_run_id": 44214442325,
+    "audit_progress_pages_result": "success：Actions run 44214442325，audit-progress提交后的Pages build、report-build-status、deploy全部成功。"
   },
   "next_priorities": [
     "11/25补入至少1道新备用题，维持未来连续7天覆盖；优先经典查找/排序，避免连续链表和图题。",
