@@ -64,6 +64,11 @@ CASES = {
         "后序遍历：D E B F C A",
         "先序遍历：A B D E C F",
     ),
+    "dll-delete-known-20261127": (
+        "删除前：10 20 30 40\\n删除后：10 20 40",
+        "删除前：10 20 30 40\\n删除后：10 20 40",
+        "插入前：10 20 30\\n插入后：10 20 25 30",
+    ),
 }
 
 
@@ -120,6 +125,7 @@ def main():
         "radix-sort-20261124": "https://oi-wiki.org/basic/radix-sort/",
         "shell-sort-20261125": "https://oi-wiki.org/basic/shell-sort/",
         "tree-reconstruct-pre-in-20261126": "https://leetcode.cn/problems/construct-binary-tree-from-preorder-and-inorder-traversal/description/",
+        "dll-delete-known-20261127": "https://www.geeksforgeeks.org/dsa/when-is-doubly-linked-list-more-efficient-than-singly-linked-list/",
         "original-insert-20261016": "https://en.oi-wiki.org/basic/insertion-sort/",
         "original-graph-bfs-20261017": "https://oi-wiki.org/graph/bfs/",
         "array-two-pointer-20261019": "https://leetcode.cn/problems/remove-duplicates-from-sorted-array/",
@@ -156,6 +162,7 @@ def main():
         "radix-sort-20261124": {"brute": 4, "optimal": 10, "variation": 10},
         "shell-sort-20261125": {"brute": 10, "optimal": 9, "variation": 5},
         "tree-reconstruct-pre-in-20261126": {"brute": 4, "optimal": 4, "variation": 4},
+        "dll-delete-known-20261127": {"brute": 4, "optimal": 4, "variation": 3},
     }
     diagram_minimum = {
         "lc997-20261109": {"brute": 6, "optimal": 6},
