@@ -154,8 +154,7 @@ def main():
         "sparse-fast-transpose-20261122": {"brute": 7, "optimal": 8, "variation": 12},
         "lc94-inorder-iterative-20261123": {"brute": 7, "optimal": 8, "variation": 5},
         "radix-sort-20261124": {"brute": 4, "optimal": 10, "variation": 10},
-        "shell-sort-20261125": {"brute": 10, "optimal": 9, "variation": 4},
-        "tree-reconstruct-pre-in-20261126": {"brute": 4, "optimal": 4, "variation": 4},
+        "shell-sort-20261125": {"brute": 10, "optimal": 9, "variation": 5},
         "tree-reconstruct-pre-in-20261126": {"brute": 4, "optimal": 4, "variation": 4},
     }
     diagram_minimum = {
@@ -172,6 +171,7 @@ def main():
         "lc94-inorder-iterative-20261123": {"brute": 7, "optimal": 8, "variation": 5},
         "radix-sort-20261124": {"brute": 4, "optimal": 10, "variation": 10},
         "shell-sort-20261125": {"brute": 10, "optimal": 9, "variation": 5},
+        "tree-reconstruct-pre-in-20261126": {"brute": 4, "optimal": 4, "variation": 4},
     }
     for lesson in queue:
         for method, minimum in diagram_minimum.get(lesson["id"], {}).items():
