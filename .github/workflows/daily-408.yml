@@ -19,7 +19,6 @@ on:
     branches: [master]
     paths:
       - '408-algorithm/lessons.json'
-      - '408-algorithm/pending-lessons.json'
       - '408-algorithm/index.html'
       - '408-algorithm/validate_lessons.py'
       - '408-algorithm/publish_daily.py'
