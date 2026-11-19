@@ -12744,16 +12744,16 @@
     "difficulty": "中等",
     "time": "15–20分钟",
     "source": "https://leetcode.cn/problems/construct-binary-tree-from-preorder-and-inorder-traversal/description/",
-    "question": "给定一棵二叉树的先序遍历序列和中序遍历序列，假设结点值互不相同，重建这棵二叉树，并输出它的后序遍历序列。请先给出在中序序列中顺序查找根位置的朴素算法，再给出优化算法。",
-    "constraint": "结点数1≤n≤100；结点值为互不相同的大写英文字母；两条遍历序列均来自同一棵二叉树。先序序列按根、左、右排列，中序序列按左、根、右排列。",
-    "sample": "先序：A B D E C F\n中序：D B E A C F\n\n输出后序：D E B F C A\n\n重建结果：\n        A\n       / \\\n      B   C\n     / \\   \\\n    D   E   F",
+    "question": "本题按力扣105《从前序与中序遍历序列构造二叉树》的定义改编为C语言静态树结构演示。给定同一棵二叉树的先序和中序遍历序列，且结点值互不相同，重建二叉树并输出后序遍历。朴素法在当前中序区间顺序查找根；优化法先建立结点值到中序下标的位置表，再递归构造。\n\n输入格式：无（先序、中序序列分别以内置字符串写在main函数中，n为序列长度）。\n输出格式：朴素法和优化法分别输出重建树的后序序列；变式输出重建树的先序序列。",
+    "constraint": "1≤n≤26；结点值为互不相同的大写英文字母A～Z；先序和中序序列长度均为n，且来自同一棵二叉树。先序按根、左、右排列，中序按左、根、右排列。由于使用大写英文字母且值不重复，n最大为26。",
+    "sample": "正例：\n先序：A B D E C F\n中序：D B E A C F\n输出后序：D E B F C A\n重建结果：\n        A\n       / \\\n      B   C\n     / \\   \\\n    D   E   F\n\n边界：n=1时，先序=A、中序=A，重建后序输出A；只有一个根结点，不发生左右区间划分。\n\n反例：不能只根据先序序列确定树形。先序均为A B时，树1可为A的左孩子是B（中序B A），树2可为A的右孩子是B（中序A B）；两者先序相同但结构不同，必须结合中序序列。\n\n错误做法反例：把先序A B D E C F直接当作后序输出，结果与正确后序D E B F C A不同。",
     "brute": {
       "title": "递归划分 + 顺序查找根位置",
       "tag": "朴素法",
       "idea": "先序区间的第一个元素必为当前子树根；在对应中序区间中顺序找到根的位置k。k左侧是左子树，右侧是右子树，左侧长度决定先序序列中左右子树的区间，再递归构造。",
       "complexity": "时间最坏 O(n²)：若树退化，每层顺序查找会扫描越来越长的中序区间；递归辅助空间 O(h)，h为树高。",
       "risk": "不能只凭先序序列确定左右子树；必须用中序序列中根的位置划分左右子树。结点值重复时，根位置可能不唯一，不能直接套用本算法。",
-      "code": "/*\n * 朴素法：先序确定根，在中序区间内顺序查找根的位置。\n * 约定：两条遍历序列来自同一棵树，且结点值互不相同。\n */\n#include <stdio.h>\n\n#define MAXN 100\n\ntypedef struct {\n    char data;       // 当前结点值\n    int left;        // 左孩子在结点数组中的下标，-1表示空\n    int right;       // 右孩子在结点数组中的下标，-1表示空\n} Node;\n\nint buildNaive(const char pre[], int preL, int preR,\n               const char in[], int inL, int inR,\n               Node tree[], int *used) {\n    if (preL > preR) return -1; // 当前子树为空\n\n    char rootValue = pre[preL]; // 先序区间第一个元素就是根\n    int k = inL;\n\n    // 朴素查找：在当前中序区间中寻找根的位置\n    while (k <= inR && in[k] != rootValue)\n        k++;\n\n    if (k > inR) return -1; // 输入不符合题目保证时，返回空下标\n\n    int leftSize = k - inL; // 根左侧元素个数就是左子树结点数\n    int u = (*used)++;\n    tree[u].data = rootValue;\n\n    // 左子树先序区间紧跟根，长度为leftSize\n    tree[u].left = buildNaive(pre, preL + 1, preL + leftSize,\n                              in, inL, k - 1, tree, used);\n\n    // 右子树先序区间位于左子树之后\n    tree[u].right = buildNaive(pre, preL + leftSize + 1, preR,\n                               in, k + 1, inR, tree, used);\n    return u;\n}\n\n// 后序遍历：左子树、右子树、根\nvoid postorder(int u, const Node tree[]) {\n    if (u == -1) return;\n    postorder(tree[u].left, tree);\n    postorder(tree[u].right, tree);\n    printf(\"%c \", tree[u].data);\n}\n\nint main(void) {\n    const char pre[] = \"ABDECF\"; // 先序：根、左、右\n    const char in[] = \"DBEACF\";  // 中序：左、根、右\n    int n = 6;\n    Node tree[MAXN];\n    int used = 0;\n\n    // 从完整区间开始递归构造二叉树\n    int root = buildNaive(pre, 0, n - 1, in, 0, n - 1, tree, &used);\n\n    printf(\"后序遍历：\");\n    postorder(root, tree);\n    putchar('\\n');\n    return 0; // 输出应为D E B F C A\n}",
+      "code": "/*\n * 朴素法：先序确定根，在中序区间内顺序查找根的位置。\n * 约定：两条遍历序列来自同一棵树，且结点值互不相同。\n */\n#include <stdio.h>\n\n#define MAXN 26\n\ntypedef struct {\n    char data;       // 当前结点值\n    int left;        // 左孩子在结点数组中的下标，-1表示空\n    int right;       // 右孩子在结点数组中的下标，-1表示空\n} Node;\n\nint buildNaive(const char pre[], int preL, int preR,\n               const char in[], int inL, int inR,\n               Node tree[], int *used) {\n    if (preL > preR) return -1; // 当前子树为空\n\n    char rootValue = pre[preL]; // 先序区间第一个元素就是根\n    int k = inL;\n\n    // 朴素查找：在当前中序区间中寻找根的位置\n    while (k <= inR && in[k] != rootValue)\n        k++;\n\n    if (k > inR) return -1; // 输入不符合题目保证时，返回空下标\n\n    int leftSize = k - inL; // 根左侧元素个数就是左子树结点数\n    int u = (*used)++;\n    tree[u].data = rootValue;\n\n    // 左子树先序区间紧跟根，长度为leftSize\n    tree[u].left = buildNaive(pre, preL + 1, preL + leftSize,\n                              in, inL, k - 1, tree, used);\n\n    // 右子树先序区间位于左子树之后\n    tree[u].right = buildNaive(pre, preL + leftSize + 1, preR,\n                               in, k + 1, inR, tree, used);\n    return u;\n}\n\n// 后序遍历：左子树、右子树、根\nvoid postorder(int u, const Node tree[]) {\n    if (u == -1) return;\n    postorder(tree[u].left, tree);\n    postorder(tree[u].right, tree);\n    printf(\"%c \", tree[u].data);\n}\n\nint main(void) {\n    const char pre[] = \"ABDECF\"; // 先序：根、左、右\n    const char in[] = \"DBEACF\";  // 中序：左、根、右\n    int n = 6;\n    Node tree[MAXN];\n    int used = 0;\n\n    // 从完整区间开始递归构造二叉树\n    int root = buildNaive(pre, 0, n - 1, in, 0, n - 1, tree, &used);\n\n    printf(\"后序遍历：\");\n    postorder(root, tree);\n    putchar('\\n');\n    return 0; // 输出应为D E B F C A\n}",
       "explain": [
         "pre[preL]是当前子树根；在中序区间[inL,inR]中找到它的位置k。",
         "leftSize=k-inL，左子树先序区间为[preL+1,preL+leftSize]。",
@@ -12766,7 +12766,7 @@
       "idea": "先扫描一次中序序列，建立每个结点值到中序下标的映射。递归时直接查表得到根位置，不再逐段扫描；每个结点只处理一次。",
       "complexity": "时间 O(n)；固定字符集的位置表为 O(1) 空间，递归栈 O(h)，结点存储 O(n)。若结点值范围不固定，使用哈希表建立映射，额外空间 O(n)。",
       "risk": "位置表必须按unsigned char下标访问，避免char为负时越界；先序递归必须先构造左子树、再构造右子树。",
-      "code": "/*\n * 优化法：先建立“结点值 -> 中序下标”位置表，再递归构造。\n * 本题结点值为大写字母；pos[256]可直接完成常数时间查找。\n */\n#include <stdio.h>\n\n#define MAXN 100\n\ntypedef struct {\n    char data;\n    int left;\n    int right;\n} Node;\n\nint buildFast(const char pre[], int *preIndex,\n              int inL, int inR, const int pos[],\n              Node tree[], int *used) {\n    if (inL > inR) return -1; // 中序区间为空，当前子树为空\n\n    char rootValue = pre[(*preIndex)++]; // 按先序顺序读取根\n    int k = pos[(unsigned char)rootValue]; // O(1)查出根在中序中的位置\n\n    if (k < inL || k > inR) return -1; // 防止不合法序列造成错误划分\n\n    int u = (*used)++;\n    tree[u].data = rootValue;\n\n    // 先构造左子树，再构造右子树，与先序顺序一致\n    tree[u].left = buildFast(pre, preIndex, inL, k - 1,\n                             pos, tree, used);\n    tree[u].right = buildFast(pre, preIndex, k + 1, inR,\n                              pos, tree, used);\n    return u;\n}\n\nvoid postorder(int u, const Node tree[]) {\n    if (u == -1) return;\n    postorder(tree[u].left, tree);\n    postorder(tree[u].right, tree);\n    printf(\"%c \", tree[u].data);\n}\n\nint main(void) {\n    const char pre[] = \"ABDECF\";\n    const char in[] = \"DBEACF\";\n    int n = 6;\n    int pos[256];\n    Node tree[MAXN];\n    int used = 0;\n    int preIndex = 0;\n\n    // 初始化位置表；-1表示该字符没有出现在中序序列中\n    for (int i = 0; i < 256; i++)\n        pos[i] = -1;\n\n    // 一次扫描中序序列，记录每个结点值的位置\n    for (int i = 0; i < n; i++)\n        pos[(unsigned char)in[i]] = i;\n\n    // preIndex会随递归依次读取根、左子树、右子树\n    int root = buildFast(pre, &preIndex, 0, n - 1,\n                         pos, tree, &used);\n\n    printf(\"后序遍历：\");\n    postorder(root, tree);\n    putchar('\\n');\n    return 0; // 输出应为D E B F C A\n}",
+      "code": "/*\n * 优化法：先建立“结点值 -> 中序下标”位置表，再递归构造。\n * 本题结点值为大写字母；pos[256]可直接完成常数时间查找。\n */\n#include <stdio.h>\n\n#define MAXN 26\n\ntypedef struct {\n    char data;\n    int left;\n    int right;\n} Node;\n\nint buildFast(const char pre[], int *preIndex,\n              int inL, int inR, const int pos[],\n              Node tree[], int *used) {\n    if (inL > inR) return -1; // 中序区间为空，当前子树为空\n\n    char rootValue = pre[(*preIndex)++]; // 按先序顺序读取根\n    int k = pos[(unsigned char)rootValue]; // O(1)查出根在中序中的位置\n\n    if (k < inL || k > inR) return -1; // 防止不合法序列造成错误划分\n\n    int u = (*used)++;\n    tree[u].data = rootValue;\n\n    // 先构造左子树，再构造右子树，与先序顺序一致\n    tree[u].left = buildFast(pre, preIndex, inL, k - 1,\n                             pos, tree, used);\n    tree[u].right = buildFast(pre, preIndex, k + 1, inR,\n                              pos, tree, used);\n    return u;\n}\n\nvoid postorder(int u, const Node tree[]) {\n    if (u == -1) return;\n    postorder(tree[u].left, tree);\n    postorder(tree[u].right, tree);\n    printf(\"%c \", tree[u].data);\n}\n\nint main(void) {\n    const char pre[] = \"ABDECF\";\n    const char in[] = \"DBEACF\";\n    int n = 6;\n    int pos[256];\n    Node tree[MAXN];\n    int used = 0;\n    int preIndex = 0;\n\n    // 初始化位置表；-1表示该字符没有出现在中序序列中\n    for (int i = 0; i < 256; i++)\n        pos[i] = -1;\n\n    // 一次扫描中序序列，记录每个结点值的位置\n    for (int i = 0; i < n; i++)\n        pos[(unsigned char)in[i]] = i;\n\n    // preIndex会随递归依次读取根、左子树、右子树\n    int root = buildFast(pre, &preIndex, 0, n - 1,\n                         pos, tree, &used);\n\n    printf(\"后序遍历：\");\n    postorder(root, tree);\n    putchar('\\n');\n    return 0; // 输出应为D E B F C A\n}",
       "explain": [
         "先建立pos表，例如pos['A']=3、pos['B']=1、pos['C']=4。",
         "读取先序根A，查表得到中序下标3，于是左区间为[0,2]、右区间为[4,5]。",
@@ -12783,7 +12783,7 @@
       "question": "巩固题：已知中序序列为D B E A C F、后序序列为D E B F C A，重建二叉树并输出先序序列。写出递归关键顺序。",
       "idea": "后序序列最后一个元素A是根；在中序序列中找到A，左边D B E是左子树，右边C F是右子树。反向读取后序时，顺序为根、右、左，因此递归时必须先构造右子树，再构造左子树。最终先序输出为A B D E C F。",
       "complexity": "时间 O(n)；位置表 O(1)（固定字符集），递归栈 O(h)，结点存储 O(n)。",
-      "code": "/*\n * 巩固：由中序和后序序列重建二叉树。\n * 反向读取后序时是“根、右、左”，所以先递归右子树。\n */\n#include <stdio.h>\n\n#define MAXN 100\n\ntypedef struct {\n    char data;\n    int left;\n    int right;\n} Node;\n\nint buildFromInPost(const char post[], int *postIndex,\n                    int inL, int inR, const int pos[],\n                    Node tree[], int *used) {\n    if (inL > inR) return -1; // 空中序区间对应空子树\n\n    char rootValue = post[(*postIndex)--]; // 后序末尾是当前根\n    int k = pos[(unsigned char)rootValue];\n\n    if (k < inL || k > inR) return -1; // 合法输入下根必在当前区间\n\n    int u = (*used)++;\n    tree[u].data = rootValue;\n\n    // 后序从右向左读取：根之后先遇到右子树，再遇到左子树\n    tree[u].right = buildFromInPost(post, postIndex, k + 1, inR,\n                                    pos, tree, used);\n    tree[u].left = buildFromInPost(post, postIndex, inL, k - 1,\n                                   pos, tree, used);\n    return u;\n}\n\n// 用先序输出验证重建结果\nvoid preorder(int u, const Node tree[]) {\n    if (u == -1) return;\n    printf(\"%c \", tree[u].data);\n    preorder(tree[u].left, tree);\n    preorder(tree[u].right, tree);\n}\n\nint main(void) {\n    const char in[] = \"DBEACF\";\n    const char post[] = \"DEBFCA\";\n    int n = 6;\n    int pos[256];\n    Node tree[MAXN];\n    int used = 0;\n    int postIndex = n - 1;\n\n    // 建立中序位置表\n    for (int i = 0; i < 256; i++)\n        pos[i] = -1;\n    for (int i = 0; i < n; i++)\n        pos[(unsigned char)in[i]] = i;\n\n    // 从后序末尾开始，按根、右、左的顺序递归\n    int root = buildFromInPost(post, &postIndex, 0, n - 1,\n                               pos, tree, &used);\n\n    printf(\"先序遍历：\");\n    preorder(root, tree);\n    putchar('\\n');\n    return 0; // 输出应为A B D E C F\n}",
+      "code": "/*\n * 巩固：由中序和后序序列重建二叉树。\n * 反向读取后序时是“根、右、左”，所以先递归右子树。\n */\n#include <stdio.h>\n\n#define MAXN 26\n\ntypedef struct {\n    char data;\n    int left;\n    int right;\n} Node;\n\nint buildFromInPost(const char post[], int *postIndex,\n                    int inL, int inR, const int pos[],\n                    Node tree[], int *used) {\n    if (inL > inR) return -1; // 空中序区间对应空子树\n\n    char rootValue = post[(*postIndex)--]; // 后序末尾是当前根\n    int k = pos[(unsigned char)rootValue];\n\n    if (k < inL || k > inR) return -1; // 合法输入下根必在当前区间\n\n    int u = (*used)++;\n    tree[u].data = rootValue;\n\n    // 后序从右向左读取：根之后先遇到右子树，再遇到左子树\n    tree[u].right = buildFromInPost(post, postIndex, k + 1, inR,\n                                    pos, tree, used);\n    tree[u].left = buildFromInPost(post, postIndex, inL, k - 1,\n                                   pos, tree, used);\n    return u;\n}\n\n// 用先序输出验证重建结果\nvoid preorder(int u, const Node tree[]) {\n    if (u == -1) return;\n    printf(\"%c \", tree[u].data);\n    preorder(tree[u].left, tree);\n    preorder(tree[u].right, tree);\n}\n\nint main(void) {\n    const char in[] = \"DBEACF\";\n    const char post[] = \"DEBFCA\";\n    int n = 6;\n    int pos[256];\n    Node tree[MAXN];\n    int used = 0;\n    int postIndex = n - 1;\n\n    // 建立中序位置表\n    for (int i = 0; i < 256; i++)\n        pos[i] = -1;\n    for (int i = 0; i < n; i++)\n        pos[(unsigned char)in[i]] = i;\n\n    // 从后序末尾开始，按根、右、左的顺序递归\n    int root = buildFromInPost(post, &postIndex, 0, n - 1,\n                               pos, tree, &used);\n\n    printf(\"先序遍历：\");\n    preorder(root, tree);\n    putchar('\\n');\n    return 0; // 输出应为A B D E C F\n}",
       "explain": [
         "后序最后一个元素A是根；中序中A左侧为D B E，右侧为C F。",
         "postIndex从n-1递减，读到根后必须先构造右子树，再构造左子树。",
@@ -12900,7 +12900,8 @@
             5
           ],
           "pointers": {
-            "phase": "index"
+            "phase": "index",
+            "i": 5
           },
           "diagram": "位置表：D→0，B→1，E→2，A→3，C→4，F→5",
           "text": "先扫描中序序列建立位置表，后续查找根的位置不再逐个比较。"
@@ -12945,6 +12946,7 @@
           "pointers": {
             "root": "B",
             "posB": 1,
+            "preIndex": 2,
             "phase": "recursive"
           },
           "diagram": "左子树根B，pos[B]=1\n右子树根C，pos[C]=4",
@@ -12968,7 +12970,8 @@
             5
           ],
           "pointers": {
-            "phase": "complete"
+            "phase": "complete",
+            "preIndex": 6
           },
           "diagram": "后序：D E B F C A\n总时间：O(n)",
           "text": "二叉树构造完成，后序输出正确；位置表把反复扫描优化为常数时间查找。"
@@ -13048,7 +13051,8 @@
             5
           ],
           "pointers": {
-            "phase": "complete"
+            "phase": "complete",
+            "postIndex": -1
           },
           "diagram": "先序：A B D E C F",
           "text": "最终按根、左、右输出，先序结果为A B D E C F。"
