@@ -59,6 +59,11 @@ CASES = {
         "4 2 5 1 3 6",
         "FOUND 5",
     ),
+    "tree-reconstruct-pre-in-20261126": (
+        "后序遍历：D E B F C A",
+        "后序遍历：D E B F C A",
+        "先序遍历：A B D E C F",
+    ),
 }
 
 
@@ -114,6 +119,7 @@ def main():
         "lc94-inorder-iterative-20261123": "https://leetcode.com/problems/binary-tree-inorder-traversal/",
         "radix-sort-20261124": "https://oi-wiki.org/basic/radix-sort/",
         "shell-sort-20261125": "https://oi-wiki.org/basic/shell-sort/",
+        "tree-reconstruct-pre-in-20261126": "https://leetcode.cn/problems/construct-binary-tree-from-preorder-and-inorder-traversal/description/",
         "original-insert-20261016": "https://en.oi-wiki.org/basic/insertion-sort/",
         "original-graph-bfs-20261017": "https://oi-wiki.org/graph/bfs/",
         "array-two-pointer-20261019": "https://leetcode.cn/problems/remove-duplicates-from-sorted-array/",
@@ -148,7 +154,9 @@ def main():
         "sparse-fast-transpose-20261122": {"brute": 7, "optimal": 8, "variation": 12},
         "lc94-inorder-iterative-20261123": {"brute": 7, "optimal": 8, "variation": 5},
         "radix-sort-20261124": {"brute": 4, "optimal": 10, "variation": 10},
-        "shell-sort-20261125": {"brute": 10, "optimal": 9, "variation": 5},
+        "shell-sort-20261125": {"brute": 10, "optimal": 9, "variation": 4},
+        "tree-reconstruct-pre-in-20261126": {"brute": 4, "optimal": 4, "variation": 4},
+        "tree-reconstruct-pre-in-20261126": {"brute": 4, "optimal": 4, "variation": 4},
     }
     diagram_minimum = {
         "lc997-20261109": {"brute": 6, "optimal": 6},
@@ -472,6 +480,7 @@ def main():
         "lc94-inorder-iterative-20261123": ("brute", "optimal", "variation"),
         "radix-sort-20261124": ("brute", "optimal", "variation"),
         "shell-sort-20261125": ("brute", "optimal", "variation"),
+        "tree-reconstruct-pre-in-20261126": ("brute", "optimal", "variation"),
     }
     reviewed_variations = {
         "lc997-20261109", "lc994-20261110", "kmp-20261111",
@@ -482,7 +491,7 @@ def main():
         "two-stacks-one-array-20261120", "sliding-window-max-20261121",
         "sparse-fast-transpose-20261122",
         "lc94-inorder-iterative-20261123", "radix-sort-20261124",
-        "shell-sort-20261125",
+        "shell-sort-20261125", "tree-reconstruct-pre-in-20261126",
     }
     for lesson in queue:
         if lesson["id"] in reviewed_variations and not lesson.get("variation", {}).get("complexity"):
@@ -765,6 +774,67 @@ def main():
             if not frame.get("diagram") or not isinstance(frame.get("active"), list):
                 raise ValueError(f"tree-level-order-20261119.{method}: 第{index + 1}帧缺少树连线或操作高亮")
 
+    reconstruction_lesson = next((x for x in queue if x["id"] == "tree-reconstruct-pre-in-20261126"), None)
+    if reconstruction_lesson is None:
+        raise ValueError("缺少tree-reconstruct-pre-in-20261126")
+    if reconstruction_lesson.get("source") != "https://leetcode.cn/problems/construct-binary-tree-from-preorder-and-inorder-traversal/description/":
+        raise ValueError("tree-reconstruct-pre-in-20261126: 来源必须指向力扣105官方题面")
+    if not all(term in reconstruction_lesson.get("question", "") for term in ("输入格式：无", "输出格式：")):
+        raise ValueError("tree-reconstruct-pre-in-20261126: 静态演示题必须明确输入/输出格式")
+    if "1≤n≤26" not in reconstruction_lesson.get("constraint", ""):
+        raise ValueError("tree-reconstruct-pre-in-20261126: 大写唯一字符集的n上限必须为26")
+    if not all(term in reconstruction_lesson.get("sample", "") for term in ("正例：", "边界：", "反例：")):
+        raise ValueError("tree-reconstruct-pre-in-20261126: 缺少正例、边界或仅凭先序无法定树形的反例")
+    expected_reconstruction_pointers = {
+        "brute": [
+            {"preL": 0, "inL": 0, "inR": 5, "root": "A"},
+            {"root": "A", "k": 3, "leftSize": 3},
+            {"root": "B", "inL": 0, "inR": 2, "k": 1},
+            {"phase": "complete"},
+        ],
+        "optimal": [
+            {"phase": "index", "i": 5},
+            {"preIndex": 1, "root": "A", "k": 3},
+            {"root": "B", "posB": 1, "preIndex": 2, "phase": "recursive"},
+            {"phase": "complete", "preIndex": 6},
+        ],
+        "variation": [
+            {"postIndex": 5, "root": "A"},
+            {"root": "C", "posC": 4, "phase": "right"},
+            {"root": "B", "posB": 1, "phase": "left"},
+            {"phase": "complete", "postIndex": -1},
+        ],
+    }
+    expected_reconstruction_arrays = {
+        "brute": [
+            ["A", "B", "D", "E", "C", "F"],
+            ["D", "B", "E", "A", "C", "F"],
+            ["A", "B", "D", "E", "C", "F"],
+            ["D", "E", "B", "F", "C", "A"],
+        ],
+        "optimal": [
+            ["D", "B", "E", "A", "C", "F"],
+            ["A", "B", "D", "E", "C", "F"],
+            ["A", "B", "D", "E", "C", "F"],
+            ["D", "E", "B", "F", "C", "A"],
+        ],
+        "variation": [
+            ["D", "E", "B", "F", "C", "A"],
+            ["C", "F"],
+            ["D", "B", "E"],
+            ["A", "B", "D", "E", "C", "F"],
+        ],
+    }
+    for method, expected in expected_reconstruction_pointers.items():
+        frames = reconstruction_lesson.get("animation", {}).get(method, [])
+        if [frame.get("pointers") for frame in frames] != expected:
+            raise ValueError(f"tree-reconstruct-pre-in-20261126.{method}: 递归区间/索引指针轨迹错误")
+        if [frame.get("array") for frame in frames] != expected_reconstruction_arrays[method]:
+            raise ValueError(f"tree-reconstruct-pre-in-20261126.{method}: 遍历序列状态错误")
+        for index, frame in enumerate(frames):
+            if not frame.get("diagram") or not frame.get("text") or not isinstance(frame.get("active"), list):
+                raise ValueError(f"tree-reconstruct-pre-in-20261126.{method}: 第{index + 1}帧缺少连线、说明或高亮")
+
     sparse_lesson = next((x for x in queue if x["id"] == "sparse-fast-transpose-20261122"), None)
     if sparse_lesson is None:
         raise ValueError("缺少sparse-fast-transpose-20261122")
@@ -902,6 +972,60 @@ def main():
                       x["id"] + ".variation.k_greater_than_n",
                       "100 1 101\n" + chain_rows + "\n")
             count += 1
+        if x["id"] == "tree-reconstruct-pre-in-20261126":
+            # 三份静态演示程序都必须通过样例、单结点及26个唯一大写字母的退化树测试。
+            replacements = {
+                "brute": [
+                    ('const char pre[] = "ABDECF";', 'const char pre[] = "A";'),
+                    ('const char in[] = "DBEACF";', 'const char in[] = "A";'),
+                ],
+                "optimal": [
+                    ('const char pre[] = "ABDECF";', 'const char pre[] = "A";'),
+                    ('const char in[] = "DBEACF";', 'const char in[] = "A";'),
+                ],
+                "variation": [
+                    ('const char in[] = "DBEACF";', 'const char in[] = "A";'),
+                    ('const char post[] = "DEBFCA";', 'const char post[] = "A";'),
+                ],
+            }
+            single_expected = {
+                "brute": "后序遍历：A",
+                "optimal": "后序遍历：A",
+                "variation": "先序遍历：A",
+            }
+            for method, pairs in replacements.items():
+                code = x[method]["code"].replace("int n = 6;", "int n = 1;", 1)
+                for old, new in pairs:
+                    if old not in code:
+                        raise ValueError(f"{x['id']}.{method}: 单结点测试替换锚点缺失")
+                    code = code.replace(old, new, 1)
+                check_one(code, single_expected[method], x["id"] + "." + method + ".single_node")
+                count += 1
+
+            alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+            reverse_alphabet = alphabet[::-1]
+            skew_cases = {
+                "left_skew": (alphabet, reverse_alphabet, reverse_alphabet),
+                "right_skew": (alphabet, alphabet, reverse_alphabet),
+            }
+            for case_name, (preorder, inorder, postorder) in skew_cases.items():
+                for method in ("brute", "optimal"):
+                    code = x[method]["code"].replace('const char pre[] = "ABDECF";',
+                                                     f'const char pre[] = "{preorder}";', 1)
+                    code = code.replace('const char in[] = "DBEACF";',
+                                        f'const char in[] = "{inorder}";', 1)
+                    code = code.replace("int n = 6;", "int n = 26;", 1)
+                    check_one(code, "后序遍历：" + " ".join(postorder),
+                              x["id"] + "." + method + "." + case_name + "_26")
+                    count += 1
+                code = x["variation"]["code"].replace('const char in[] = "DBEACF";',
+                                                      f'const char in[] = "{inorder}";', 1)
+                code = code.replace('const char post[] = "DEBFCA";',
+                                    f'const char post[] = "{postorder}";', 1)
+                code = code.replace("int n = 6;", "int n = 26;", 1)
+                check_one(code, "先序遍历：" + " ".join(alphabet),
+                          x["id"] + ".variation." + case_name + "_26")
+                count += 1
         if x["id"] == "tree-level-order-20261119":
             sample_tree = """Node tree[] = {
         {'A', 1, 2},
