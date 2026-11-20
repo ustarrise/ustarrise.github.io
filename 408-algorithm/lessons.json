@@ -1,5 +1,1135 @@
 [
   {
+    "id": "sliding-window-max-20261121",
+    "date": "2026-11-21",
+    "year": "预测",
+    "number": "21",
+    "category": "队列 · 单调双端队列 · 滑动窗口",
+    "title": "滑动窗口最大值：从重复扫描到单调双端队列",
+    "difficulty": "中等",
+    "time": "20–25分钟",
+    "source": "https://leetcode.cn/problems/sliding-window-maximum/",
+    "question": "给定整数数组nums和窗口长度k。窗口从数组最左侧开始，每次向右移动一位；每个位置只考虑窗口内的k个元素。输出每个窗口中的最大值。输入格式：第一行输入n和k，第二行输入n个整数。输出格式：一行输出n-k+1个整数，依次表示各窗口最大值。",
+    "constraint": "1≤n≤100000；1≤k≤n；-10000≤nums[i]≤10000。数组非空且k保证合法。输出元素个数固定为n-k+1。C程序使用int保存元素和下标；队列与堆数组容量均为MAXN=100000。",
+    "sample": "输入：\n8 3\n1 3 -1 -3 5 3 6 7\n输出：\n3 3 5 5 6 7\n\n边界1：n=1、k=1、数组[5]，输出5。\n边界2：数组[-5,-2,-7,-1,-3]、k=2，输出-2 -2 -1 -1；全为负数时不能把0当初始最大值。\n边界3：k=n时只输出整个数组的最大值。\n反例：数组[9,1,2,3]、k=2，若只记住历史最大值9却不删除过期下标，会错误输出9 9 9；正确输出9 2 3。",
+    "brute": {
+      "title": "逐窗口扫描",
+      "tag": "保底思路",
+      "idea": "枚举每个窗口的左端点，在窗口范围内逐个比较，记录最大元素。每个窗口都重新扫描k个元素，思路直接但有大量重复比较。",
+      "complexity": "时间 O((n-k+1)k)，最坏 O(nk)；额外空间 O(1)（不计输出数组）。",
+      "risk": "当n和k都较大时，重复扫描会产生O(nk)次比较，不能满足线性时间要求。",
+      "code": "/*\n * 朴素法：每个长度为k的窗口都从头扫描，找出最大元素。\n * 窗口之间会重复比较元素，最坏时间为O(nk)。\n */\n#include <stdio.h>\n#define MAXN 100000\n\nint main(void) {\n    int n, k, a[MAXN], answer[MAXN];\n\n    if (scanf(\"%d%d\", &n, &k) != 2) return 0; // 没有读到完整的n和k\n    if (n < 1 || n > MAXN || k < 1 || k > n) {\n        fprintf(stderr, \"invalid n or k\\n\");\n        return 1; // 窗口长度必须在数组长度范围内\n    }\n    for (int i = 0; i < n; i++) {\n        if (scanf(\"%d\", &a[i]) != 1) return 1; // 输入元素不完整\n    }\n\n    int out = 0;\n    for (int left = 0; left + k <= n; left++) {\n        int maxIndex = left;\n        for (int j = left + 1; j < left + k; j++) {\n            if (a[j] > a[maxIndex])\n                maxIndex = j; // 只有更大元素才替换当前最大值下标\n        }\n        answer[out++] = a[maxIndex];\n    }\n\n    for (int i = 0; i < out; i++)\n        printf(\"%d%c\", answer[i], i + 1 == out ? '\\n' : ' ');\n    return 0; // 所有窗口均已扫描并输出\n}",
+      "explain": [
+        "left枚举每个窗口的起点，保证窗口不会越过数组末尾。",
+        "maxIndex保存当前窗口最大元素的下标，比较时不能把负数数组的最大值错误初始化为0。",
+        "只有扫描完整个窗口后才能输出该窗口最大值。"
+      ]
+    },
+    "optimal": {
+      "title": "单调双端队列",
+      "tag": "考场推荐",
+      "idea": "队列只存数组下标，并保持对应数值从队首到队尾递减。每次先删除滑出窗口的队首，再从队尾删除所有不大于当前值的下标，最后将当前下标入队；队首就是窗口最大值。",
+      "complexity": "时间 O(n)（每个下标最多入队、出队各一次）；额外空间 O(k)，输出数组 O(n-k+1)。",
+      "risk": "必须存下标而不是只存数值，否则无法判断队首是否已经滑出当前窗口；队列的head、tail也不能混淆。",
+      "code": "/*\n * 单调双端队列存储下标，队列对应的数值从队首到队尾严格递减。\n * 每个下标最多入队、出队各一次，因此总时间为O(n)。\n */\n#include <stdio.h>\n#define MAXN 100000\n\nint main(void) {\n    int n, k, a[MAXN], deque[MAXN], answer[MAXN];\n    if (scanf(\"%d%d\", &n, &k) != 2) return 0; // 没有读到完整的n和k\n    if (n < 1 || n > MAXN || k < 1 || k > n) {\n        fprintf(stderr, \"invalid n or k\\n\");\n        return 1; // 窗口长度必须在数组长度范围内\n    }\n    for (int i = 0; i < n; i++) {\n        if (scanf(\"%d\", &a[i]) != 1) return 1; // 输入元素不完整\n    }\n\n    int head = 0, tail = 0, out = 0;\n    for (int i = 0; i < n; i++) {\n        // 队首下标不在当前窗口内，不能再作为最大值候选。\n        while (head < tail && deque[head] <= i - k)\n            head++;\n\n        // 新元素更大或相等时，队尾旧元素以后不可能成为最大值。\n        while (head < tail && a[deque[tail - 1]] <= a[i])\n            tail--;\n\n        deque[tail++] = i; // 保存下标，才能判断元素何时滑出窗口\n        if (i >= k - 1)\n            answer[out++] = a[deque[head]]; // 队首就是当前窗口最大值\n    }\n\n    for (int i = 0; i < out; i++)\n        printf(\"%d%c\", answer[i], i + 1 == out ? '\\n' : ' ');\n    return 0; // 每个完整窗口都已输出\n}",
+      "explain": [
+        "deque[head]≤i-k表示队首下标已在窗口左边，必须先过期删除。",
+        "队尾值≤当前值时，旧下标以后不可能成为最大值，因此可以从队尾淘汰。",
+        "i≥k-1才形成第一个完整窗口，此时队首对应最大值。"
+      ]
+    },
+    "tips": [
+      "单调队列保存下标，不只保存元素值。",
+      "先删过期队首，再维护队尾单调性，最后插入当前下标。",
+      "相等元素保留较新的下标，可让较旧元素更早被淘汰。",
+      "每个下标最多入队一次、从队首或队尾删除一次，所以总时间为O(n)。"
+    ],
+    "variation": {
+      "question": "巩固题：使用最大堆求每个滑动窗口最大值。输入数组[1,3,-1,-3,5,3,6,7]、k=3，输出3 3 5 5 6 7。堆中保存数值和下标，只在过期元素到达堆顶时惰性删除。",
+      "idea": "每读入一个元素就将(数值,下标)压入最大堆。若堆顶下标小于当前窗口左端点，就弹出；重复直到堆顶有效。窗口形成后，堆顶就是最大值。惰性删除使堆最多保存n个元素。",
+      "complexity": "时间 O(n log n)，额外空间 O(n)；每个元素入堆一次，最多出堆一次。",
+      "code": "/*\n * 变式：使用最大堆保存(数值,下标)，堆顶始终是当前最大候选。\n * 过期元素采用惰性删除：只有到达堆顶时才弹出。\n */\n#include <stdio.h>\n#define MAXN 100000\n\ntypedef struct {\n    int value;\n    int index;\n} Item;\n\nItem heap[MAXN];\nint heapSize = 0;\n\nint higher(Item a, Item b) {\n    if (a.value != b.value) return a.value > b.value;\n    return a.index > b.index; // 数值相同优先保留较新的下标\n}\n\nvoid push(Item x) {\n    int i = heapSize++;\n    while (i > 0) {\n        int parent = (i - 1) / 2;\n        if (!higher(x, heap[parent])) break;\n        heap[i] = heap[parent];\n        i = parent;\n    }\n    heap[i] = x;\n}\n\nItem popMax(void) {\n    Item result = heap[0];\n    Item last = heap[--heapSize];\n    int i = 0;\n\n    while (i * 2 + 1 < heapSize) {\n        int child = i * 2 + 1;\n        if (child + 1 < heapSize && higher(heap[child + 1], heap[child]))\n            child++;\n        if (!higher(heap[child], last)) break;\n        heap[i] = heap[child];\n        i = child;\n    }\n    if (heapSize > 0) heap[i] = last;\n    return result; // 返回原堆顶，供调用者检查是否过期\n}\n\nint main(void) {\n    int n, k, a[MAXN], answer[MAXN];\n    if (scanf(\"%d%d\", &n, &k) != 2) return 0; // 没有读到完整的n和k\n    if (n < 1 || n > MAXN || k < 1 || k > n) {\n        fprintf(stderr, \"invalid n or k\\n\");\n        return 1; // 窗口长度必须在数组长度范围内\n    }\n    for (int i = 0; i < n; i++) {\n        if (scanf(\"%d\", &a[i]) != 1) return 1; // 输入元素不完整\n    }\n\n    int out = 0;\n    for (int i = 0; i < n; i++) {\n        Item x = {a[i], i};\n        push(x);\n        // 堆顶若已滑出窗口就删除；循环处理连续的过期堆顶。\n        while (heapSize > 0 && heap[0].index <= i - k)\n            (void)popMax();\n        if (i >= k - 1)\n            answer[out++] = heap[0].value;\n    }\n\n    for (int i = 0; i < out; i++)\n        printf(\"%d%c\", answer[i], i + 1 == out ? '\\n' : ' ');\n    return 0; // 所有完整窗口的最大值均已输出\n}",
+      "explain": [
+        "最大堆保存(value,index)，堆顶给出当前候选最大值；index用于判断元素是否已滑出窗口。",
+        "只需惰性删除堆顶的过期元素：非堆顶元素即使过期，也不会影响当前最大值，等它升到堆顶再删除。",
+        "每个元素最多入堆一次、出堆一次，所以总时间O(n log n)，额外空间O(n)。"
+      ]
+    },
+    "animation": {
+      "layout": "array",
+      "brute": [
+        {
+          "array": [
+            1,
+            3,
+            -1,
+            -3,
+            5,
+            3,
+            6,
+            7
+          ],
+          "active": [
+            0,
+            1,
+            2
+          ],
+          "pointers": {
+            "left": 0,
+            "right": 2,
+            "j": 0,
+            "maxIndex": 0
+          },
+          "text": "窗口0..2，扫描a[0]=1；当前最大值为1（下标0）。继续扫描窗口内剩余元素。",
+          "diagram": "窗口下标[0..2]：1 3 -1\n扫描指针j=0，当前最大值a[0]=1"
+        },
+        {
+          "array": [
+            1,
+            3,
+            -1,
+            -3,
+            5,
+            3,
+            6,
+            7
+          ],
+          "active": [
+            0,
+            1,
+            2
+          ],
+          "pointers": {
+            "left": 0,
+            "right": 2,
+            "j": 1,
+            "maxIndex": 1
+          },
+          "text": "窗口0..2，扫描a[1]=3；当前最大值为3（下标1）。继续扫描窗口内剩余元素。",
+          "diagram": "窗口下标[0..2]：1 3 -1\n扫描指针j=1，当前最大值a[1]=3"
+        },
+        {
+          "array": [
+            1,
+            3,
+            -1,
+            -3,
+            5,
+            3,
+            6,
+            7
+          ],
+          "active": [
+            0,
+            1,
+            2
+          ],
+          "pointers": {
+            "left": 0,
+            "right": 2,
+            "j": 2,
+            "maxIndex": 1
+          },
+          "text": "窗口0..2，扫描a[2]=-1；当前最大值为3（下标1）。输出本窗口最大值3。",
+          "diagram": "窗口下标[0..2]：1 3 -1\n扫描指针j=2，当前最大值a[1]=3"
+        },
+        {
+          "array": [
+            1,
+            3,
+            -1,
+            -3,
+            5,
+            3,
+            6,
+            7
+          ],
+          "active": [
+            1,
+            2,
+            3
+          ],
+          "pointers": {
+            "left": 1,
+            "right": 3,
+            "j": 1,
+            "maxIndex": 1
+          },
+          "text": "窗口1..3，扫描a[1]=3；当前最大值为3（下标1）。继续扫描窗口内剩余元素。",
+          "diagram": "窗口下标[1..3]：3 -1 -3\n扫描指针j=1，当前最大值a[1]=3"
+        },
+        {
+          "array": [
+            1,
+            3,
+            -1,
+            -3,
+            5,
+            3,
+            6,
+            7
+          ],
+          "active": [
+            1,
+            2,
+            3
+          ],
+          "pointers": {
+            "left": 1,
+            "right": 3,
+            "j": 2,
+            "maxIndex": 1
+          },
+          "text": "窗口1..3，扫描a[2]=-1；当前最大值为3（下标1）。继续扫描窗口内剩余元素。",
+          "diagram": "窗口下标[1..3]：3 -1 -3\n扫描指针j=2，当前最大值a[1]=3"
+        },
+        {
+          "array": [
+            1,
+            3,
+            -1,
+            -3,
+            5,
+            3,
+            6,
+            7
+          ],
+          "active": [
+            1,
+            2,
+            3
+          ],
+          "pointers": {
+            "left": 1,
+            "right": 3,
+            "j": 3,
+            "maxIndex": 1
+          },
+          "text": "窗口1..3，扫描a[3]=-3；当前最大值为3（下标1）。输出本窗口最大值3。",
+          "diagram": "窗口下标[1..3]：3 -1 -3\n扫描指针j=3，当前最大值a[1]=3"
+        },
+        {
+          "array": [
+            1,
+            3,
+            -1,
+            -3,
+            5,
+            3,
+            6,
+            7
+          ],
+          "active": [
+            2,
+            3,
+            4
+          ],
+          "pointers": {
+            "left": 2,
+            "right": 4,
+            "j": 2,
+            "maxIndex": 2
+          },
+          "text": "窗口2..4，扫描a[2]=-1；当前最大值为-1（下标2）。继续扫描窗口内剩余元素。",
+          "diagram": "窗口下标[2..4]：-1 -3 5\n扫描指针j=2，当前最大值a[2]=-1"
+        },
+        {
+          "array": [
+            1,
+            3,
+            -1,
+            -3,
+            5,
+            3,
+            6,
+            7
+          ],
+          "active": [
+            2,
+            3,
+            4
+          ],
+          "pointers": {
+            "left": 2,
+            "right": 4,
+            "j": 3,
+            "maxIndex": 2
+          },
+          "text": "窗口2..4，扫描a[3]=-3；当前最大值为-1（下标2）。继续扫描窗口内剩余元素。",
+          "diagram": "窗口下标[2..4]：-1 -3 5\n扫描指针j=3，当前最大值a[2]=-1"
+        },
+        {
+          "array": [
+            1,
+            3,
+            -1,
+            -3,
+            5,
+            3,
+            6,
+            7
+          ],
+          "active": [
+            2,
+            3,
+            4
+          ],
+          "pointers": {
+            "left": 2,
+            "right": 4,
+            "j": 4,
+            "maxIndex": 4
+          },
+          "text": "窗口2..4，扫描a[4]=5；当前最大值为5（下标4）。输出本窗口最大值5。",
+          "diagram": "窗口下标[2..4]：-1 -3 5\n扫描指针j=4，当前最大值a[4]=5"
+        },
+        {
+          "array": [
+            1,
+            3,
+            -1,
+            -3,
+            5,
+            3,
+            6,
+            7
+          ],
+          "active": [
+            3,
+            4,
+            5
+          ],
+          "pointers": {
+            "left": 3,
+            "right": 5,
+            "j": 3,
+            "maxIndex": 3
+          },
+          "text": "窗口3..5，扫描a[3]=-3；当前最大值为-3（下标3）。继续扫描窗口内剩余元素。",
+          "diagram": "窗口下标[3..5]：-3 5 3\n扫描指针j=3，当前最大值a[3]=-3"
+        },
+        {
+          "array": [
+            1,
+            3,
+            -1,
+            -3,
+            5,
+            3,
+            6,
+            7
+          ],
+          "active": [
+            3,
+            4,
+            5
+          ],
+          "pointers": {
+            "left": 3,
+            "right": 5,
+            "j": 4,
+            "maxIndex": 4
+          },
+          "text": "窗口3..5，扫描a[4]=5；当前最大值为5（下标4）。继续扫描窗口内剩余元素。",
+          "diagram": "窗口下标[3..5]：-3 5 3\n扫描指针j=4，当前最大值a[4]=5"
+        },
+        {
+          "array": [
+            1,
+            3,
+            -1,
+            -3,
+            5,
+            3,
+            6,
+            7
+          ],
+          "active": [
+            3,
+            4,
+            5
+          ],
+          "pointers": {
+            "left": 3,
+            "right": 5,
+            "j": 5,
+            "maxIndex": 4
+          },
+          "text": "窗口3..5，扫描a[5]=3；当前最大值为5（下标4）。输出本窗口最大值5。",
+          "diagram": "窗口下标[3..5]：-3 5 3\n扫描指针j=5，当前最大值a[4]=5"
+        },
+        {
+          "array": [
+            1,
+            3,
+            -1,
+            -3,
+            5,
+            3,
+            6,
+            7
+          ],
+          "active": [
+            4,
+            5,
+            6
+          ],
+          "pointers": {
+            "left": 4,
+            "right": 6,
+            "j": 4,
+            "maxIndex": 4
+          },
+          "text": "窗口4..6，扫描a[4]=5；当前最大值为5（下标4）。继续扫描窗口内剩余元素。",
+          "diagram": "窗口下标[4..6]：5 3 6\n扫描指针j=4，当前最大值a[4]=5"
+        },
+        {
+          "array": [
+            1,
+            3,
+            -1,
+            -3,
+            5,
+            3,
+            6,
+            7
+          ],
+          "active": [
+            4,
+            5,
+            6
+          ],
+          "pointers": {
+            "left": 4,
+            "right": 6,
+            "j": 5,
+            "maxIndex": 4
+          },
+          "text": "窗口4..6，扫描a[5]=3；当前最大值为5（下标4）。继续扫描窗口内剩余元素。",
+          "diagram": "窗口下标[4..6]：5 3 6\n扫描指针j=5，当前最大值a[4]=5"
+        },
+        {
+          "array": [
+            1,
+            3,
+            -1,
+            -3,
+            5,
+            3,
+            6,
+            7
+          ],
+          "active": [
+            4,
+            5,
+            6
+          ],
+          "pointers": {
+            "left": 4,
+            "right": 6,
+            "j": 6,
+            "maxIndex": 6
+          },
+          "text": "窗口4..6，扫描a[6]=6；当前最大值为6（下标6）。输出本窗口最大值6。",
+          "diagram": "窗口下标[4..6]：5 3 6\n扫描指针j=6，当前最大值a[6]=6"
+        },
+        {
+          "array": [
+            1,
+            3,
+            -1,
+            -3,
+            5,
+            3,
+            6,
+            7
+          ],
+          "active": [
+            5,
+            6,
+            7
+          ],
+          "pointers": {
+            "left": 5,
+            "right": 7,
+            "j": 5,
+            "maxIndex": 5
+          },
+          "text": "窗口5..7，扫描a[5]=3；当前最大值为3（下标5）。继续扫描窗口内剩余元素。",
+          "diagram": "窗口下标[5..7]：3 6 7\n扫描指针j=5，当前最大值a[5]=3"
+        },
+        {
+          "array": [
+            1,
+            3,
+            -1,
+            -3,
+            5,
+            3,
+            6,
+            7
+          ],
+          "active": [
+            5,
+            6,
+            7
+          ],
+          "pointers": {
+            "left": 5,
+            "right": 7,
+            "j": 6,
+            "maxIndex": 6
+          },
+          "text": "窗口5..7，扫描a[6]=6；当前最大值为6（下标6）。继续扫描窗口内剩余元素。",
+          "diagram": "窗口下标[5..7]：3 6 7\n扫描指针j=6，当前最大值a[6]=6"
+        },
+        {
+          "array": [
+            1,
+            3,
+            -1,
+            -3,
+            5,
+            3,
+            6,
+            7
+          ],
+          "active": [
+            5,
+            6,
+            7
+          ],
+          "pointers": {
+            "left": 5,
+            "right": 7,
+            "j": 7,
+            "maxIndex": 7
+          },
+          "text": "窗口5..7，扫描a[7]=7；当前最大值为7（下标7）。输出本窗口最大值7。",
+          "diagram": "窗口下标[5..7]：3 6 7\n扫描指针j=7，当前最大值a[7]=7"
+        }
+      ],
+      "optimal": [
+        {
+          "array": [
+            1,
+            3,
+            -1,
+            -3,
+            5,
+            3,
+            6,
+            7
+          ],
+          "active": [
+            0
+          ],
+          "pointers": {
+            "i": 0,
+            "head": 0,
+            "tail": 1,
+            "deque": [
+              0
+            ],
+            "expired": [],
+            "removedBack": [],
+            "frontIndex": 0,
+            "maxValue": 1
+          },
+          "text": "处理a[0]=1：过期队首无；队尾淘汰无；窗口尚未形成。",
+          "diagram": "单调递减双端队列（存下标）：0(1)\nhead=0，tail=1；队首是当前最大值"
+        },
+        {
+          "array": [
+            1,
+            3,
+            -1,
+            -3,
+            5,
+            3,
+            6,
+            7
+          ],
+          "active": [
+            0,
+            1
+          ],
+          "pointers": {
+            "i": 1,
+            "head": 0,
+            "tail": 1,
+            "deque": [
+              1
+            ],
+            "expired": [],
+            "removedBack": [
+              0
+            ],
+            "frontIndex": 1,
+            "maxValue": 3
+          },
+          "text": "处理a[1]=3：过期队首无；队尾淘汰0；窗口尚未形成。",
+          "diagram": "单调递减双端队列（存下标）：1(3)\nhead=0，tail=1；队首是当前最大值"
+        },
+        {
+          "array": [
+            1,
+            3,
+            -1,
+            -3,
+            5,
+            3,
+            6,
+            7
+          ],
+          "active": [
+            1,
+            2
+          ],
+          "pointers": {
+            "i": 2,
+            "head": 0,
+            "tail": 2,
+            "deque": [
+              1,
+              2
+            ],
+            "expired": [],
+            "removedBack": [],
+            "frontIndex": 1,
+            "maxValue": 3
+          },
+          "text": "处理a[2]=-1：过期队首无；队尾淘汰无；窗口最大值为3。",
+          "diagram": "单调递减双端队列（存下标）：1(3) → 2(-1)\nhead=0，tail=2；队首是当前最大值"
+        },
+        {
+          "array": [
+            1,
+            3,
+            -1,
+            -3,
+            5,
+            3,
+            6,
+            7
+          ],
+          "active": [
+            1,
+            2,
+            3
+          ],
+          "pointers": {
+            "i": 3,
+            "head": 0,
+            "tail": 3,
+            "deque": [
+              1,
+              2,
+              3
+            ],
+            "expired": [],
+            "removedBack": [],
+            "frontIndex": 1,
+            "maxValue": 3
+          },
+          "text": "处理a[3]=-3：过期队首无；队尾淘汰无；窗口最大值为3。",
+          "diagram": "单调递减双端队列（存下标）：1(3) → 2(-1) → 3(-3)\nhead=0，tail=3；队首是当前最大值"
+        },
+        {
+          "array": [
+            1,
+            3,
+            -1,
+            -3,
+            5,
+            3,
+            6,
+            7
+          ],
+          "active": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "pointers": {
+            "i": 4,
+            "head": 1,
+            "tail": 2,
+            "deque": [
+              4
+            ],
+            "expired": [
+              1
+            ],
+            "removedBack": [
+              3,
+              2
+            ],
+            "frontIndex": 4,
+            "maxValue": 5
+          },
+          "text": "处理a[4]=5：过期队首1；队尾淘汰3,2；窗口最大值为5。",
+          "diagram": "单调递减双端队列（存下标）：4(5)\nhead=1，tail=2；队首是当前最大值"
+        },
+        {
+          "array": [
+            1,
+            3,
+            -1,
+            -3,
+            5,
+            3,
+            6,
+            7
+          ],
+          "active": [
+            4,
+            5
+          ],
+          "pointers": {
+            "i": 5,
+            "head": 1,
+            "tail": 3,
+            "deque": [
+              4,
+              5
+            ],
+            "expired": [],
+            "removedBack": [],
+            "frontIndex": 4,
+            "maxValue": 5
+          },
+          "text": "处理a[5]=3：过期队首无；队尾淘汰无；窗口最大值为5。",
+          "diagram": "单调递减双端队列（存下标）：4(5) → 5(3)\nhead=1，tail=3；队首是当前最大值"
+        },
+        {
+          "array": [
+            1,
+            3,
+            -1,
+            -3,
+            5,
+            3,
+            6,
+            7
+          ],
+          "active": [
+            4,
+            5,
+            6
+          ],
+          "pointers": {
+            "i": 6,
+            "head": 1,
+            "tail": 2,
+            "deque": [
+              6
+            ],
+            "expired": [],
+            "removedBack": [
+              5,
+              4
+            ],
+            "frontIndex": 6,
+            "maxValue": 6
+          },
+          "text": "处理a[6]=6：过期队首无；队尾淘汰5,4；窗口最大值为6。",
+          "diagram": "单调递减双端队列（存下标）：6(6)\nhead=1，tail=2；队首是当前最大值"
+        },
+        {
+          "array": [
+            1,
+            3,
+            -1,
+            -3,
+            5,
+            3,
+            6,
+            7
+          ],
+          "active": [
+            6,
+            7
+          ],
+          "pointers": {
+            "i": 7,
+            "head": 1,
+            "tail": 2,
+            "deque": [
+              7
+            ],
+            "expired": [],
+            "removedBack": [
+              6
+            ],
+            "frontIndex": 7,
+            "maxValue": 7
+          },
+          "text": "处理a[7]=7：过期队首无；队尾淘汰6；窗口最大值为7。",
+          "diagram": "单调递减双端队列（存下标）：7(7)\nhead=1，tail=2；队首是当前最大值"
+        }
+      ],
+      "variation": [
+        {
+          "array": [
+            1,
+            3,
+            -1,
+            -3,
+            5,
+            3,
+            6,
+            7
+          ],
+          "active": [
+            0
+          ],
+          "pointers": {
+            "i": 0,
+            "heapSize": 1,
+            "topIndex": 0,
+            "topValue": 1,
+            "expiredPops": [],
+            "heap": [
+              {
+                "index": 0,
+                "value": 1
+              }
+            ]
+          },
+          "text": "加入a[0]=1，弹出堆顶中过期下标无；窗口尚未形成。",
+          "diagram": "最大堆（值@下标）：1@0\n堆顶1@0；仅当堆顶过期时才惰性删除"
+        },
+        {
+          "array": [
+            1,
+            3,
+            -1,
+            -3,
+            5,
+            3,
+            6,
+            7
+          ],
+          "active": [
+            1
+          ],
+          "pointers": {
+            "i": 1,
+            "heapSize": 2,
+            "topIndex": 1,
+            "topValue": 3,
+            "expiredPops": [],
+            "heap": [
+              {
+                "index": 1,
+                "value": 3
+              },
+              {
+                "index": 0,
+                "value": 1
+              }
+            ]
+          },
+          "text": "加入a[1]=3，弹出堆顶中过期下标无；窗口尚未形成。",
+          "diagram": "最大堆（值@下标）：3@1，1@0\n堆顶3@1；仅当堆顶过期时才惰性删除"
+        },
+        {
+          "array": [
+            1,
+            3,
+            -1,
+            -3,
+            5,
+            3,
+            6,
+            7
+          ],
+          "active": [
+            1,
+            2
+          ],
+          "pointers": {
+            "i": 2,
+            "heapSize": 3,
+            "topIndex": 1,
+            "topValue": 3,
+            "expiredPops": [],
+            "heap": [
+              {
+                "index": 1,
+                "value": 3
+              },
+              {
+                "index": 0,
+                "value": 1
+              },
+              {
+                "index": 2,
+                "value": -1
+              }
+            ]
+          },
+          "text": "加入a[2]=-1，弹出堆顶中过期下标无；当前窗口最大值为3（下标1）。",
+          "diagram": "最大堆（值@下标）：3@1，1@0，-1@2\n堆顶3@1；仅当堆顶过期时才惰性删除"
+        },
+        {
+          "array": [
+            1,
+            3,
+            -1,
+            -3,
+            5,
+            3,
+            6,
+            7
+          ],
+          "active": [
+            1,
+            3
+          ],
+          "pointers": {
+            "i": 3,
+            "heapSize": 4,
+            "topIndex": 1,
+            "topValue": 3,
+            "expiredPops": [],
+            "heap": [
+              {
+                "index": 1,
+                "value": 3
+              },
+              {
+                "index": 0,
+                "value": 1
+              },
+              {
+                "index": 2,
+                "value": -1
+              },
+              {
+                "index": 3,
+                "value": -3
+              }
+            ]
+          },
+          "text": "加入a[3]=-3，弹出堆顶中过期下标无；当前窗口最大值为3（下标1）。",
+          "diagram": "最大堆（值@下标）：3@1，1@0，-1@2，-3@3\n堆顶3@1；仅当堆顶过期时才惰性删除"
+        },
+        {
+          "array": [
+            1,
+            3,
+            -1,
+            -3,
+            5,
+            3,
+            6,
+            7
+          ],
+          "active": [
+            4
+          ],
+          "pointers": {
+            "i": 4,
+            "heapSize": 5,
+            "topIndex": 4,
+            "topValue": 5,
+            "expiredPops": [],
+            "heap": [
+              {
+                "index": 4,
+                "value": 5
+              },
+              {
+                "index": 1,
+                "value": 3
+              },
+              {
+                "index": 2,
+                "value": -1
+              },
+              {
+                "index": 3,
+                "value": -3
+              },
+              {
+                "index": 0,
+                "value": 1
+              }
+            ]
+          },
+          "text": "加入a[4]=5，弹出堆顶中过期下标无；当前窗口最大值为5（下标4）。",
+          "diagram": "最大堆（值@下标）：5@4，3@1，-1@2，-3@3，1@0\n堆顶5@4；仅当堆顶过期时才惰性删除"
+        },
+        {
+          "array": [
+            1,
+            3,
+            -1,
+            -3,
+            5,
+            3,
+            6,
+            7
+          ],
+          "active": [
+            4,
+            5
+          ],
+          "pointers": {
+            "i": 5,
+            "heapSize": 6,
+            "topIndex": 4,
+            "topValue": 5,
+            "expiredPops": [],
+            "heap": [
+              {
+                "index": 4,
+                "value": 5
+              },
+              {
+                "index": 1,
+                "value": 3
+              },
+              {
+                "index": 5,
+                "value": 3
+              },
+              {
+                "index": 3,
+                "value": -3
+              },
+              {
+                "index": 0,
+                "value": 1
+              },
+              {
+                "index": 2,
+                "value": -1
+              }
+            ]
+          },
+          "text": "加入a[5]=3，弹出堆顶中过期下标无；当前窗口最大值为5（下标4）。",
+          "diagram": "最大堆（值@下标）：5@4，3@1，3@5，-3@3，1@0，-1@2\n堆顶5@4；仅当堆顶过期时才惰性删除"
+        },
+        {
+          "array": [
+            1,
+            3,
+            -1,
+            -3,
+            5,
+            3,
+            6,
+            7
+          ],
+          "active": [
+            6
+          ],
+          "pointers": {
+            "i": 6,
+            "heapSize": 7,
+            "topIndex": 6,
+            "topValue": 6,
+            "expiredPops": [],
+            "heap": [
+              {
+                "index": 6,
+                "value": 6
+              },
+              {
+                "index": 1,
+                "value": 3
+              },
+              {
+                "index": 4,
+                "value": 5
+              },
+              {
+                "index": 3,
+                "value": -3
+              },
+              {
+                "index": 0,
+                "value": 1
+              },
+              {
+                "index": 2,
+                "value": -1
+              },
+              {
+                "index": 5,
+                "value": 3
+              }
+            ]
+          },
+          "text": "加入a[6]=6，弹出堆顶中过期下标无；当前窗口最大值为6（下标6）。",
+          "diagram": "最大堆（值@下标）：6@6，3@1，5@4，-3@3，1@0，-1@2，3@5\n堆顶6@6；仅当堆顶过期时才惰性删除"
+        },
+        {
+          "array": [
+            1,
+            3,
+            -1,
+            -3,
+            5,
+            3,
+            6,
+            7
+          ],
+          "active": [
+            7
+          ],
+          "pointers": {
+            "i": 7,
+            "heapSize": 8,
+            "topIndex": 7,
+            "topValue": 7,
+            "expiredPops": [],
+            "heap": [
+              {
+                "index": 7,
+                "value": 7
+              },
+              {
+                "index": 6,
+                "value": 6
+              },
+              {
+                "index": 4,
+                "value": 5
+              },
+              {
+                "index": 1,
+                "value": 3
+              },
+              {
+                "index": 0,
+                "value": 1
+              },
+              {
+                "index": 2,
+                "value": -1
+              },
+              {
+                "index": 5,
+                "value": 3
+              },
+              {
+                "index": 3,
+                "value": -3
+              }
+            ]
+          },
+          "text": "加入a[7]=7，弹出堆顶中过期下标无；当前窗口最大值为7（下标7）。",
+          "diagram": "最大堆（值@下标）：7@7，6@6，5@4，3@1，1@0，-1@2，3@5，-3@3\n堆顶7@7；仅当堆顶过期时才惰性删除"
+        }
+      ]
+    }
+  },
+  {
     "id": "2012-42",
     "date": "2026-10-10",
     "year": "2012",
