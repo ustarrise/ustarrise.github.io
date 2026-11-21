@@ -972,16 +972,16 @@ def main():
         if x["id"] == "selection-sort-20261129":
             # 检查单元素、重复值、负数，以及稳定版对相同关键字的原始次序。
             extra = [
-                ("single", "1\\n7\\n", "7"),
-                ("all_equal", "4\\n5 5 5 5\\n", "5 5 5 5"),
-                ("negative_duplicates", "6\\n-3 0 -3 2 0 -1\\n", "-3 -3 -1 0 0 2"),
-                ("already_sorted", "5\\n1 2 3 4 5\\n", "1 2 3 4 5"),
+                ("single", "1\n7\n", "7"),
+                ("all_equal", "4\n5 5 5 5\n", "5 5 5 5"),
+                ("negative_duplicates", "6\n-3 0 -3 2 0 -1\n", "-3 -3 -1 0 0 2"),
+                ("already_sorted", "5\n1 2 3 4 5\n", "1 2 3 4 5"),
             ]
             for method in ("brute", "optimal"):
                 for label, data, expected in extra:
                     check_one(x[method]["code"], expected, x["id"] + "." + method + "." + label, data)
                     count += 1
-            stable_case = "3\\n2 1\\n2 2\\n1 3\\n"
+            stable_case = "3\n2 1\n2 2\n1 3\n"
             check_one(x["variation"]["code"], "1:3 2:1 2:2",
                       x["id"] + ".variation.equal_keys", stable_case)
             count += 1
