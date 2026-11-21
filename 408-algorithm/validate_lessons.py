@@ -69,6 +69,7 @@ CASES = {
         "删除前：10 20 30 40\n删除后：10 20 40",
         "插入前：10 20 30\n插入后：10 20 25 30",
     ),
+    "complete-tree-bfs-20261128": ("朴素法：YES", "优化法：YES", "YES"),
 }
 
 
@@ -131,6 +132,7 @@ def main():
         "array-two-pointer-20261019": "https://leetcode.cn/problems/remove-duplicates-from-sorted-array/",
         "list-reverse-20261020": "https://leetcode.cn/problems/reverse-linked-list/",
         "tree-leaves-20261021": "https://www.geeksforgeeks.org/dsa/write-a-c-program-to-get-count-of-leaf-nodes-in-a-binary-tree/",
+        "complete-tree-bfs-20261128": "https://www.geeksforgeeks.org/dsa/check-if-a-given-binary-tree-is-complete-tree-or-not/",
     }
     for lesson in queue:
         source = lesson.get("source")
@@ -914,13 +916,15 @@ def main():
         "lc94-inorder-iterative-20261123": "6 1\n1 2 3\n2 4 5\n3 0 6\n4 0 0\n5 0 0\n6 0 0\n",
         "radix-sort-20261124": "8\n170 45 75 90 802 24 2 66\n",
         "shell-sort-20261125": "10\n49 38 65 97 76 13 27 49 55 4\n",
+        "complete-tree-bfs-20261128": "6\n2 3\n4 5\n6 0\n0 0\n0 0\n0 0\n",
     }
     variant_inputs = { "kmp-20261111": "aaaaab\naaab\n","lc-hash-linear-20261116": "7 5\n5 20016 40027 17 20028 -3 8\n40027 5 99 -3 20028\n",
                       "lc997-20261109": "3 3\n1 3\n2 3\n3 1\n",
                       "lc994-20261110": "2 2\n2 0\n0 1\n",
                       "lc503-20261106": "5\n3 8 4 1 2\n", "quick-sort-20261117": "6\n3 -1 3 0 -1 2\n", "floyd-20261118": "3 3\n1 2 4\n2 3 -2\n1 3 5\n", "sliding-window-max-20261121": "8 3\n1 3 -1 -3 5 3 6 7\n",
                       "sparse-fast-transpose-20261122": "3 4 4\n0 1 5\n1 0 -2\n1 3 8\n2 1 7\n",
-                      "lc94-inorder-iterative-20261123": "6 1 3\n1 2 3\n2 4 5\n3 0 6\n4 0 0\n5 0 0\n6 0 0\n"}
+                      "lc94-inorder-iterative-20261123": "6 1 3\n1 2 3\n2 4 5\n3 0 6\n4 0 0\n5 0 0\n6 0 0\n",
+                      "complete-tree-bfs-20261128": "5\n2 3\n4 5\n0 0\n0 0\n0 0\n"}
     count = 0
     for x in queue:
         case = CASES.get(x["id"])
@@ -941,6 +945,26 @@ def main():
         check_one(x["variation"]["code"], expected_variation, x["id"] + ".variation",
                   variant_inputs.get(x["id"], ""))
         count += 1
+        if x["id"] == "complete-tree-bfs-20261128":
+            # 空树、单结点和“左侧缺口后仍有右孩子”是完全二叉树判定的关键边界。
+            empty = "0\\n"
+            single = "1\\n0 0\\n"
+            incomplete = "5\\n2 3\\n0 5\\n0 0\\n0 0\\n0 0\\n"
+            for method, expected in (("brute", "朴素法：YES"), ("optimal", "优化法：YES")):
+                check_one(x[method]["code"], expected, x["id"] + "." + method + ".empty", empty)
+                count += 1
+                check_one(x[method]["code"], expected, x["id"] + "." + method + ".single", single)
+                count += 1
+                check_one(x[method]["code"], expected.replace("YES", "NO"),
+                          x["id"] + "." + method + ".gap_then_child", incomplete)
+                count += 1
+            check_one(x["variation"]["code"], "YES", x["id"] + ".variation.empty", empty)
+            count += 1
+            check_one(x["variation"]["code"], "YES", x["id"] + ".variation.single", single)
+            count += 1
+            check_one(x["variation"]["code"], "NO", x["id"] + ".variation.one_child", incomplete)
+            count += 1
+
         if x["id"] == "lc94-inorder-iterative-20261123":
             for method in ("brute", "optimal"):
                 check_one(x[method]["code"], "", x["id"] + "." + method + ".empty_tree", "0 0\n")
