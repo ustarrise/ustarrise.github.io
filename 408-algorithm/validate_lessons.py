@@ -70,6 +70,7 @@ CASES = {
         "插入前：10 20 30\n插入后：10 20 25 30",
     ),
     "complete-tree-bfs-20261128": ("朴素法：YES", "优化法：YES", "YES"),
+    "selection-sort-20261129": ("11 12 22 25 64", "11 12 22 25 64", "1:2 1:4 2:1 2:3"),
 }
 
 
@@ -133,6 +134,7 @@ def main():
         "list-reverse-20261020": "https://leetcode.cn/problems/reverse-linked-list/",
         "tree-leaves-20261021": "https://www.geeksforgeeks.org/dsa/write-a-c-program-to-get-count-of-leaf-nodes-in-a-binary-tree/",
         "complete-tree-bfs-20261128": "https://www.geeksforgeeks.org/dsa/check-if-a-given-binary-tree-is-complete-tree-or-not/",
+        "selection-sort-20261129": "https://oi.wiki/basic/selection-sort/",
     }
     for lesson in queue:
         source = lesson.get("source")
@@ -917,6 +919,7 @@ def main():
         "radix-sort-20261124": "8\n170 45 75 90 802 24 2 66\n",
         "shell-sort-20261125": "10\n49 38 65 97 76 13 27 49 55 4\n",
         "complete-tree-bfs-20261128": "6\n2 3\n4 5\n6 0\n0 0\n0 0\n0 0\n",
+        "selection-sort-20261129": "5\n64 25 12 22 11\n",
     }
     variant_inputs = { "kmp-20261111": "aaaaab\naaab\n","lc-hash-linear-20261116": "7 5\n5 20016 40027 17 20028 -3 8\n40027 5 99 -3 20028\n",
                       "lc997-20261109": "3 3\n1 3\n2 3\n3 1\n",
@@ -924,7 +927,8 @@ def main():
                       "lc503-20261106": "5\n3 8 4 1 2\n", "quick-sort-20261117": "6\n3 -1 3 0 -1 2\n", "floyd-20261118": "3 3\n1 2 4\n2 3 -2\n1 3 5\n", "sliding-window-max-20261121": "8 3\n1 3 -1 -3 5 3 6 7\n",
                       "sparse-fast-transpose-20261122": "3 4 4\n0 1 5\n1 0 -2\n1 3 8\n2 1 7\n",
                       "lc94-inorder-iterative-20261123": "6 1 3\n1 2 3\n2 4 5\n3 0 6\n4 0 0\n5 0 0\n6 0 0\n",
-                      "complete-tree-bfs-20261128": "5\n2 3\n4 5\n0 0\n0 0\n0 0\n"}
+                      "complete-tree-bfs-20261128": "5\n2 3\n4 5\n0 0\n0 0\n0 0\n",
+                      "selection-sort-20261129": "4\n2 1\n1 2\n2 3\n1 4\n"}
     count = 0
     for x in queue:
         case = CASES.get(x["id"])
@@ -963,6 +967,23 @@ def main():
             check_one(x["variation"]["code"], "YES", x["id"] + ".variation.single", single)
             count += 1
             check_one(x["variation"]["code"], "NO", x["id"] + ".variation.one_child", incomplete)
+            count += 1
+
+        if x["id"] == "selection-sort-20261129":
+            # 检查单元素、重复值、负数，以及稳定版对相同关键字的原始次序。
+            extra = [
+                ("single", "1\\n7\\n", "7"),
+                ("all_equal", "4\\n5 5 5 5\\n", "5 5 5 5"),
+                ("negative_duplicates", "6\\n-3 0 -3 2 0 -1\\n", "-3 -3 -1 0 0 2"),
+                ("already_sorted", "5\\n1 2 3 4 5\\n", "1 2 3 4 5"),
+            ]
+            for method in ("brute", "optimal"):
+                for label, data, expected in extra:
+                    check_one(x[method]["code"], expected, x["id"] + "." + method + "." + label, data)
+                    count += 1
+            stable_case = "3\\n2 1\\n2 2\\n1 3\\n"
+            check_one(x["variation"]["code"], "1:3 2:1 2:2",
+                      x["id"] + ".variation.equal_keys", stable_case)
             count += 1
 
         if x["id"] == "lc94-inorder-iterative-20261123":
