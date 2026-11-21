@@ -947,9 +947,9 @@ def main():
         count += 1
         if x["id"] == "complete-tree-bfs-20261128":
             # 空树、单结点和“左侧缺口后仍有右孩子”是完全二叉树判定的关键边界。
-            empty = "0\\n"
-            single = "1\\n0 0\\n"
-            incomplete = "5\\n2 3\\n0 5\\n0 0\\n0 0\\n0 0\\n"
+            empty = "0\n"
+            single = "1\n0 0\n"
+            incomplete = "5\n2 3\n0 5\n0 0\n0 0\n0 0\n"
             for method, expected in (("brute", "朴素法：YES"), ("optimal", "优化法：YES")):
                 check_one(x[method]["code"], expected, x["id"] + "." + method + ".empty", empty)
                 count += 1
