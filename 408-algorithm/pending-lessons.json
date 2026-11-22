@@ -14242,5 +14242,274 @@
         }
       ]
     }
+  },
+  {
+    "id": "avl-insert-20261130",
+    "date": "2026-11-30",
+    "year": "408",
+    "number": "平衡树",
+    "category": "二叉排序树 · AVL树 · 四种旋转",
+    "title": "AVL树插入：从普通BST退化到四种旋转",
+    "difficulty": "中等",
+    "time": "25–30分钟",
+    "source": "https://opendsa-server.cs.vt.edu/ODSA/Books/duke/cs201/spring-2025/MW/html/AVL.html",
+    "question": "给定n个互不相同的整数，按输入顺序依次插入二叉搜索树。请分别编写普通二叉搜索树（BST）和AVL树的插入程序。每个程序输出两行：第一行输出最终树高（空树高度为0，叶结点高度为1）；第二行输出中序遍历序列。输入格式：第一行输入n，第二行输入n个互不相同的整数。输出格式：普通BST程序和AVL程序分别独立运行，各输出树高和中序序列。两种树的中序序列应相同，但树高可能不同。",
+    "constraint": "1≤n≤1000；所有关键字互不相同，且-1000000000≤key≤1000000000。结点使用静态数组和整数下标表示，0表示空孩子。普通BST递归深度最坏为O(n)，本题n上限为1000。",
+    "sample": "输入：\n6\n30 20 10 25 28 27\n\n普通BST程序输出：\n5\n10 20 25 27 28 30\n\nAVL程序输出：\n3\n10 20 25 27 28 30\n说明：普通BST沿插入顺序形成较长分支；AVL在插入过程中通过旋转维持平衡。两者都是二叉搜索树，因此中序遍历均为递增序列。\n边界1：n=1，输入-7，树高为1，中序序列为-7。\n边界2：输入10 20 30，普通BST高度为3，AVL经过RR单旋后高度为2。\n反例：只在插入结束后做一次普通中序遍历，虽然能得到有序序列，却不能说明树已经平衡；AVL必须在每次插入回溯时更新高度并检查失衡结点。",
+    "brute": {
+      "title": "普通二叉搜索树插入",
+      "tag": "保底思路",
+      "idea": "每个新关键字从根开始比较：小于当前结点就进入左子树，大于当前结点就进入右子树，直到遇到空孩子后插入。插入完成后递归计算树高，再做中序遍历。若输入已经递增或递减，普通BST会退化成单链表。",
+      "complexity": "插入总时间最坏O(n²)，最好或较平衡时约O(n log n)；计算高度和中序遍历各O(n)。结点存储O(n)，递归辅助空间O(h)，最坏O(n)。",
+      "risk": "普通BST不主动调整形状，输入顺序会显著影响树高；有序输入会导致查找和插入退化为O(n)。",
+      "code": "/*\n * 朴素法：按二叉搜索树规则逐个插入，不做旋转。\n * 有序输入可能使树退化成链表，n次插入最坏为O(n^2)。\n */\n#include <stdio.h>\n#define MAXN 1005\n\ntypedef struct {\n    int key;          // 当前结点的关键字\n    int left, right;  // 左、右孩子下标，0表示空\n} Node;\n\nNode bst[MAXN];\nint bstCount = 0;\n\n// 创建一个新结点，返回它在静态数组中的下标。\nint newNode(int key) {\n    int u = ++bstCount;\n    bst[u].key = key;\n    bst[u].left = 0;\n    bst[u].right = 0;\n    return u;\n}\n\n// 按BST规则递归插入；题目保证关键字互不相同。\nint insertBST(int root, int key) {\n    if (root == 0)\n        return newNode(key); // 找到空位置，新结点成为该子树的根\n\n    if (key < bst[root].key)\n        bst[root].left = insertBST(bst[root].left, key);\n    else if (key > bst[root].key)\n        bst[root].right = insertBST(bst[root].right, key);\n\n    return root; // 子树根可能未变，必须把它返回给父结点\n}\n\n// 空树高度为0，非空树高度等于较高子树高度加1。\nint heightBST(int root) {\n    if (root == 0) return 0;\n    int lh = heightBST(bst[root].left);\n    int rh = heightBST(bst[root].right);\n    return (lh > rh ? lh : rh) + 1;\n}\n\n// 中序遍历BST，利用first控制输出空格。\nvoid inorderBST(int root, int *first) {\n    if (root == 0) return;\n    inorderBST(bst[root].left, first);\n    if (!*first) putchar(' ');\n    printf(\"%d\", bst[root].key);\n    *first = 0;\n    inorderBST(bst[root].right, first);\n}\n\nint main(void) {\n    int n, root = 0;\n    if (scanf(\"%d\", &n) != 1) return 1; // 读取结点数\n    if (n < 1 || n > 1000) return 1;    // 检查数组容量范围\n\n    for (int i = 0; i < n; i++) {\n        int key;\n        if (scanf(\"%d\", &key) != 1) return 1; // 逐个读取插入关键字\n        root = insertBST(root, key);           // 插入后更新整棵树的根下标\n    }\n\n    printf(\"%d\\n\", heightBST(root)); // 输出最终树高\n    int first = 1;\n    inorderBST(root, &first);         // BST中序遍历应为递增序列\n    putchar('\\n');\n    return 0;\n}",
+      "explain": [
+        "小于当前结点就递归进入左子树，大于当前结点就进入右子树；遇到0才创建新结点。",
+        "递归返回时要把子树根下标重新赋给left或right，不能丢失插入后的链接。",
+        "普通BST不旋转，最坏树高为n，因此有序输入会使总插入时间达到O(n²)。"
+      ]
+    },
+    "optimal": {
+      "title": "AVL插入与局部旋转",
+      "tag": "考场推荐",
+      "idea": "先按普通BST规则插入新叶结点，再沿递归返回路径更新结点高度。定义平衡因子BF=左子树高度-右子树高度；若BF超出[-1,1]，根据新关键字落入失衡结点的LL、RR、LR或RL方向，分别执行一次单旋或双旋。旋转只调整局部指针，不改变中序次序。",
+      "complexity": "每次插入沿树高访问O(log n)个结点，每个失衡点的旋转为O(1)，因此n次插入总时间O(n log n)。结点存储O(n)，递归辅助空间O(log n)。",
+      "risk": "旋转前后必须按先子结点、后原根的顺序更新高度；LL/RR是单旋，LR/RL是双旋，方向写反会破坏BST次序或平衡条件。",
+      "code": "/*\n * 优化法：AVL树 = 普通BST插入 + 回溯更新高度 + 四种旋转。\n * 平衡因子BF = height(left) - height(right)，合法范围为[-1, 1]。\n */\n#include <stdio.h>\n#define MAXN 1005\n\ntypedef struct {\n    int key;                 // 当前结点的关键字\n    int left, right;         // 左、右孩子下标，0表示空\n    int height;              // 以当前结点为根的子树高度\n} Node;\n\nNode avl[MAXN];\nint avlCount = 0;\n\n// 空结点高度为0；新建叶结点高度为1。\nint nodeHeight(int u) {\n    return u == 0 ? 0 : avl[u].height;\n}\n\nint maxInt(int a, int b) {\n    return a > b ? a : b;\n}\n\nvoid updateHeight(int u) {\n    avl[u].height = maxInt(nodeHeight(avl[u].left),\n                           nodeHeight(avl[u].right)) + 1;\n}\n\nint balanceFactor(int u) {\n    return nodeHeight(avl[u].left) - nodeHeight(avl[u].right);\n}\n\nint newAVLNode(int key) {\n    int u = ++avlCount;\n    avl[u].key = key;\n    avl[u].left = 0;\n    avl[u].right = 0;\n    avl[u].height = 1;\n    return u;\n}\n\n// 对以y为根的子树做右旋，返回旋转后的新根x。\nint rotateRight(int y) {\n    int x = avl[y].left;\n    int middle = avl[x].right;\n\n    avl[x].right = y;       // 原根y成为x的右孩子\n    avl[y].left = middle;  // 中间子树接到y的左侧\n\n    updateHeight(y);       // 先更新下降后的原根\n    updateHeight(x);       // 再更新新的子树根\n    return x;\n}\n\n// 对以x为根的子树做左旋，返回旋转后的新根y。\nint rotateLeft(int x) {\n    int y = avl[x].right;\n    int middle = avl[y].left;\n\n    avl[y].left = x;       // 原根x成为y的左孩子\n    avl[x].right = middle; // 中间子树接到x的右侧\n\n    updateHeight(x);       // 先更新下降后的原根\n    updateHeight(y);       // 再更新新的子树根\n    return y;\n}\n\n// 插入后从递归路径回溯，更新高度并修复第一个失衡位置。\nint insertAVL(int root, int key) {\n    if (root == 0)\n        return newAVLNode(key); // 新关键字插入空位置，形成叶结点\n\n    if (key < avl[root].key)\n        avl[root].left = insertAVL(avl[root].left, key);\n    else if (key > avl[root].key)\n        avl[root].right = insertAVL(avl[root].right, key);\n    else\n        return root; // 本题保证不重复；此分支使函数对重复值也安全\n\n    updateHeight(root);                 // 先更新当前结点高度\n    int bf = balanceFactor(root);       // 再检查当前结点的平衡因子\n\n    // LL：新结点插入左孩子的左子树，单次右旋。\n    if (bf > 1 && key < avl[avl[root].left].key)\n        return rotateRight(root);\n\n    // RR：新结点插入右孩子的右子树，单次左旋。\n    if (bf < -1 && key > avl[avl[root].right].key)\n        return rotateLeft(root);\n\n    // LR：先对左孩子左旋，再对当前根右旋。\n    if (bf > 1 && key > avl[avl[root].left].key) {\n        avl[root].left = rotateLeft(avl[root].left);\n        return rotateRight(root);\n    }\n\n    // RL：先对右孩子右旋，再对当前根左旋。\n    if (bf < -1 && key < avl[avl[root].right].key) {\n        avl[root].right = rotateRight(avl[root].right);\n        return rotateLeft(root);\n    }\n\n    return root; // 未失衡时，当前结点仍是这棵子树的根\n}\n\nvoid inorderAVL(int root, int *first) {\n    if (root == 0) return;\n    inorderAVL(avl[root].left, first);\n    if (!*first) putchar(' ');\n    printf(\"%d\", avl[root].key);\n    *first = 0;\n    inorderAVL(avl[root].right, first);\n}\n\nint main(void) {\n    int n, root = 0;\n    if (scanf(\"%d\", &n) != 1) return 1; // 读取结点数\n    if (n < 1 || n > 1000) return 1;    // 检查数组容量范围\n\n    for (int i = 0; i < n; i++) {\n        int key;\n        if (scanf(\"%d\", &key) != 1) return 1; // 逐个读取插入关键字\n        root = insertAVL(root, key);           // 旋转可能改变根，必须接收返回值\n    }\n\n    printf(\"%d\\n\", nodeHeight(root)); // AVL结点高度已在每次回溯时维护\n    int first = 1;\n    inorderAVL(root, &first);          // 旋转不改变中序遍历的关键字顺序\n    putchar('\\n');\n    return 0;\n}",
+      "explain": [
+        "BF=左子树高度-右子树高度；BF>1表示左侧过高，BF<-1表示右侧过高。",
+        "LL对应右旋，RR对应左旋；LR先左旋左孩子再右旋根，RL先右旋右孩子再左旋根。",
+        "旋转改变了子树根下标，因此递归调用必须返回新根，并由父结点重新接住。",
+        "旋转后先更新下降结点的高度，再更新上升结点的高度；中序遍历顺序保持不变。"
+      ]
+    },
+    "tips": [
+      "AVL树仍然是二叉搜索树，中序遍历始终递增；旋转只改变形状，不改变关键字的相对大小关系。",
+      "记忆四种情况：LL右旋、RR左旋、LR先左后右、RL先右后左。可用BF的正负判断失衡方向。",
+      "插入时只沿新结点到根的路径更新高度；AVL树高为O(log n)，因此单次插入为O(log n)。",
+      "普通BST在有序输入时退化为链表，AVL通过旋转把最坏树高控制在O(log n)。",
+      "考场性价比：中等偏高。重点掌握平衡因子、四种旋转图、旋转后的指针连接和高度更新顺序；删除时可能沿多层继续调整，不要把插入结论直接套到删除。"
+    ],
+    "variation": {
+      "question": "巩固题：给定一棵以数组下标表示的二叉树，判断它是否同时满足二叉搜索树（BST）性质和AVL平衡条件。输入第一行n root，随后n行依次输入key left right，0表示空孩子。关键字必须互不相同。若每个结点均满足左子树关键字小于根、右子树关键字大于根，且每个结点左右子树高度差不超过1，输出YES；否则输出NO。空树视为满足条件。",
+      "idea": "一次后序递归同时完成两件事：用上下界检查BST的全局有序约束；从左右子树返回高度，若任一子树非法或高度差超过1就返回-1作为失败标记，否则返回当前子树高度。这样每个结点只访问一次。",
+      "complexity": "时间O(n)，每个结点访问一次；递归辅助空间O(h)，最坏O(n)。",
+      "code": "/*\n * 巩固题：同时检查BST有序性和AVL平衡性。\n * 返回值为子树高度；若BST范围或平衡条件不满足，则返回-1。\n */\n#include <stdio.h>\n#include <limits.h>\n#define MAXN 1005\n\ntypedef struct {\n    int key;\n    int left, right;\n} Node;\n\nNode tree[MAXN];\n\n// low和high是开区间边界，保证所有祖先的大小约束都被检查。\nint checkAVL(int u, long long low, long long high) {\n    if (u == 0) return 0; // 空子树高度为0\n\n    if (tree[u].key <= low || tree[u].key >= high)\n        return -1; // 当前关键字违反BST的祖先上下界\n\n    int lh = checkAVL(tree[u].left, low, tree[u].key);\n    if (lh == -1) return -1; // 左子树已不满足BST或AVL条件\n\n    int rh = checkAVL(tree[u].right, tree[u].key, high);\n    if (rh == -1) return -1; // 右子树已不满足BST或AVL条件\n\n    int diff = lh - rh;\n    if (diff > 1 || diff < -1)\n        return -1; // 当前结点左右子树高度差超过1\n\n    return (lh > rh ? lh : rh) + 1; // 返回当前子树真实高度\n}\n\nint main(void) {\n    int n, root;\n    if (scanf(\"%d%d\", &n, &root) != 2) return 1; // 读取规模和根下标\n    if (n < 0 || n > 1000) return 1;             // 检查结点数范围\n    if ((n == 0 && root != 0) ||\n        (n > 0 && (root < 1 || root > n)))\n        return 1; // 空树根必须为0，非空树根必须有效\n\n    for (int i = 1; i <= n; i++) {\n        if (scanf(\"%d%d%d\", &tree[i].key,\n                  &tree[i].left, &tree[i].right) != 3)\n            return 1; // 每行必须完整读入关键字和两个孩子\n        if (tree[i].left < 0 || tree[i].left > n ||\n            tree[i].right < 0 || tree[i].right > n)\n            return 1; // 防止孩子下标越界\n    }\n\n    int h = checkAVL(root, LLONG_MIN, LLONG_MAX);\n    puts(h == -1 ? \"NO\" : \"YES\");\n    return 0;\n}",
+      "explain": [
+        "只比较父子结点不够：BST必须满足所有左后代小于祖先、所有右后代大于祖先，因此递归时要传递上下界。",
+        "后序递归先取得左右子树高度，再判断当前结点高度差；任一子树返回-1就立即向上传递失败。",
+        "返回高度而不是反复重新计算子树高度，保证每个结点只访问一次，总时间为O(n)。"
+      ]
+    },
+    "animation": {
+      "layout": "diagram",
+      "brute": [
+        {
+          "diagram": "插入30\n30成为根结点",
+          "pointers": {
+            "root": 30,
+            "insert": 30
+          },
+          "active": [
+            30
+          ],
+          "text": "普通BST直接把第一个关键字作为根。"
+        },
+        {
+          "diagram": "插入20\n  30\n /\n20",
+          "pointers": {
+            "root": 30,
+            "insert": 20
+          },
+          "active": [
+            30,
+            20
+          ],
+          "text": "20小于30，进入根的左子树并插入空位置。"
+        },
+        {
+          "diagram": "插入10\n   30\n  /\n 20\n /\n10",
+          "pointers": {
+            "root": 30,
+            "insert": 10
+          },
+          "active": [
+            30,
+            20,
+            10
+          ],
+          "text": "10连续向左下降，普通BST不旋转，树高增加。"
+        },
+        {
+          "diagram": "继续插入25、28、27\n       30\n      /\n    20\n   /  \\\n 10   25\n        \\\n        28\n       /\n      27",
+          "pointers": {
+            "root": 30,
+            "insertSequence": [
+              25,
+              28,
+              27
+            ]
+          },
+          "active": [
+            20,
+            25,
+            28,
+            27
+          ],
+          "text": "后续关键字仍按大小关系插入，树形逐渐拉长。"
+        },
+        {
+          "diagram": "最终BST高度=5\n中序：10 20 25 27 28 30",
+          "pointers": {
+            "root": 30,
+            "height": 5
+          },
+          "active": [
+            10,
+            20,
+            25,
+            27,
+            28,
+            30
+          ],
+          "text": "中序遍历仍然有序，但树高达到5；继续输入有序关键字时可能退化成链表。",
+          "done": true
+        }
+      ],
+      "optimal": [
+        {
+          "diagram": "依次插入30、20、10\n   30\n  /\n20\n/\n10\nBF(30)=+2，LL",
+          "pointers": {
+            "root": 30,
+            "balance": 2,
+            "case": "LL"
+          },
+          "active": [
+            30,
+            20,
+            10
+          ],
+          "text": "新结点落在失衡结点的左孩子的左子树，属于LL情况。"
+        },
+        {
+          "diagram": "对30右旋\n   20\n  /  \\\n10   30",
+          "pointers": {
+            "root": 20,
+            "rotation": "右旋30"
+          },
+          "active": [
+            20,
+            10,
+            30
+          ],
+          "text": "把20提升为根，30成为20的右孩子，树重新平衡。"
+        },
+        {
+          "diagram": "插入25\n   20\n  /  \\\n10   30\n     /\n    25",
+          "pointers": {
+            "root": 20,
+            "insert": 25
+          },
+          "active": [
+            20,
+            30,
+            25
+          ],
+          "text": "25进入30的左子树，当前各结点仍满足AVL平衡条件。"
+        },
+        {
+          "diagram": "插入28后，30处出现LR\n   20\n  /  \\\n10   30\n     /\n    25\n      \\\n      28",
+          "pointers": {
+            "root": 20,
+            "unbalanced": 30,
+            "case": "LR"
+          },
+          "active": [
+            30,
+            25,
+            28
+          ],
+          "text": "30的左子树过高，且左孩子25向右倾斜，属于LR双旋。"
+        },
+        {
+          "diagram": "先左旋25，再右旋30\n   20\n  /  \\\n10   28\n     /  \\\n    25  30",
+          "pointers": {
+            "root": 20,
+            "rotation": "先左旋25，再右旋30"
+          },
+          "active": [
+            20,
+            25,
+            28,
+            30
+          ],
+          "text": "双旋后以28作为右子树根，原有中序次序不变。"
+        },
+        {
+          "diagram": "插入27后，根20出现RL\n   20\n  /  \\\n10   28\n     /  \\\n    25  30\n      \\\n      27",
+          "pointers": {
+            "root": 20,
+            "unbalanced": 20,
+            "case": "RL"
+          },
+          "active": [
+            20,
+            28,
+            25,
+            27
+          ],
+          "text": "右子树比左子树高2，而右孩子28的左侧更高，属于RL双旋。"
+        },
+        {
+          "diagram": "先右旋28，再左旋20\n       25\n      /  \\\n    20    28\n   /      / \\\n 10      27 30\n高度=3",
+          "pointers": {
+            "root": 25,
+            "rotation": "先右旋28，再左旋20",
+            "height": 3
+          },
+          "active": [
+            25,
+            20,
+            28,
+            10,
+            27,
+            30
+          ],
+          "text": "最终树高为3；中序仍为10 20 25 27 28 30。RR是镜像情况，例如插入10、20、30时对10左旋。",
+          "done": true
+        }
+      ],
+      "variation": [
+        {
+          "diagram": "先用上下界检查根\n根key必须满足low < key < high",
+          "pointers": {
+            "node": "root",
+            "low": "-∞",
+            "high": "+∞"
+          },
+          "active": [],
+          "text": "BST检查不能只看父子关系，必须把祖先施加的上下界继续传给后代。"
+        },
+        {
+          "diagram": "递归得到左高lh、右高rh\n检查两棵子树均有效",
+          "pointers": {
+            "leftHeight": "lh",
+            "rightHeight": "rh"
+          },
+          "active": [],
+          "text": "后序递归先得到左右子树的高度；若子树返回-1，整棵树立即判为不合法。"
+        },
+        {
+          "diagram": "检查 |lh-rh|≤1\n合法则返回max(lh,rh)+1",
+          "pointers": {
+            "balance": "lh-rh",
+            "valid": "abs(balance)<=1"
+          },
+          "active": [],
+          "text": "当前结点也平衡时返回真实高度；否则返回-1，最终输出NO。",
+          "done": true
+        }
+      ]
+    }
   }
 ]
