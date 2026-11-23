@@ -71,6 +71,7 @@ CASES = {
     ),
     "complete-tree-bfs-20261128": ("朴素法：YES", "优化法：YES", "YES"),
     "selection-sort-20261129": ("11 12 22 25 64", "11 12 22 25 64", "1:2 1:4 2:1 2:3"),
+    "avl-insert-20261130": ("5\n10 20 25 27 28 30", "3\n10 20 25 27 28 30", "YES"),
 }
 
 
@@ -920,6 +921,7 @@ def main():
         "shell-sort-20261125": "10\n49 38 65 97 76 13 27 49 55 4\n",
         "complete-tree-bfs-20261128": "6\n2 3\n4 5\n6 0\n0 0\n0 0\n0 0\n",
         "selection-sort-20261129": "5\n64 25 12 22 11\n",
+        "avl-insert-20261130": "6\n30 20 10 25 28 27\n",
     }
     variant_inputs = { "kmp-20261111": "aaaaab\naaab\n","lc-hash-linear-20261116": "7 5\n5 20016 40027 17 20028 -3 8\n40027 5 99 -3 20028\n",
                       "lc997-20261109": "3 3\n1 3\n2 3\n3 1\n",
@@ -928,7 +930,7 @@ def main():
                       "sparse-fast-transpose-20261122": "3 4 4\n0 1 5\n1 0 -2\n1 3 8\n2 1 7\n",
                       "lc94-inorder-iterative-20261123": "6 1 3\n1 2 3\n2 4 5\n3 0 6\n4 0 0\n5 0 0\n6 0 0\n",
                       "complete-tree-bfs-20261128": "5\n2 3\n4 5\n0 0\n0 0\n0 0\n",
-                      "selection-sort-20261129": "4\n2 1\n1 2\n2 3\n1 4\n"}
+                      "selection-sort-20261129": "4\n2 1\n1 2\n2 3\n1 4\n", "avl-insert-20261130": "6 1\n25 2 3\n20 4 0\n28 5 6\n10 0 0\n27 0 0\n30 0 0\n"}
     count = 0
     for x in queue:
         case = CASES.get(x["id"])
