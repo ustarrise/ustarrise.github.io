@@ -72,6 +72,7 @@ CASES = {
     "complete-tree-bfs-20261128": ("朴素法：YES", "优化法：YES", "YES"),
     "selection-sort-20261129": ("11 12 22 25 64", "11 12 22 25 64", "1:2 1:4 2:1 2:3"),
     "avl-insert-20261130": ("5\n10 20 25 27 28 30", "3\n10 20 25 27 28 30", "YES"),
+    "threaded-binary-tree-20261201": ("1 2 3 4 5 6 7", "1 2 3 4 5 6 7", "4"),
 }
 
 
@@ -136,6 +137,7 @@ def main():
         "tree-leaves-20261021": "https://www.geeksforgeeks.org/dsa/write-a-c-program-to-get-count-of-leaf-nodes-in-a-binary-tree/",
         "complete-tree-bfs-20261128": "https://www.geeksforgeeks.org/dsa/check-if-a-given-binary-tree-is-complete-tree-or-not/",
         "selection-sort-20261129": "https://oi.wiki/basic/selection-sort/",
+        "threaded-binary-tree-20261201": "https://sercankulcu.github.io/files/dsa_c/notes/Chapter_12_Threaded_Binary_Trees_Lecture_Notes.html",
     }
     for lesson in queue:
         source = lesson.get("source")
@@ -168,6 +170,7 @@ def main():
         "shell-sort-20261125": {"brute": 10, "optimal": 9, "variation": 5},
         "tree-reconstruct-pre-in-20261126": {"brute": 4, "optimal": 4, "variation": 4},
         "dll-delete-known-20261127": {"brute": 4, "optimal": 4, "variation": 3},
+        "threaded-binary-tree-20261201": {"brute": 5, "optimal": 8, "variation": 4},
     }
     diagram_minimum = {
         "lc997-20261109": {"brute": 6, "optimal": 6},
@@ -184,6 +187,7 @@ def main():
         "radix-sort-20261124": {"brute": 4, "optimal": 10, "variation": 10},
         "shell-sort-20261125": {"brute": 10, "optimal": 9, "variation": 5},
         "tree-reconstruct-pre-in-20261126": {"brute": 4, "optimal": 4, "variation": 4},
+        "threaded-binary-tree-20261201": {"brute": 5, "optimal": 8, "variation": 4},
     }
     for lesson in queue:
         for method, minimum in diagram_minimum.get(lesson["id"], {}).items():
@@ -922,6 +926,7 @@ def main():
         "complete-tree-bfs-20261128": "6\n2 3\n4 5\n6 0\n0 0\n0 0\n0 0\n",
         "selection-sort-20261129": "5\n64 25 12 22 11\n",
         "avl-insert-20261130": "6\n30 20 10 25 28 27\n",
+        "threaded-binary-tree-20261201": "7 1\n4 2 3\n2 4 5\n6 6 7\n1 0 0\n3 0 0\n5 0 0\n7 0 0\n",
     }
     variant_inputs = { "kmp-20261111": "aaaaab\naaab\n","lc-hash-linear-20261116": "7 5\n5 20016 40027 17 20028 -3 8\n40027 5 99 -3 20028\n",
                       "lc997-20261109": "3 3\n1 3\n2 3\n3 1\n",
@@ -930,7 +935,7 @@ def main():
                       "sparse-fast-transpose-20261122": "3 4 4\n0 1 5\n1 0 -2\n1 3 8\n2 1 7\n",
                       "lc94-inorder-iterative-20261123": "6 1 3\n1 2 3\n2 4 5\n3 0 6\n4 0 0\n5 0 0\n6 0 0\n",
                       "complete-tree-bfs-20261128": "5\n2 3\n4 5\n0 0\n0 0\n0 0\n",
-                      "selection-sort-20261129": "4\n2 1\n1 2\n2 3\n1 4\n", "avl-insert-20261130": "6 1\n25 2 3\n20 4 0\n28 5 6\n10 0 0\n27 0 0\n30 0 0\n"}
+                      "selection-sort-20261129": "4\n2 1\n1 2\n2 3\n1 4\n", "avl-insert-20261130": "6 1\n25 2 3\n20 4 0\n28 5 6\n10 0 0\n27 0 0\n30 0 0\n", "threaded-binary-tree-20261201": "7 1 3\n4 2 3\n2 4 5\n6 6 7\n1 0 0\n3 0 0\n5 0 0\n7 0 0\n"}
     count = 0
     for x in queue:
         case = CASES.get(x["id"])
@@ -986,6 +991,25 @@ def main():
             stable_case = "3\n2 1\n2 2\n1 3\n"
             check_one(x["variation"]["code"], "1:3 2:1 2:2",
                       x["id"] + ".variation.equal_keys", stable_case)
+            count += 1
+
+        if x["id"] == "threaded-binary-tree-20261201":
+            empty = "0 0\n"
+            for method in ("brute", "optimal"):
+                check_one(x[method]["code"], "", x["id"] + "." + method + ".empty", empty)
+                count += 1
+            single = "1 1\n5 0 0\n"
+            for method in ("brute", "optimal"):
+                check_one(x[method]["code"], "5", x["id"] + "." + method + ".single", single)
+                count += 1
+            check_one(x["variation"]["code"], "-1", x["id"] + ".variation.empty",
+                      "0 0 7\n")
+            count += 1
+            check_one(x["variation"]["code"], "-1", x["id"] + ".variation.single_last",
+                      "1 1 5\n5 0 0\n")
+            count += 1
+            check_one(x["variation"]["code"], "3", x["id"] + ".variation.real_right_child",
+                      "7 1 2\n4 2 3\n2 4 5\n6 6 7\n1 0 0\n3 0 0\n5 0 0\n7 0 0\n")
             count += 1
 
         if x["id"] == "lc94-inorder-iterative-20261123":
