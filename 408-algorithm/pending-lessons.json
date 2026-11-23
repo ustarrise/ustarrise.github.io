@@ -14511,5 +14511,382 @@
         }
       ]
     }
+  },
+  {
+    "id": "threaded-binary-tree-20261201",
+    "date": "2026-12-01",
+    "year": "408",
+    "number": "线索二叉树",
+    "category": "二叉树 · 中序线索化 · 前驱后继",
+    "title": "中序线索二叉树：把空指针改造成前驱后继",
+    "difficulty": "中等",
+    "time": "25–30分钟",
+    "source": "https://sercankulcu.github.io/files/dsa_c/notes/Chapter_12_Threaded_Binary_Trees_Lecture_Notes.html",
+    "question": "给定一棵二叉树，结点用数组下标表示。先用普通递归中序遍历输出序列，再将空左指针改为中序前驱线索、空右指针改为中序后继线索，最后不使用递归或显式栈完成中序遍历。输入格式：第一行输入n和根结点下标root；随后n行依次输入key left right，0表示空孩子。输出格式：一行输出中序序列，数字之间以一个空格分隔。两种方法的输出应完全相同。",
+    "constraint": "0≤n≤1000；n=0时root=0，否则1≤root≤n。结点下标为1..n，关键字互不相同；输入保证所有结点从root可达且构成一棵合法二叉树。每个孩子下标只能为0或1..n。线索标志ltag/rtag取0表示真实孩子指针，取1表示前驱/后继线索。",
+    "sample": "输入：\n7 1\n4 2 3\n2 4 5\n6 6 7\n1 0 0\n3 0 0\n5 0 0\n7 0 0\n输出：\n1 2 3 4 5 6 7\n\n边界：n=0、root=0时输出空行；n=1，输入“1 1 / 5 0 0”时输出5；最左结点没有中序前驱，最右结点没有中序后继。\n反例：若把右线索误当成真实右孩子递归访问，可能沿线索返回祖先并重复访问；必须先检查rtag，不能只看right是否为0。",
+    "brute": {
+      "tag": "递归中序遍历",
+      "title": "普通二叉树递归遍历",
+      "idea": "保持原有左右孩子指针不变，按左子树、根、右子树的顺序递归访问。递归调用栈负责记住返回路径，因此不需要修改结点结构。",
+      "complexity": "时间O(n)，每个结点访问一次；递归辅助空间O(h)，h为树高，最坏O(n)。",
+      "risk": "代码短、考场手写性价比高；但遍历依赖递归栈，树退化成链时递归深度可达n，不能直接实现无栈的后继移动。",
+      "code": "/*\n * 朴素法：普通二叉树的递归中序遍历。\n * 访问顺序为左子树、根、右子树。\n */\n#include <stdio.h>\n#define MAXN 1005\n\ntypedef struct {\n    int key;\n    int left, right;\n} Node;\n\nNode tree[MAXN];\n\nvoid inorder(int u, int *first) {\n    if (u == 0) return;\n    inorder(tree[u].left, first);\n    if (!*first) putchar(' ');\n    printf(\"%d\", tree[u].key);\n    *first = 0;\n    inorder(tree[u].right, first);\n}\n\nint main(void) {\n    int n, root;\n    if (scanf(\"%d%d\", &n, &root) != 2) return 1;\n    if (n < 0 || n > 1000) return 1;\n    if ((n == 0 && root != 0) ||\n        (n > 0 && (root < 1 || root > n))) return 1;\n\n    for (int i = 1; i <= n; i++) {\n        if (scanf(\"%d%d%d\", &tree[i].key,\n                  &tree[i].left, &tree[i].right) != 3) return 1;\n        if (tree[i].left < 0 || tree[i].left > n ||\n            tree[i].right < 0 || tree[i].right > n) return 1;\n    }\n\n    int first = 1;\n    inorder(root, &first);\n    putchar('\\n');\n    return 0;\n}",
+      "explain": [
+        "先递归左子树，再访问当前结点，最后递归右子树；这个顺序就是中序的定义。",
+        "first只用于控制输出空格，不参与树结构；空树直接输出空行。",
+        "递归栈保存从根到当前结点的路径，时间O(n)，辅助空间取决于树高h。"
+      ]
+    },
+    "optimal": {
+      "tag": "双向线索 · 无栈遍历",
+      "title": "中序线索化后沿后继遍历",
+      "idea": "增加ltag和rtag区分孩子与线索。中序访问当前结点时，若其左指针为空，就连向前驱pre；若前驱的右指针为空，就回头把它连向当前结点作为后继。线索化后从整棵树最左结点开始：若rtag=1直接沿右线索走，否则进入真实右子树并找其最左结点。",
+      "complexity": "线索化O(n)，线索遍历O(n)；遍历阶段额外空间O(1)。递归建立线索时调用栈为O(h)，不把这部分与无栈遍历混为一谈。",
+      "risk": "最关键的是0/1标志含义：ltag或rtag为0才是真实孩子，为1才是线索。遍历时若把线索当孩子，会重复访问甚至形成循环。",
+      "code": "/*\n * 优化法：双向中序线索化，再沿后继线索无栈遍历。\n * tag=0表示孩子，tag=1表示前驱/后继线索。\n */\n#include <stdio.h>\n#define MAXN 1005\n\ntypedef struct {\n    int key;\n    int left, right;\n    int ltag, rtag;\n} Node;\n\nNode tree[MAXN];\nint pre = 0;\n\n/* 中序访问u时，补上u的前驱线索和pre的后继线索。 */\nvoid threadInorder(int u) {\n    if (u == 0) return;\n\n    if (tree[u].ltag == 0)\n        threadInorder(tree[u].left);\n\n    if (tree[u].left == 0) {\n        tree[u].ltag = 1;\n        tree[u].left = pre;\n    }\n\n    if (pre != 0 && tree[pre].right == 0) {\n        tree[pre].rtag = 1;\n        tree[pre].right = u;\n    }\n\n    pre = u;\n\n    if (tree[u].rtag == 0)\n        threadInorder(tree[u].right);\n}\n\n/* 找整棵树中序序列的第一个结点。 */\nint firstNode(int u) {\n    while (u != 0 && tree[u].ltag == 0)\n        u = tree[u].left;\n    return u;\n}\n\n/* 返回u的中序后继；没有后继时返回0。 */\nint nextNode(int u) {\n    if (u == 0) return 0;\n    if (tree[u].rtag == 1)\n        return tree[u].right;\n\n    u = tree[u].right;\n    while (u != 0 && tree[u].ltag == 0)\n        u = tree[u].left;\n    return u;\n}\n\nint main(void) {\n    int n, root;\n    if (scanf(\"%d%d\", &n, &root) != 2) return 1;\n    if (n < 0 || n > 1000) return 1;\n    if ((n == 0 && root != 0) ||\n        (n > 0 && (root < 1 || root > n))) return 1;\n\n    for (int i = 1; i <= n; i++) {\n        if (scanf(\"%d%d%d\", &tree[i].key,\n                  &tree[i].left, &tree[i].right) != 3) return 1;\n        if (tree[i].left < 0 || tree[i].left > n ||\n            tree[i].right < 0 || tree[i].right > n) return 1;\n    }\n\n    threadInorder(root);\n    int first = 1;\n    for (int p = firstNode(root); p != 0; p = nextNode(p)) {\n        if (!first) putchar(' ');\n        printf(\"%d\", tree[p].key);\n        first = 0;\n    }\n    putchar('\\n');\n    return 0;\n}",
+      "explain": [
+        "pre始终指向中序序列中刚访问过的结点；当前结点左指针为空时，left改指向pre。",
+        "若pre的真实右孩子为空，当前结点就是pre的中序后继，因此把pre.right改为当前结点并置rtag=1。",
+        "找后继分两种情况：rtag=1直接沿线索；rtag=0进入右子树，再沿真实左孩子走到最左结点。",
+        "从root沿真实左孩子找到第一个结点后，反复调用nextNode即可完成遍历，不需要显式栈。"
+      ]
+    },
+    "tips": [
+      "含n个结点的二叉树共有n+1个空指针域；中序线索化把这些空域用于保存前驱或后继信息。",
+      "ltag=0/rtag=0表示孩子，ltag=1/rtag=1表示线索；判断指针含义必须看tag，不能只判断指针是否为空。",
+      "pre是线索化的核心：当前结点补左线索，前驱结点补右线索，后继关系因此被延迟一拍建立。",
+      "中序后继：有真实右子树就找右子树最左结点；没有真实右子树就直接沿右线索。",
+      "考场性价比：中等偏高。重点掌握pre的更新时机、两个tag的含义和后继的两种情况；线索遍历O(n)、遍历额外空间O(1)，但递归线索化本身仍使用O(h)调用栈。"
+    ],
+    "variation": {
+      "question": "巩固题：给定一棵普通二叉树和关键字x，先建立双向中序线索，再求关键字x所在结点的中序后继。若x不存在或x没有后继，输出-1。输入格式：第一行n root x，随后n行输入key left right。输出格式：输出后继关键字或-1。",
+      "idea": "先用pre指针完成中序线索化，再按结点数组查找关键字x。若目标结点的rtag=1，右指针就是后继；否则进入真实右子树并沿左孩子找到最左结点。",
+      "complexity": "线索化O(n)，数组查找目标O(n)，求后继O(h)，总时间O(n)，线索化递归栈O(h)，求后继过程O(1)额外空间。",
+      "explain": [
+        "目标结点有右线索时，right直接保存中序后继；若right是孩子，则后继是右子树中最左的结点。",
+        "目标不存在或目标是中序序列最后一个结点时，统一输出-1。",
+        "查找目标使用数组扫描是因为题目给的是普通二叉树，不保证满足二叉搜索树性质。"
+      ],
+      "code": "/*\n * 巩固：建立中序线索后，查询指定关键字的中序后继。\n * 普通二叉树不一定是BST，因此先扫描数组定位目标结点。\n */\n#include <stdio.h>\n#define MAXN 1005\n\ntypedef struct {\n    int key;\n    int left, right;\n    int ltag, rtag;\n} Node;\n\nNode tree[MAXN];\nint pre = 0;\n\nvoid threadInorder(int u) {\n    if (u == 0) return;\n    if (tree[u].ltag == 0)\n        threadInorder(tree[u].left);\n\n    if (tree[u].left == 0) {\n        tree[u].ltag = 1;\n        tree[u].left = pre;\n    }\n    if (pre != 0 && tree[pre].right == 0) {\n        tree[pre].rtag = 1;\n        tree[pre].right = u;\n    }\n    pre = u;\n\n    if (tree[u].rtag == 0)\n        threadInorder(tree[u].right);\n}\n\nint nextNode(int u) {\n    if (u == 0) return 0;\n    if (tree[u].rtag == 1)\n        return tree[u].right;\n\n    u = tree[u].right;\n    while (u != 0 && tree[u].ltag == 0)\n        u = tree[u].left;\n    return u;\n}\n\nint main(void) {\n    int n, root, target;\n    if (scanf(\"%d%d%d\", &n, &root, &target) != 3) return 1;\n    if (n < 0 || n > 1000) return 1;\n    if ((n == 0 && root != 0) ||\n        (n > 0 && (root < 1 || root > n))) return 1;\n\n    for (int i = 1; i <= n; i++) {\n        if (scanf(\"%d%d%d\", &tree[i].key,\n                  &tree[i].left, &tree[i].right) != 3) return 1;\n        if (tree[i].left < 0 || tree[i].left > n ||\n            tree[i].right < 0 || tree[i].right > n) return 1;\n    }\n\n    threadInorder(root);\n    int p = 0;\n    for (int i = 1; i <= n; i++) {\n        if (tree[i].key == target) {\n            p = i;\n            break;\n        }\n    }\n\n    if (p == 0) {\n        puts(\"-1\");\n        return 0;\n    }\n\n    int s = nextNode(p);\n    if (s == 0) puts(\"-1\");\n    else printf(\"%d\\n\", tree[s].key);\n    return 0;\n}"
+    },
+    "animation": {
+      "layout": "diagram",
+      "brute": [
+        {
+          "diagram": "原树：根为4；左子树根2，右子树根6。每个结点按左、根、右访问。",
+          "pointers": {
+            "phase": "start",
+            "root": 4
+          },
+          "active": [
+            4
+          ],
+          "text": "递归中序遍历不修改左右孩子指针，调用栈负责保存返回路径。"
+        },
+        {
+          "diagram": "沿左孩子到达结点1：1没有左孩子，先访问1。",
+          "pointers": {
+            "phase": "visit",
+            "node": 1,
+            "path": [
+              4,
+              2,
+              1
+            ],
+            "output": [
+              1
+            ]
+          },
+          "active": [
+            4,
+            2,
+            1
+          ],
+          "array": [
+            1
+          ],
+          "text": "从4进入左子树2，再进入左子树1；1是当前子树最左结点。"
+        },
+        {
+          "diagram": "返回2，访问2，再进入其右子树3。",
+          "pointers": {
+            "phase": "visit",
+            "node": 3,
+            "path": [
+              4,
+              2,
+              3
+            ],
+            "output": [
+              1,
+              2,
+              3
+            ]
+          },
+          "active": [
+            2,
+            3
+          ],
+          "array": [
+            1,
+            2,
+            3
+          ],
+          "text": "1访问完成后回到2，访问2，再访问2的右子树3。"
+        },
+        {
+          "diagram": "左子树结束，回到根4并访问。",
+          "pointers": {
+            "phase": "visit",
+            "node": 4,
+            "output": [
+              1,
+              2,
+              3,
+              4
+            ]
+          },
+          "active": [
+            4
+          ],
+          "array": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "text": "左子树全部完成后才访问根4，这正是左—根—右顺序。"
+        },
+        {
+          "diagram": "进入右子树6：依次访问5、6、7。最终序列为1 2 3 4 5 6 7。",
+          "pointers": {
+            "phase": "done",
+            "node": 7,
+            "output": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7
+            ]
+          },
+          "active": [
+            6,
+            5,
+            7
+          ],
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "text": "完成右子树后，递归遍历结束；整棵树每个结点恰好访问一次。",
+          "done": true
+        }
+      ],
+      "optimal": [
+        {
+          "diagram": "初始仍是普通二叉树；所有ltag=0、rtag=0，pre=0。",
+          "pointers": {
+            "phase": "start",
+            "pre": 0,
+            "root": 4
+          },
+          "active": [
+            4
+          ],
+          "text": "线索化前，所有非空指针都是孩子指针，空指针尚未存放前驱或后继。"
+        },
+        {
+          "diagram": "访问最左结点1：左指针为空，改为前驱线索NULL；pre=1。",
+          "pointers": {
+            "phase": "thread",
+            "node": 1,
+            "pre": 1,
+            "leftThread": 0
+          },
+          "active": [
+            1
+          ],
+          "text": "第一个中序结点没有前驱，因此它的左线索指向0；pre更新为1。"
+        },
+        {
+          "diagram": "访问结点2：发现pre=1的右指针为空，将1.right改为2并置rtag=1。",
+          "pointers": {
+            "phase": "thread",
+            "node": 2,
+            "pre": 2,
+            "thread": "1.right->2"
+          },
+          "active": [
+            1,
+            2
+          ],
+          "text": "当前结点2是结点1的中序后继，所以回头补上1的右线索。"
+        },
+        {
+          "diagram": "访问结点3：3.left为空，建立3.left->2；pre更新为3。",
+          "pointers": {
+            "phase": "thread",
+            "node": 3,
+            "pre": 3,
+            "thread": "3.left->2"
+          },
+          "active": [
+            2,
+            3
+          ],
+          "text": "3没有真实左孩子，它的左指针改为指向前驱2，并置ltag=1。"
+        },
+        {
+          "diagram": "访问根4：3.right为空，补上3.right->4；pre=4。",
+          "pointers": {
+            "phase": "thread",
+            "node": 4,
+            "pre": 4,
+            "thread": "3.right->4"
+          },
+          "active": [
+            3,
+            4
+          ],
+          "text": "结点4是3的中序后继，3的右指针改为后继线索。"
+        },
+        {
+          "diagram": "访问5和6：5.left->4，随后5.right->6；真实孩子指针保持不变。",
+          "pointers": {
+            "phase": "thread",
+            "node": 6,
+            "pre": 6,
+            "threads": [
+              "5.left->4",
+              "5.right->6"
+            ]
+          },
+          "active": [
+            4,
+            5,
+            6
+          ],
+          "text": "线索化只改空指针域；已有真实左、右孩子的指针和tag保持不变。"
+        },
+        {
+          "diagram": "访问7：7.left->6；7是最后一个结点，没有中序后继。",
+          "pointers": {
+            "phase": "thread",
+            "node": 7,
+            "pre": 7,
+            "threads": [
+              "7.left->6",
+              "7.right=NULL"
+            ]
+          },
+          "active": [
+            6,
+            7
+          ],
+          "text": "最后一个结点的右指针仍为NULL；遍历遇到nextNode返回0时结束。"
+        },
+        {
+          "diagram": "从最左结点1开始，依次执行nextNode：1→2→3→4→5→6→7→0。",
+          "pointers": {
+            "phase": "traverse",
+            "current": 1,
+            "next": 2,
+            "output": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7
+            ]
+          },
+          "active": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "array": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "text": "若rtag=1就直接跟随右线索；若rtag=0就进入右子树并找最左结点。无需递归或显式栈。",
+          "done": true
+        }
+      ],
+      "variation": [
+        {
+          "diagram": "线索化完成后，查询目标结点3；其rtag=1，right指向4。",
+          "pointers": {
+            "target": 3,
+            "rtag": 1,
+            "right": 4
+          },
+          "active": [
+            3,
+            4
+          ],
+          "text": "目标3没有真实右子树，右指针已经保存它的中序后继。"
+        },
+        {
+          "diagram": "nextNode(3)直接沿右线索到4，输出4。",
+          "pointers": {
+            "target": 3,
+            "successor": 4,
+            "phase": "thread"
+          },
+          "active": [
+            3,
+            4
+          ],
+          "text": "rtag=1时不再向下搜索，直接返回right指向的结点。"
+        },
+        {
+          "diagram": "若查询目标2，rtag=0：进入右子树3，再沿左孩子找到最左结点3。",
+          "pointers": {
+            "target": 2,
+            "rtag": 0,
+            "rightChild": 3,
+            "successor": 3
+          },
+          "active": [
+            2,
+            3
+          ],
+          "text": "rtag=0说明right是真实右孩子；后继是该右子树的最左结点。"
+        },
+        {
+          "diagram": "查询最后一个结点7：没有右子树且没有后继，nextNode返回0，输出-1。",
+          "pointers": {
+            "target": 7,
+            "successor": 0,
+            "output": -1
+          },
+          "active": [
+            7
+          ],
+          "text": "若目标是中序序列最后一个结点，或关键字不存在，巩固程序都输出-1。",
+          "done": true
+        }
+      ]
+    }
   }
 ]
