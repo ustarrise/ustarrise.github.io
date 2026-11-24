@@ -14888,5 +14888,156 @@
         }
       ]
     }
+  },
+  {
+    "id": "btree-search-20261202",
+    "date": "2026-12-02",
+    "year": "408",
+    "number": "B树查找",
+    "category": "查找 · B树 · 多路平衡查找",
+    "title": "B树查找：从结点内顺序比较到折半定位",
+    "difficulty": "中等",
+    "time": "20–25分钟",
+    "source": "https://www.cs.cmu.edu/~christos/courses/721.S03/LECTURES-PDF/0330-CC_Btrees.PDF",
+    "question": "给定一棵合法的m阶B树，结点按编号1..n存储，0表示空孩子指针。每个结点先输入关键字个数cnt，再输入cnt个递增关键字，最后输入cnt+1个孩子编号。给定目标关键字x，从根结点开始查找。若找到，输出结点编号和结点内关键字位置（位置从1开始）；否则输出-1 -1。输入格式：第一行输入m、n、root、x；随后输入n个结点。输出格式：一行两个整数。",
+    "constraint": "2≤m≤10；0≤n≤1000；0≤root≤n；关键字和x均在[-10^9,10^9]内。每个结点有0..m-1个关键字，关键字严格递增；每个结点恰有cnt+1个孩子编号，编号为0..n。输入保证整棵树满足m阶B树的关键字区间约束、平衡性质和结点占用约束；不同结点的关键字不重复。n=0时root=0。",
+    "sample": "输入：\n4 4 1 50\n2 30 60 2 3 4\n2 10 20 0 0 0\n2 40 50 0 0 0\n2 70 80 0 0 0\n输出：\n3 2\n\n边界1：空树，输入“4 0 0 10”，输出-1 -1。\n边界2：根结点直接命中，若x=30，输出1 1；B树内部结点也可能保存目标记录。\n边界3：查找55，根结点选择中间孩子3；结点3中的关键字为40、50，继续走最右孩子0，输出-1 -1。",
+    "brute": {
+      "title": "结点内顺序查找",
+      "tag": "基础方法",
+      "idea": "从根结点开始，在当前结点内从左到右比较关键字，找到第一个不小于x的位置i。若该关键字等于x则成功；否则沿child[i]进入对应区间。到达空指针0时查找失败。每层最多比较m-1次。",
+      "complexity": "时间O(hm)，h为B树高度；辅助空间O(1)。B树高度为O(log_m n)，因此比较次数为O(m log_m n)；磁盘块访问次数为O(h)。",
+      "risk": "不能把二叉搜索树的左右指针规则直接套用。一个结点有k个关键字就有k+1个孩子；若x位于key[i-1]与key[i]之间，应进入child[i]。若在内部结点命中，应立即返回。",
+      "code": "#include <stdio.h>\n#define MAXN 1005\n#define MAXM 11\n\ntypedef struct {\n    int cnt;\n    int key[MAXM];\n    int child[MAXM];\n} Node;\n\nNode tree[MAXN];\n\n/* 在每个结点内顺序查找，找到后返回结点编号和关键字位置。 */\nint searchLinear(int root, int x, int *outNode, int *outPos) {\n    int u = root;\n    while (u != 0) {\n        int i = 0;\n        while (i < tree[u].cnt && tree[u].key[i] < x)\n            i++; /* 找到第一个不小于x的关键字位置 */\n        if (i < tree[u].cnt && tree[u].key[i] == x) {\n            *outNode = u;\n            *outPos = i + 1; /* 输出位置使用1-based编号 */\n            return 1;\n        }\n        u = tree[u].child[i]; /* k个关键字对应k+1个区间指针 */\n    }\n    return 0; /* 沿对应区间走到空指针，查找失败 */\n}\n\nint main(void) {\n    int m, n, root, x;\n    if (scanf(\"%d%d%d%d\", &m, &n, &root, &x) != 4)\n        return 1; /* 读取阶数、结点数、根编号和目标关键字 */\n    if (m < 2 || m > 10 || n < 0 || n > 1000 || root < 0 || root > n)\n        return 1; /* 输入范围不合法 */\n\n    for (int i = 1; i <= n; i++) {\n        if (scanf(\"%d\", &tree[i].cnt) != 1)\n            return 1;\n        if (tree[i].cnt < 0 || tree[i].cnt > m - 1)\n            return 1; /* m阶B树的结点至多有m-1个关键字 */\n        for (int j = 0; j < tree[i].cnt; j++)\n            if (scanf(\"%d\", &tree[i].key[j]) != 1)\n                return 1;\n        for (int j = 0; j <= tree[i].cnt; j++)\n            if (scanf(\"%d\", &tree[i].child[j]) != 1)\n                return 1; /* 每个结点读取cnt+1个孩子编号 */\n    }\n\n    int node = -1, pos = -1;\n    if (searchLinear(root, x, &node, &pos))\n        printf(\"%d %d\\n\", node, pos);\n    else\n        puts(\"-1 -1\");\n    return 0; /* 输出命中的结点与位置，或输出查找失败 */\n}",
+      "explain": [
+        "i从0开始，逐个跳过小于x的关键字；循环结束时i就是第一个不小于x的位置。",
+        "若i小于cnt且key[i]等于x，说明在当前结点命中，输出结点编号和i+1。",
+        "若未命中，child[i]正好对应x所在的区间；i等于cnt时自然选择最右孩子。",
+        "沿孩子指针只会进入一棵子树，不需要回溯；走到0表示查找失败。"
+      ]
+    },
+    "optimal": {
+      "title": "结点内折半查找",
+      "tag": "考场推荐",
+      "idea": "B树结点中的关键字已经递增，因此在当前结点用lower_bound二分查找第一个不小于x的位置i。若相等则成功，否则进入child[i]。每层比较从O(m)降为O(log m)，树的下降路径不变。",
+      "complexity": "时间O(h log m)，辅助空间O(1)；h=O(log_m n)。每层仍只读取一个结点，因此磁盘块访问次数仍为O(h)，折半查找主要减少结点内部的比较次数。",
+      "risk": "lower_bound返回的是0..cnt，cnt代表x大于该结点所有关键字；不能把它误写成cnt-1。无论顺序查找还是折半查找，未命中时都必须走child[i]，而不是child[i+1]。",
+      "code": "#include <stdio.h>\n#define MAXN 1005\n#define MAXM 11\n\ntypedef struct {\n    int cnt;\n    int key[MAXM];\n    int child[MAXM];\n} Node;\n\nNode tree[MAXN];\n\n/* 在一个结点内二分查找第一个不小于x的关键字位置。 */\nint lowerBound(int u, int x) {\n    int lo = 0, hi = tree[u].cnt;\n    while (lo < hi) {\n        int mid = lo + (hi - lo) / 2;\n        if (tree[u].key[mid] < x)\n            lo = mid + 1;\n        else\n            hi = mid;\n    }\n    return lo; /* 返回范围为0..cnt，cnt表示x大于所有关键字 */\n}\n\n/* 沿B树唯一可能包含x的区间向下查找。 */\nint searchBinary(int root, int x, int *outNode, int *outPos) {\n    int u = root;\n    while (u != 0) {\n        int i = lowerBound(u, x);\n        if (i < tree[u].cnt && tree[u].key[i] == x) {\n            *outNode = u;\n            *outPos = i + 1;\n            return 1; /* B树内部结点也存放记录，命中即可返回 */\n        }\n        u = tree[u].child[i]; /* 未命中则进入x所在的第i个区间 */\n    }\n    return 0;\n}\n\nint main(void) {\n    int m, n, root, x;\n    if (scanf(\"%d%d%d%d\", &m, &n, &root, &x) != 4)\n        return 1; /* 读取阶数、结点数、根编号和目标关键字 */\n    if (m < 2 || m > 10 || n < 0 || n > 1000 || root < 0 || root > n)\n        return 1;\n\n    for (int i = 1; i <= n; i++) {\n        if (scanf(\"%d\", &tree[i].cnt) != 1)\n            return 1;\n        if (tree[i].cnt < 0 || tree[i].cnt > m - 1)\n            return 1;\n        for (int j = 0; j < tree[i].cnt; j++)\n            if (scanf(\"%d\", &tree[i].key[j]) != 1)\n                return 1;\n        for (int j = 0; j <= tree[i].cnt; j++)\n            if (scanf(\"%d\", &tree[i].child[j]) != 1)\n                return 1;\n    }\n\n    int node = -1, pos = -1;\n    if (searchBinary(root, x, &node, &pos))\n        printf(\"%d %d\\n\", node, pos);\n    else\n        puts(\"-1 -1\");\n    return 0; /* 所有结点均已按唯一可能的查找路径检查 */\n}",
+      "explain": [
+        "lowerBound在半开区间[lo,hi)内寻找第一个不小于x的关键字，返回值范围为0..cnt。",
+        "若i小于cnt且key[i]等于x，直接在当前结点命中，不必继续向叶子下降。",
+        "若不相等，x只可能位于第i个区间，因此进入child[i]；i=cnt时进入最右子树。",
+        "每个结点只访问一次，直到命中或孩子编号为0；折半定位不改变B树的高度和磁盘访问层数。"
+      ]
+    },
+    "tips": [
+      "m阶B树的一个结点最多有m-1个关键字；若有k个关键字，就有k+1个孩子指针。",
+      "结点内关键字递增，child[i]表示key[i-1]与key[i]之间的区间；两端区间分别对应child[0]和child[k]。",
+      "B树的内部结点也存放记录，查找可能在根或中间结点成功；B+树的记录则集中在叶子层，不能混淆。",
+      "折半查找把每层结点内比较次数从O(m)降为O(log m)，但每层仍需读取一个结点，磁盘块访问次数仍为O(h)。",
+      "考场性价比：高。重点记住“先在结点内定位，再决定是否命中或下降”；特别留意k个关键字对应k+1个孩子，以及lower_bound返回cnt时的最右孩子。"
+    ],
+    "variation": {
+      "question": "巩固题：使用样例中的同一棵B树，将目标关键字改为55。写出查找路径、失败位置，并给出完整C程序。输出应为-1 -1。",
+      "idea": "根结点[30,60]中，55位于30与60之间，进入child[1]=3；结点3为[40,50]，55大于所有关键字，lower_bound返回cnt=2，继续进入child[2]=0，因此查找失败。",
+      "complexity": "时间O(h log m)，辅助空间O(1)；样例中访问根结点和结点3后到达空指针。",
+      "code": "#include <stdio.h>\n#define MAXN 1005\n#define MAXM 11\n\ntypedef struct {\n    int cnt;\n    int key[MAXM];\n    int child[MAXM];\n} Node;\n\nNode tree[MAXN];\n\n/* 在一个结点内二分查找第一个不小于x的关键字位置。 */\nint lowerBound(int u, int x) {\n    int lo = 0, hi = tree[u].cnt;\n    while (lo < hi) {\n        int mid = lo + (hi - lo) / 2;\n        if (tree[u].key[mid] < x)\n            lo = mid + 1;\n        else\n            hi = mid;\n    }\n    return lo; /* 返回范围为0..cnt，cnt表示x大于所有关键字 */\n}\n\n/* 沿B树唯一可能包含x的区间向下查找。 */\nint searchBinary(int root, int x, int *outNode, int *outPos) {\n    int u = root;\n    while (u != 0) {\n        int i = lowerBound(u, x);\n        if (i < tree[u].cnt && tree[u].key[i] == x) {\n            *outNode = u;\n            *outPos = i + 1;\n            return 1; /* B树内部结点也存放记录，命中即可返回 */\n        }\n        u = tree[u].child[i]; /* 未命中则进入x所在的第i个区间 */\n    }\n    return 0;\n}\n\nint main(void) {\n    int m, n, root, x;\n    if (scanf(\"%d%d%d%d\", &m, &n, &root, &x) != 4)\n        return 1; /* 读取阶数、结点数、根编号和目标关键字 */\n    if (m < 2 || m > 10 || n < 0 || n > 1000 || root < 0 || root > n)\n        return 1;\n\n    for (int i = 1; i <= n; i++) {\n        if (scanf(\"%d\", &tree[i].cnt) != 1)\n            return 1;\n        if (tree[i].cnt < 0 || tree[i].cnt > m - 1)\n            return 1;\n        for (int j = 0; j < tree[i].cnt; j++)\n            if (scanf(\"%d\", &tree[i].key[j]) != 1)\n                return 1;\n        for (int j = 0; j <= tree[i].cnt; j++)\n            if (scanf(\"%d\", &tree[i].child[j]) != 1)\n                return 1;\n    }\n\n    int node = -1, pos = -1;\n    if (searchBinary(root, x, &node, &pos))\n        printf(\"%d %d\\n\", node, pos);\n    else\n        puts(\"-1 -1\");\n    return 0; /* 所有结点均已按唯一可能的查找路径检查 */\n}",
+      "explain": [
+        "在根结点[30,60]中，lower_bound(55)返回位置1，55不等于60，故进入child[1]=3。",
+        "在结点3的[40,50]中，55大于两个关键字，lower_bound返回cnt=2。",
+        "child[2]是结点3的最右孩子，编号为0；到达空指针后输出-1 -1。"
+      ]
+    },
+    "animation": {
+      "layout": "diagram",
+      "brute": [
+        {
+          "diagram": "根结点1：[30 | 60]\n目标x=50；顺序比较30，继续比较60。\n50位于30与60之间，选择child[1]=3。",
+          "pointers": {
+            "node": 1,
+            "index": 1,
+            "child": 3
+          },
+          "active": [
+            1
+          ],
+          "text": "在根结点中依次比较：30<50<60，没有命中，沿中间区间指针进入结点3。"
+        },
+        {
+          "diagram": "结点3：[40 | 50]\n先比较40，继续比较50。\n命中结点3的第2个关键字。",
+          "pointers": {
+            "node": 3,
+            "index": 1,
+            "found": 50
+          },
+          "active": [
+            3
+          ],
+          "text": "在结点3中顺序比较，第二个关键字等于50，输出3 2。",
+          "done": true
+        }
+      ],
+      "optimal": [
+        {
+          "diagram": "根结点1：[30 | 60]\nlower_bound二分：先比较60，再比较30。\n返回i=1，进入child[1]=3。",
+          "pointers": {
+            "node": 1,
+            "lo": 0,
+            "hi": 2,
+            "mid": 0,
+            "index": 1,
+            "child": 3
+          },
+          "active": [
+            1
+          ],
+          "text": "结点内折半定位第一个不小于50的位置i=1；当前关键字60不等于50，沿child[1]下降。"
+        },
+        {
+          "diagram": "结点3：[40 | 50]\nlower_bound二分：先比较50，再比较40。\n返回i=1，key[1]=50。",
+          "pointers": {
+            "node": 3,
+            "lo": 1,
+            "hi": 2,
+            "mid": 0,
+            "index": 1,
+            "found": 50
+          },
+          "active": [
+            3
+          ],
+          "text": "在结点3中折半定位到第2个关键字，确认等于50，输出3 2。",
+          "done": true
+        }
+      ],
+      "variation": [
+        {
+          "diagram": "目标改为55。\n根结点1：[30 | 60]\nlower_bound返回i=1，进入child[1]=3。",
+          "pointers": {
+            "node": 1,
+            "index": 1,
+            "child": 3
+          },
+          "active": [
+            1
+          ],
+          "text": "55位于30与60之间，沿中间孩子进入结点3。"
+        },
+        {
+          "diagram": "结点3：[40 | 50]\n55大于所有关键字，lower_bound返回i=2。\nchild[2]=0，查找失败。",
+          "pointers": {
+            "node": 3,
+            "index": 2,
+            "child": 0,
+            "output": "-1 -1"
+          },
+          "active": [
+            3
+          ],
+          "text": "目标大于当前结点全部关键字，走最右孩子0，输出-1 -1。",
+          "done": true
+        }
+      ]
+    }
   }
 ]
