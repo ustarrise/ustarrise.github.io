@@ -945,7 +945,8 @@ def main():
                       "sparse-fast-transpose-20261122": "3 4 4\n0 1 5\n1 0 -2\n1 3 8\n2 1 7\n",
                       "lc94-inorder-iterative-20261123": "6 1 3\n1 2 3\n2 4 5\n3 0 6\n4 0 0\n5 0 0\n6 0 0\n",
                       "complete-tree-bfs-20261128": "5\n2 3\n4 5\n0 0\n0 0\n0 0\n",
-                      "selection-sort-20261129": "4\n2 1\n1 2\n2 3\n1 4\n", "avl-insert-20261130": "6 1\n25 2 3\n20 4 0\n28 5 6\n10 0 0\n27 0 0\n30 0 0\n", "threaded-binary-tree-20261201": "7 1 3\n4 2 3\n2 4 5\n6 6 7\n1 0 0\n3 0 0\n5 0 0\n7 0 0\n",\n                      "btree-search-20261202": "4 4 1 55\n2 30 60 2 3 4\n2 10 20 0 0 0\n2 40 50 0 0 0\n2 70 80 0 0 0\n",
+                      "selection-sort-20261129": "4\n2 1\n1 2\n2 3\n1 4\n", "avl-insert-20261130": "6 1\n25 2 3\n20 4 0\n28 5 6\n10 0 0\n27 0 0\n30 0 0\n", "threaded-binary-tree-20261201": "7 1 3\n4 2 3\n2 4 5\n6 6 7\n1 0 0\n3 0 0\n5 0 0\n7 0 0\n",
+                      "btree-search-20261202": "4 4 1 55\n2 30 60 2 3 4\n2 10 20 0 0 0\n2 40 50 0 0 0\n2 70 80 0 0 0\n",
                       "linear-search-sentinel-20261203": "5\n4 2 4 4 7\n4\n"
 }
     count = 0
