@@ -15039,5 +15039,435 @@
         }
       ]
     }
+  },
+  {
+    "id": "linear-search-sentinel-20261203",
+    "date": "2026-12-03",
+    "year": "408",
+    "number": "顺序查找",
+    "category": "查找 · 顺序查找 · 哨兵优化",
+    "title": "顺序查找：从边界判断到哨兵优化",
+    "difficulty": "基础",
+    "time": "15–20分钟",
+    "source": "https://www.geeksforgeeks.org/dsa/sentinel-linear-search/",
+    "question": "给定一个无序整数顺序表和待查关键字x，查找x第一次出现的位置。若找到，输出从1开始的位置；若不存在，输出0。表中允许有重复元素。\n\n输入格式：第一行输入n；第二行输入n个整数；第三行输入x。\n输出格式：输出一个整数，表示x第一次出现的位置；查找失败输出0。",
+    "constraint": "1≤n≤1000；-10^9≤a[i],x≤10^9；表中元素可以重复且不保证有序。C程序使用MAXN=1000；哨兵法额外预留a[n]，数组容量为MAXN+1。",
+    "sample": "正例：\n6\n8 3 5 1 9 2\n9\n输出：5\n\n边界1：n=1，表为[7]，x=7，输出1；若x=8，输出0。\n边界2：表为[4,2,4,4,7]，x=4，输出1，必须返回第一次出现的位置。\n边界3：表为[-3,0,-3,2]，x=-3，输出1；不能把0当作查找失败的唯一判断条件。\n反例：若表为[8,3,5,1,9,2]、x=6，逐项比较后仍未命中，应输出0；不能因扫描到末尾就误报成功。",
+    "brute": {
+      "title": "逐个比较",
+      "tag": "朴素法",
+      "idea": "从第一个表项开始依次比较a[i]与x。第一次相等时记录i+1并立即结束；若扫描完整个表仍未命中，则输出0。由于表无序，不能使用二分查找。",
+      "complexity": "时间 O(n)，额外空间 O(1)。成功查找时最好O(1)、最坏O(n)；查找失败时需要比较n次。",
+      "risk": "必须从左向右扫描并在第一次命中后停止，否则重复元素会返回错误位置；位置按题目要求从1开始，0专门表示失败。",
+      "code": "/*\n * 朴素顺序查找：从左到右逐个比较，返回第一次出现的位置。\n * 表无序，不能使用二分查找；0表示查找失败。\n */\n#include <stdio.h>\n#define MAXN 1000\n\nint main(void) {\n    int n, a[MAXN], x;\n    if (scanf(\"%d\", &n) != 1) return 1; // 读取表长\n    if (n < 1 || n > MAXN) return 1; // 检查数组长度\n\n    for (int i = 0; i < n; i++) {\n        if (scanf(\"%d\", &a[i]) != 1) return 1; // 读取表项\n    }\n    if (scanf(\"%d\", &x) != 1) return 1; // 读取待查关键字\n\n    int pos = 0; // 0表示查找失败\n    for (int i = 0; i < n; i++) {\n        if (a[i] == x) {\n            pos = i + 1; // 输出位置从1开始\n            break; // 第一次命中就是最靠前的位置\n        }\n    }\n\n    printf(\"%d\\n\", pos);\n    return 0; // 输出首个匹配位置或0\n}",
+      "explain": [
+        "先读入n和全部表项，再读入待查关键字x。",
+        "i从0递增，a[i]==x时记录i+1；加1是因为题目位置从1开始。",
+        "命中后立即break，保证重复元素返回第一次出现的位置。",
+        "若循环结束pos仍为0，说明所有表项均不等于x，查找失败。"
+      ]
+    },
+    "optimal": {
+      "title": "哨兵顺序查找",
+      "tag": "考场推荐",
+      "idea": "在数组额外位置a[n]放入关键字x作为哨兵，然后从i=0开始只判断a[i]!=x。因为哨兵保证最终一定命中，循环中不必反复检查i<n；循环结束后，i<n表示原表中找到，i==n表示只命中了哨兵。",
+      "complexity": "时间 O(n)，额外空间 O(1)。渐进时间复杂度不变，但循环体少一次边界判断；额外单元只占常数空间。",
+      "risk": "必须为a[n]预留额外空间，不能越界写入；i==n代表命中的是哨兵而非原表元素。哨兵法只减少边界判断，不把O(n)变成更低阶复杂度。",
+      "code": "/*\n * 哨兵顺序查找：在a[n]放入x，省去循环中的数组边界判断。\n * 额外单元a[n]是哨兵；i==n表示原表中不存在x。\n */\n#include <stdio.h>\n#define MAXN 1000\n\nint main(void) {\n    int n, a[MAXN + 1], x;\n    if (scanf(\"%d\", &n) != 1) return 1; // 读取表长\n    if (n < 1 || n > MAXN) return 1; // 为哨兵保留额外单元\n\n    for (int i = 0; i < n; i++) {\n        if (scanf(\"%d\", &a[i]) != 1) return 1; // 读取原表\n    }\n    if (scanf(\"%d\", &x) != 1) return 1; // 读取待查关键字\n\n    a[n] = x; // 设置哨兵，保证查找循环一定终止\n    int i = 0;\n    while (a[i] != x)\n        i++; // 不需要再判断i<n\n\n    if (i < n)\n        printf(\"%d\\n\", i + 1); // 命中原表，转换为1-based位置\n    else\n        puts(\"0\"); // 只命中哨兵，原表中不存在x\n\n    return 0; // 查找结果已输出\n}",
+      "explain": [
+        "数组容量是MAXN+1，a[n]是额外单元，不会覆盖原表最后一个元素。",
+        "将a[n]设为x后，while循环必然在原表命中或到达哨兵时停止。",
+        "i<n说明命中原表，输出i+1；i==n说明只命中哨兵，输出0。",
+        "哨兵优化减少循环中的边界判断，但最坏比较次数仍与n成正比。"
+      ]
+    },
+    "tips": [
+      "无序表查找不能直接套用折半查找；顺序查找适用于顺序表和链表。",
+      "成功查找时若每个位置等概率，平均比较次数为(n+1)/2；失败时需要比较n次。",
+      "哨兵法的核心是把边界条件移到表尾额外单元，循环结束后再判断i是否越过原表范围。",
+      "哨兵法仍为O(n)时间、O(1)额外空间；它减少的是循环判断，不改变渐进复杂度。",
+      "考场性价比：中高。记住普通顺序查找的边界判断，以及哨兵法的a[n]=x和i==n失败判定。"
+    ],
+    "variation": {
+      "question": "巩固题：给定无序表，统计关键字x出现的总次数，并输出第一次出现的位置。若x不存在，输出“0 0”。输入格式与原题相同；输出格式为“出现次数 首次位置”。",
+      "idea": "仍然从左向右扫描一次。每次a[i]==x就将count加1；若first仍为0，则把i+1记录为首次位置。扫描结束后输出count和first。",
+      "complexity": "时间 O(n)，额外空间 O(1)。每个表项只比较一次。",
+      "code": "/*\n * 巩固题：统计x出现次数，并记录第一次出现的位置。\n * 输出count和first；若未出现，两者均为0。\n */\n#include <stdio.h>\n#define MAXN 1000\n\nint main(void) {\n    int n, a[MAXN], x;\n    if (scanf(\"%d\", &n) != 1) return 1; // 读取表长\n    if (n < 1 || n > MAXN) return 1; // 检查表长\n\n    for (int i = 0; i < n; i++) {\n        if (scanf(\"%d\", &a[i]) != 1) return 1; // 读取表项\n    }\n    if (scanf(\"%d\", &x) != 1) return 1; // 读取关键字\n\n    int count = 0, first = 0;\n    for (int i = 0; i < n; i++) {\n        if (a[i] == x) {\n            count++; // 每命中一次就累计\n            if (first == 0)\n                first = i + 1; // 只记录第一次命中的位置\n        }\n    }\n\n    printf(\"%d %d\\n\", count, first);\n    return 0; // 输出出现次数和首次位置\n}",
+      "explain": [
+        "count初值为0，first初值为0，分别表示出现次数和首次位置。",
+        "每次比较相等都执行count++，因此不会漏掉重复元素。",
+        "只有first仍为0时才写入i+1，后续命中不会覆盖首次位置。",
+        "扫描结束后若没有命中，输出自然为0 0。"
+      ]
+    },
+    "animation": {
+      "layout": "array",
+      "brute": [
+        {
+          "array": [
+            8,
+            3,
+            5,
+            1,
+            9,
+            2
+          ],
+          "active": [
+            0
+          ],
+          "pointers": {
+            "i": 0,
+            "target": 9,
+            "compared": 8,
+            "found": false
+          },
+          "diagram": "原表：[8, 3, 5, 1, 9, 2]\n目标x=9；从下标0开始。",
+          "text": "比较a[0]=8与x=9，不相等，继续向右。"
+        },
+        {
+          "array": [
+            8,
+            3,
+            5,
+            1,
+            9,
+            2
+          ],
+          "active": [
+            1
+          ],
+          "pointers": {
+            "i": 1,
+            "target": 9,
+            "compared": 3,
+            "found": false
+          },
+          "diagram": "已检查下标0；当前i=1。\n3 != 9，继续扫描。",
+          "text": "比较a[1]=3与x=9，不相等。"
+        },
+        {
+          "array": [
+            8,
+            3,
+            5,
+            1,
+            9,
+            2
+          ],
+          "active": [
+            2
+          ],
+          "pointers": {
+            "i": 2,
+            "target": 9,
+            "compared": 5,
+            "found": false
+          },
+          "diagram": "已检查下标0..1；当前i=2。\n5 != 9，继续扫描。",
+          "text": "比较a[2]=5与x=9，不相等。"
+        },
+        {
+          "array": [
+            8,
+            3,
+            5,
+            1,
+            9,
+            2
+          ],
+          "active": [
+            3
+          ],
+          "pointers": {
+            "i": 3,
+            "target": 9,
+            "compared": 1,
+            "found": false
+          },
+          "diagram": "已检查下标0..2；当前i=3。\n1 != 9，继续扫描。",
+          "text": "比较a[3]=1与x=9，不相等。"
+        },
+        {
+          "array": [
+            8,
+            3,
+            5,
+            1,
+            9,
+            2
+          ],
+          "active": [
+            4
+          ],
+          "pointers": {
+            "i": 4,
+            "target": 9,
+            "compared": 9,
+            "found": true,
+            "output": 5
+          },
+          "diagram": "a[4]=9，首次命中。\n输出位置i+1=5。",
+          "text": "比较a[4]=9与x=9，相等，立即停止并输出5。",
+          "done": true
+        }
+      ],
+      "optimal": [
+        {
+          "array": [
+            8,
+            3,
+            5,
+            1,
+            9,
+            2,
+            9
+          ],
+          "active": [
+            6
+          ],
+          "pointers": {
+            "phase": "append",
+            "i": 0,
+            "sentinelIndex": 6,
+            "target": 9
+          },
+          "diagram": "原表：[8, 3, 5, 1, 9, 2]\n追加哨兵：a[6]=9。",
+          "text": "先在额外单元a[n]放入x，保证循环一定能找到匹配值。"
+        },
+        {
+          "array": [
+            8,
+            3,
+            5,
+            1,
+            9,
+            2,
+            9
+          ],
+          "active": [
+            0
+          ],
+          "pointers": {
+            "i": 0,
+            "compared": 8,
+            "target": 9
+          },
+          "diagram": "i=0：8 != 9\n不检查i是否越界，直接令i++。",
+          "text": "比较第一个表项，不相等，i增加到1。"
+        },
+        {
+          "array": [
+            8,
+            3,
+            5,
+            1,
+            9,
+            2,
+            9
+          ],
+          "active": [
+            1
+          ],
+          "pointers": {
+            "i": 1,
+            "compared": 3,
+            "target": 9
+          },
+          "diagram": "i=1：3 != 9\n继续令i++。",
+          "text": "比较第二个表项，不相等，继续扫描。"
+        },
+        {
+          "array": [
+            8,
+            3,
+            5,
+            1,
+            9,
+            2,
+            9
+          ],
+          "active": [
+            2,
+            3
+          ],
+          "pointers": {
+            "i": 2,
+            "compared": 5,
+            "target": 9,
+            "next": 3
+          },
+          "diagram": "i=2：5 != 9\n随后i=3，继续比较。",
+          "text": "当前表项仍不匹配，循环只需判断a[i]是否等于x。"
+        },
+        {
+          "array": [
+            8,
+            3,
+            5,
+            1,
+            9,
+            2,
+            9
+          ],
+          "active": [
+            3
+          ],
+          "pointers": {
+            "i": 3,
+            "compared": 1,
+            "target": 9,
+            "next": 4
+          },
+          "diagram": "i=3：1 != 9\n随后i=4。",
+          "text": "继续向右，尚未命中目标。"
+        },
+        {
+          "array": [
+            8,
+            3,
+            5,
+            1,
+            9,
+            2,
+            9
+          ],
+          "active": [
+            4
+          ],
+          "pointers": {
+            "i": 4,
+            "compared": 9,
+            "target": 9,
+            "found": true,
+            "output": 5
+          },
+          "diagram": "i=4：9 == 9，且i<n。\n命中原表，输出5。",
+          "text": "在原表下标4命中，i<n成立，输出i+1=5。",
+          "done": true
+        }
+      ],
+      "variation": [
+        {
+          "array": [
+            4,
+            2,
+            4,
+            4,
+            7
+          ],
+          "active": [],
+          "pointers": {
+            "i": 0,
+            "count": 0,
+            "first": 0,
+            "target": 4
+          },
+          "diagram": "表：[4, 2, 4, 4, 7]\n初始化count=0、first=0。",
+          "text": "从左到右扫描，count统计命中次数，first记录首次位置。"
+        },
+        {
+          "array": [
+            4,
+            2,
+            4,
+            4,
+            7
+          ],
+          "active": [
+            0
+          ],
+          "pointers": {
+            "i": 0,
+            "count": 1,
+            "first": 1,
+            "target": 4
+          },
+          "diagram": "a[0]=4，命中。\ncount=1，first=1。",
+          "text": "第一次命中，次数加1，并记录位置1。"
+        },
+        {
+          "array": [
+            4,
+            2,
+            4,
+            4,
+            7
+          ],
+          "active": [
+            1
+          ],
+          "pointers": {
+            "i": 1,
+            "count": 1,
+            "first": 1,
+            "target": 4
+          },
+          "diagram": "a[1]=2，不命中。\ncount和first保持不变。",
+          "text": "当前元素不等于x，不更新统计量。"
+        },
+        {
+          "array": [
+            4,
+            2,
+            4,
+            4,
+            7
+          ],
+          "active": [
+            2
+          ],
+          "pointers": {
+            "i": 2,
+            "count": 2,
+            "first": 1,
+            "target": 4
+          },
+          "diagram": "a[2]=4，命中。\ncount=2，first仍为1。",
+          "text": "第二次命中，只增加count，不覆盖首次位置。"
+        },
+        {
+          "array": [
+            4,
+            2,
+            4,
+            4,
+            7
+          ],
+          "active": [
+            3
+          ],
+          "pointers": {
+            "i": 3,
+            "count": 3,
+            "first": 1,
+            "target": 4
+          },
+          "diagram": "a[3]=4，命中。\ncount=3，first仍为1。",
+          "text": "第三次命中，count继续增加，first保持1。"
+        },
+        {
+          "array": [
+            4,
+            2,
+            4,
+            4,
+            7
+          ],
+          "active": [
+            4
+          ],
+          "pointers": {
+            "i": 4,
+            "count": 3,
+            "first": 1,
+            "target": 4,
+            "output": "3 1"
+          },
+          "diagram": "a[4]=7，不命中。\n扫描结束，输出3 1。",
+          "text": "最后一个元素不匹配；总次数为3，第一次出现位置为1。",
+          "done": true
+        }
+      ]
+    }
   }
 ]
