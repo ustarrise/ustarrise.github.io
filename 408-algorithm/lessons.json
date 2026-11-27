@@ -13805,5 +13805,286 @@
         }
       ]
     }
+  },
+  {
+    "id": "dll-delete-known-20261127",
+    "date": "2026-11-27",
+    "year": "原创408练习",
+    "number": "06",
+    "category": "链表 · 双向链表 · 前驱指针 · 删除结点",
+    "title": "删除已知结点：从单链表找前驱到双链表直连",
+    "difficulty": "简单",
+    "time": "15–20分钟",
+    "source": "https://www.geeksforgeeks.org/dsa/when-is-doubly-linked-list-more-efficient-than-singly-linked-list/",
+    "question": "给定一个待删除结点的指针p，保证p指向当前链表中的真实数据结点，且不提供按关键字查找的过程。先考虑单链表：从头结点出发寻找p的前驱，再删除p；再考虑双向链表：利用p->prev直接连接p的前驱和后继。比较两种方法的时间复杂度与空间代价。输入格式：无（两种链表和目标结点均在程序中内置）。输出格式：分别输出删除前、删除后的结点序列。",
+    "constraint": "结点数0≤n≤100。待删除指针p若非空，必须指向当前链表中的一个真实数据结点，不是哨兵结点；单链表只含next指针，双向链表同时含prev和next指针。双向链表使用头、尾哨兵，因此每个真实结点均有非空前驱和后继。删除成功后必须释放结点；若p为空或不属于单链表，单链表函数返回失败且不改变链表。",
+    "sample": "初始链表：10 -> 20 -> 30 -> 40\n已知目标指针p指向结点30（不是只给出数值30）。\n\n单链表：从头结点开始依次检查10、20，找到30的前驱20，再令20.next=40。\n双向链表：直接读取p.prev=20、p.next=40，令20.next=40且40.prev=20。\n\n输出：\n删除前：10 20 30 40\n删除后：10 20 40\n\n边界：删除首个或最后一个真实结点时，双向链表的哨兵结点仍提供有效的前驱或后继；单链表删除首结点时必须更新head。若只给出关键字而没有结点指针，两种链表都需要先查找目标，查找时间仍为O(n)。",
+    "brute": {
+      "title": "单链表从头寻找前驱",
+      "tag": "朴素法",
+      "idea": "单链表结点只有next。即使已经拿到待删除结点p的地址，也不能从p反向找到前驱；必须从头结点开始扫描，直到找到满足cur->next==p的前驱。随后跳过p并释放它。",
+      "complexity": "时间 O(n)：最坏需要扫描到尾部才能找到前驱；找到后修改指针为O(1)。辅助空间 O(1)。",
+      "risk": "删除首结点时没有前驱，必须单独更新head；不能在未确认p属于当前链表时直接free(p)，否则可能破坏其他链表或释放无效地址。",
+      "code": "/*\n * 朴素法：单链表只有next。\n * 已知目标结点的地址，仍需从头寻找它的前驱。\n */\n#include <stdio.h>\n#include <stdlib.h>\n\ntypedef struct SNode {\n    int data;\n    struct SNode *next;\n} SNode;\n\n/* 创建一个单链表结点，失败时返回NULL。 */\nSNode *newSNode(int value) {\n    SNode *p = (SNode *)malloc(sizeof(SNode));\n    if (p == NULL) return NULL;\n    p->data = value;\n    p->next = NULL;\n    return p;\n}\n\n/* 删除已知地址target指向的结点；找不到时不修改链表。 */\nint deleteKnownSingly(SNode **head, SNode *target) {\n    if (head == NULL || *head == NULL || target == NULL)\n        return 0;\n\n    SNode *prev = NULL;\n    SNode *cur = *head;\n\n    /* 单链表不能由target反向找到前驱，只能从头扫描。 */\n    while (cur != NULL && cur != target) {\n        prev = cur;\n        cur = cur->next;\n    }\n\n    if (cur == NULL) return 0; /* target不在当前链表中 */\n\n    if (prev == NULL)\n        *head = cur->next;     /* 删除的是首结点，更新头指针 */\n    else\n        prev->next = cur->next; /* 前驱跳过目标结点 */\n\n    free(cur);                 /* 释放已经从链表中摘下的结点 */\n    return 1;\n}\n\n/* 从头到尾输出单链表。 */\nvoid printSList(const SNode *head) {\n    const SNode *p = head;\n    while (p != NULL) {\n        printf(\"%d\", p->data);\n        if (p->next != NULL) printf(\" \");\n        p = p->next;\n    }\n    putchar('\\n');\n}\n\n/* 释放单链表剩余的所有结点。 */\nvoid freeSList(SNode *head) {\n    while (head != NULL) {\n        SNode *next = head->next;\n        free(head);\n        head = next;\n    }\n}\n\nint main(void) {\n    SNode *node[4];\n    int value[4] = {10, 20, 30, 40};\n\n    /* 先创建全部结点；任一分配失败就释放已创建结点。 */\n    for (int i = 0; i < 4; i++) {\n        node[i] = newSNode(value[i]);\n        if (node[i] == NULL) {\n            for (int j = 0; j < i; j++) free(node[j]);\n            puts(\"内存分配失败\");\n            return 1;\n        }\n    }\n\n    /* 按数组顺序连接成10 -> 20 -> 30 -> 40。 */\n    for (int i = 0; i < 3; i++)\n        node[i]->next = node[i + 1];\n\n    SNode *head = node[0];\n    SNode *target = node[2]; /* 已经拿到结点30的地址 */\n\n    printf(\"删除前：\");\n    printSList(head);\n\n    if (deleteKnownSingly(&head, target)) {\n        printf(\"删除后：\");\n        printSList(head);\n    } else {\n        puts(\"目标结点不在链表中\");\n    }\n\n    freeSList(head); /* 释放删除操作后仍留在链表中的结点 */\n    return 0;\n}",
+      "explain": [
+        "单链表只有next，结点30本身无法指出它的前驱20。",
+        "从head开始扫描，直到cur==target；循环结束时prev就是目标结点的前驱。",
+        "执行prev->next=cur->next后，链表变成10 -> 20 -> 40，再free(cur)。",
+        "若目标恰好是首结点，prev仍为NULL，因此要改写head。"
+      ]
+    },
+    "optimal": {
+      "title": "双向链表利用prev直接删除",
+      "tag": "408重点掌握",
+      "idea": "双向链表的每个结点同时保存prev和next。已知p的地址后，直接读取p->prev与p->next，让前驱的next指向后继、后继的prev指回前驱，然后释放p；无需从头扫描。头尾哨兵使删除首个、最后一个真实结点也使用同一套指针操作。",
+      "complexity": "时间 O(1)：只修改两个相邻指针并释放目标结点。辅助空间 O(1)；双向链表每个结点比单链表多一个prev指针，总存储仍为O(n)，但常数开销更大。",
+      "risk": "必须同时修改前驱的next和后继的prev，只改一边会破坏双向链表结构。O(1)只针对已经拿到目标结点地址的删除操作；若输入是关键字，仍要先O(n)查找。",
+      "code": "/*\n * 优化法：双向链表同时保存prev和next。\n * 已知目标结点p后，可直接连接它的前驱与后继。\n * 头、尾哨兵避免删除首个或最后一个数据结点时的特判。\n */\n#include <stdio.h>\n#include <stdlib.h>\n\ntypedef struct DNode {\n    int data;\n    struct DNode *prev;\n    struct DNode *next;\n} DNode;\n\n/* 创建一个双向链表结点，失败时返回NULL。 */\nDNode *newDNode(int value) {\n    DNode *p = (DNode *)malloc(sizeof(DNode));\n    if (p == NULL) return NULL;\n    p->data = value;\n    p->prev = NULL;\n    p->next = NULL;\n    return p;\n}\n\n/* 删除已知地址p指向的真实结点；哨兵结点不能删除。 */\nint deleteKnownDoubly(DNode *p) {\n    if (p == NULL || p->prev == NULL || p->next == NULL)\n        return 0;\n\n    DNode *before = p->prev; /* 直接得到前驱 */\n    DNode *after = p->next;  /* 直接得到后继 */\n\n    before->next = after;    /* 前驱越过p，指向后继 */\n    after->prev = before;    /* 后继反向指回前驱 */\n\n    free(p);                 /* 结点已从两个方向摘除 */\n    return 1;\n}\n\n/* head、tail是哨兵，只输出两者之间的真实数据结点。 */\nvoid printDList(const DNode *head) {\n    const DNode *p = head->next;\n    while (p != NULL && p->next != NULL) {\n        printf(\"%d\", p->data);\n        if (p->next->next != NULL) printf(\" \");\n        p = p->next;\n    }\n    putchar('\\n');\n}\n\n/* 释放头尾哨兵之间的所有真实结点。 */\nvoid freeDList(DNode *head) {\n    DNode *p = head->next;\n    while (p != NULL && p->next != NULL) {\n        DNode *next = p->next;\n        free(p);\n        p = next;\n    }\n    head->next = NULL;\n}\n\nint main(void) {\n    DNode head = {-1, NULL, NULL}; /* 头哨兵 */\n    DNode tail = {-1, NULL, NULL}; /* 尾哨兵 */\n    DNode *node[4];\n    int value[4] = {10, 20, 30, 40};\n\n    /* 创建四个真实数据结点。 */\n    for (int i = 0; i < 4; i++) {\n        node[i] = newDNode(value[i]);\n        if (node[i] == NULL) {\n            for (int j = 0; j < i; j++) free(node[j]);\n            puts(\"内存分配失败\");\n            return 1;\n        }\n    }\n\n    /* 连接头哨兵、四个数据结点和尾哨兵。 */\n    head.next = node[0];\n    node[0]->prev = &head;\n    for (int i = 0; i < 3; i++) {\n        node[i]->next = node[i + 1];\n        node[i + 1]->prev = node[i];\n    }\n    node[3]->next = &tail;\n    tail.prev = node[3];\n\n    DNode *target = node[2]; /* 已经拿到结点30的地址 */\n\n    printf(\"删除前：\");\n    printDList(&head);\n\n    if (deleteKnownDoubly(target)) {\n        printf(\"删除后：\");\n        printDList(&head);\n    } else {\n        puts(\"目标为空或不是可删除的真实结点\");\n    }\n\n    freeDList(&head); /* 释放剩余数据结点 */\n    return 0;\n}",
+      "explain": [
+        "目标结点p已经给定，p->prev直接指向20，p->next直接指向40。",
+        "先令20.next=40，再令40.prev=20，前后两个方向的链接都恢复正确。",
+        "释放p后，链表仍为10 <-> 20 <-> 40；整个删除过程没有遍历。",
+        "若只给出数值30而没有p的地址，仍需先查找30，不能把总时间误写成O(1)。"
+      ]
+    },
+    "tips": [
+      "本题的关键前提是“已知结点地址p”。单链表只有next，仍要从头找前驱；双向链表可直接读p->prev。",
+      "双向链表删除必须同时执行p->prev->next=p->next和p->next->prev=p->prev。",
+      "若按关键字删除，单链表和双向链表都要先查找，最坏时间仍为O(n)；双向链表的O(1)优势只在目标结点已定位时成立。",
+      "考场性价比：高。记住“单链表缺前驱要遍历，双链表有prev可直连”，并检查删除首尾结点时的边界。"
+    ],
+    "variation": {
+      "question": "巩固题：已知双向链表中的真实结点p，要求在p之后插入一个新结点x。写出指针修改顺序，并说明为什么必须先保存p的原后继。",
+      "idea": "先保存q=p->next，再令x->prev=p、x->next=q，最后令p->next=x、q->prev=x。四次指针赋值完成插入，时间复杂度O(1)，辅助空间O(1)。若先覆盖p->next而没有保存q，就会丢失原后继，无法正确接回链表。",
+      "complexity": "时间 O(1)，辅助空间 O(1)。若题目只给出关键字而未给出p的地址，还需先查找p，整体最坏为O(n)。",
+      "code": "/*\n * 巩固：在双向链表的已知结点p之后插入x。\n * 先保存p的原后继q，再修改四条相关链接。\n */\n#include <stdio.h>\n\ntypedef struct Node {\n    int data;\n    struct Node *prev;\n    struct Node *next;\n} Node;\n\n/* x必须是尚未链接到其他链表中的独立结点。 */\nint insertAfter(Node *p, Node *x) {\n    if (p == NULL || x == NULL || p->next == NULL ||\n        x->prev != NULL || x->next != NULL)\n        return 0;\n\n    Node *q = p->next; /* 先保存p原来的后继，防止覆盖后丢失 */\n\n    x->prev = p;       /* x的前驱是p */\n    x->next = q;       /* x的后继是原来的q */\n    p->next = x;       /* p向后连接x */\n    q->prev = x;       /* q向前连接x */\n\n    return 1;\n}\n\n/* 输出两个哨兵之间的真实数据结点。 */\nvoid printList(const Node *head) {\n    const Node *p = head->next;\n    while (p != NULL && p->next != NULL) {\n        printf(\"%d\", p->data);\n        if (p->next->next != NULL) printf(\" \");\n        p = p->next;\n    }\n    putchar('\\n');\n}\n\nint main(void) {\n    Node head = {-1, NULL, NULL};\n    Node tail = {-1, NULL, NULL};\n    Node a = {10, NULL, NULL};\n    Node b = {20, NULL, NULL};\n    Node c = {30, NULL, NULL};\n    Node x = {25, NULL, NULL}; /* 待插入结点，初始未链接 */\n\n    /* 建立head <-> 10 <-> 20 <-> 30 <-> tail。 */\n    head.next = &a;\n    a.prev = &head;\n    a.next = &b;\n    b.prev = &a;\n    b.next = &c;\n    c.prev = &b;\n    c.next = &tail;\n    tail.prev = &c;\n\n    printf(\"插入前：\");\n    printList(&head);\n\n    if (insertAfter(&b, &x)) {\n        printf(\"插入后：\");\n        printList(&head);\n    } else {\n        puts(\"插入失败\");\n    }\n\n    return 0; /* 结果为10 20 25 30 */\n}",
+      "explain": [
+        "初始p指向20，q=p->next指向30；必须先保存q。",
+        "令x.prev=p、x.next=q，使新结点两侧指针先准备好。",
+        "再令p.next=x、q.prev=x，完成前向和反向链接。",
+        "结果为10 <-> 20 <-> 25 <-> 30，整个插入只修改固定数量的指针。"
+      ]
+    },
+    "animation": {
+      "layout": "chains",
+      "rows": [
+        {
+          "label": "单链表：只有next，目标结点地址已知",
+          "values": [
+            10,
+            20,
+            30,
+            40
+          ],
+          "pointerKey": "target"
+        },
+        {
+          "label": "双向链表：每个结点有prev和next",
+          "values": [
+            10,
+            20,
+            30,
+            40
+          ],
+          "pointerKey": "target"
+        }
+      ],
+      "brute": [
+        {
+          "array": [
+            10,
+            20,
+            30,
+            40
+          ],
+          "active": [
+            2
+          ],
+          "pointers": {
+            "target": 2,
+            "cur": 0,
+            "prev": -1
+          },
+          "text": "目标指针p已经指向30，但单链表没有prev字段；从头结点10开始寻找前驱。"
+        },
+        {
+          "array": [
+            10,
+            20,
+            30,
+            40
+          ],
+          "active": [
+            0,
+            1
+          ],
+          "pointers": {
+            "target": 2,
+            "cur": 1,
+            "prev": 0
+          },
+          "text": "扫描到20时，发现20.next就是目标30，因此prev=20，找到了前驱。"
+        },
+        {
+          "array": [
+            10,
+            20,
+            30,
+            40
+          ],
+          "active": [
+            1,
+            3
+          ],
+          "pointers": {
+            "target": 2,
+            "prev": 1,
+            "next": 3
+          },
+          "text": "令20.next=40，链表前向连接变为10 -> 20 -> 40。"
+        },
+        {
+          "array": [
+            10,
+            20,
+            40
+          ],
+          "active": [
+            1,
+            2
+          ],
+          "pointers": {
+            "prev": 1,
+            "next": 2
+          },
+          "text": "释放原结点30，结果为10 -> 20 -> 40；扫描前驱花费O(n)。"
+        }
+      ],
+      "optimal": [
+        {
+          "array": [
+            10,
+            20,
+            30,
+            40
+          ],
+          "active": [
+            2
+          ],
+          "pointers": {
+            "target": 2,
+            "prev": 1,
+            "next": 3
+          },
+          "text": "双向链表中p指向30，p.prev直接指向20，p.next直接指向40，无须从头扫描。"
+        },
+        {
+          "array": [
+            10,
+            20,
+            30,
+            40
+          ],
+          "active": [
+            1,
+            3
+          ],
+          "pointers": {
+            "target": 2,
+            "prev": 1,
+            "next": 3
+          },
+          "text": "执行20.next=40，前向链接已经越过30；此时反向链接尚未修复。"
+        },
+        {
+          "array": [
+            10,
+            20,
+            40
+          ],
+          "active": [
+            1,
+            2
+          ],
+          "pointers": {
+            "prev": 1,
+            "next": 2
+          },
+          "text": "执行40.prev=20，双向链接恢复一致，然后释放结点30。"
+        },
+        {
+          "array": [
+            10,
+            20,
+            40
+          ],
+          "active": [
+            0,
+            1,
+            2
+          ],
+          "pointers": {
+            "head": 0,
+            "tail": 2
+          },
+          "text": "最终链表为10 <-> 20 <-> 40，只修改两个相邻结点的指针，删除时间O(1)。"
+        }
+      ],
+      "variation": [
+        {
+          "array": [
+            10,
+            20,
+            30
+          ],
+          "active": [
+            1
+          ],
+          "pointers": {
+            "p": 1,
+            "q": 2
+          },
+          "text": "已知p指向20，先保存q=p.next，即30；不能提前覆盖p.next。"
+        },
+        {
+          "array": [
+            10,
+            20,
+            25,
+            30
+          ],
+          "active": [
+            1,
+            2,
+            3
+          ],
+          "pointers": {
+            "p": 1,
+            "x": 2,
+            "q": 3
+          },
+          "text": "令x.prev=p、x.next=q，再令p.next=x、q.prev=x，四条链接完成接入。"
+        },
+        {
+          "array": [
+            10,
+            20,
+            25,
+            30
+          ],
+          "active": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "pointers": {
+            "head": 0,
+            "tail": 3
+          },
+          "text": "结果为10 <-> 20 <-> 25 <-> 30，插入操作只修改固定数量的指针。"
+        }
+      ]
+    }
   }
 ]
